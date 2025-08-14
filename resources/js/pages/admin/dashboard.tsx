@@ -1,0 +1,291 @@
+import { Head, usePage, router } from '@inertiajs/react';
+import React from 'react';
+import AppLayout from '@/layouts/app-layout';
+import { StatsCard } from '@/components/dashboard/StatsCard';
+import { RecentRegistrationsTable, type RegistrationRow } from '@/components/dashboard/RecentRegistrationsTable';
+import { DetailPendaftaranModal, type PendaftarData } from '@/components/dashboard/DetailPendaftaranModal';
+import { StatusNotificationModal } from '@/components/dashboard/StatusNotificationModal';
+import Pagination from '@/components/Pagination';
+// Replaced legacy DashboardFilterBar with unified FilterDropdown
+import { type ActiveFilters } from '@/components/dashboard/FilterDropdown';
+import { Users, UserCheck, BookOpen, FileText, UserCog } from 'lucide-react';
+import { type BreadcrumbItem } from '@/types';
+
+interface PendaftaranItem {
+  id: string;
+  original_id: number;
+  user_id: number;
+  nama: string;
+  jenis_pendaftaran: string;
+  program: string;
+  batch?: string | null;
+  tanggal_pendaftaran: string;
+  status: string;
+  type: string;
+}
+
+interface StatsSummary { 
+  peserta_sertifikasi?: number; 
+  siswa_pkl?: number; 
+  jumlah_sertifikasi?: number; 
+  total_blog?: number; 
+  total_video?: number;
+  total_users?: number;
+}
+export default function Dashboard() {
+  const { props } = usePage<{ stats: StatsSummary; pendaftaran_terbaru: PendaftaranItem[] }>();
+  const breadcrumbs: BreadcrumbItem[] = [ { title: 'Dashboard', href: '/admin/dashboard' } ];
+  const { stats, pendaftaran_terbaru } = props;
+  const rows = (pendaftaran_terbaru||[]).map(p => ({ 
+    id: p.id, 
+    original_id: p.original_id,
+    user_id: p.user_id,
+    nama: p.nama, 
+    jenis: p.jenis_pendaftaran, 
+    program: p.program, 
+    batch: p.batch, 
+    tanggal: p.tanggal_pendaftaran, 
+    status: p.status 
+  }));
+  
+  // Modal state for approval
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [selectedRegistration, setSelectedRegistration] = React.useState<PendaftarData | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = React.useState(false);
+  
+  // Status notification modal state
+  const [statusModal, setStatusModal] = React.useState<{
+    isOpen: boolean;
+    status: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    status: 'info',
+    title: '',
+    message: ''
+  });
+  
+  // placeholder search state reuse (server side filtering bisa ditambahkan)
+  const [search, setSearch] = React.useState('');
+  const [activeFilters, setActiveFilters] = React.useState<ActiveFilters>({ jenisPendaftaran: [], tanggalPendaftaran: null, status: [] });
+  // Function to fetch registration detail from backend
+  const fetchRegistrationDetail = async (registrationId: number, type: 'sertifikasi' | 'pkl') => {
+    try {
+      setIsLoadingDetail(true);
+      
+      const response = await fetch(`/admin/pendaftaran/${type}/${registrationId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response error:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Received data:', data);
+      
+      // Transform the backend data to match PendaftarData interface
+      const getStatus = () => {
+        if (data.status === 'pending' || data.status === 'Pending' || data.status === 'Pengajuan') return 'Pengajuan';
+        if (data.status === 'approved' || data.status === 'Disetujui') return 'Disetujui';
+        return 'Ditolak';
+      };
+      
+      const transformedData: PendaftarData = {
+        user_id: data.user.id,
+        nama: data.user.name,
+        status: getStatus(),
+        biodata: {
+          nama: data.user.name,
+          tempatTanggalLahir: data.user.tempat_lahir && data.user.tanggal_lahir ? 
+            `${data.user.tempat_lahir}, ${data.user.tanggal_lahir}` : '-',
+          alamat: data.user.alamat || '-',
+          email: data.user.email,
+          noTelepon: data.user.phone || '-'
+        },
+        sertifikasi: {
+          namaSertifikasi: type === 'sertifikasi' ? data.sertifikasi?.nama_sertifikasi || '-' : data.pkl?.nama_program || '-',
+          jadwalSertifikasi: type === 'sertifikasi' && data.batch ? 
+            `${data.batch.tanggal_mulai_formatted || data.batch.tanggal_mulai} - ${data.batch.tanggal_selesai_formatted || data.batch.tanggal_selesai}` : '-',
+          batch: type === 'sertifikasi' ? data.batch?.nama_batch || '-' : '-',
+          assessor: type === 'sertifikasi' ? data.sertifikasi?.assessor || '-' : '-'
+        },
+        catatan_admin: data.catatan_admin || undefined
+      };
+      
+      setSelectedRegistration(transformedData);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching registration detail:', error);
+      alert('Gagal memuat detail pendaftaran');
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
+
+  // Function to handle approval/rejection
+  const handleApproval = async (status: 'Disetujui' | 'Ditolak', alasan?: string): Promise<void> => {
+    if (!selectedRegistration) return;
+    
+    try {
+      // Find the original registration to get type and id
+      const originalRow = rows.find(r => r.nama === selectedRegistration.nama);
+      if (!originalRow) return;
+      
+      const type = originalRow.jenis.toLowerCase().includes('sertifikasi') ? 'sertifikasi' : 'pkl';
+      
+      const response = await fetch(`/admin/pendaftaran/${type}/${originalRow.original_id}/approve`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          status: status,
+          catatan_admin: alasan || null
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update registration status');
+      }
+      
+      // Show success modal
+      setStatusModal({
+        isOpen: true,
+        status: 'success',
+        title: 'Berhasil!',
+        message: `Pendaftaran berhasil ${status.toLowerCase()}`
+      });
+      
+    } catch (error) {
+      console.error('Error updating registration:', error);
+      // Show error modal
+      setStatusModal({
+        isOpen: true,
+        status: 'error',
+        title: 'Gagal!',
+        message: `Gagal memperbarui status pendaftaran: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+      throw error; // Re-throw to let the modal handle the error state
+    }
+  };
+
+  // Function to handle status modal close and refresh
+  const handleStatusModalClose = () => {
+    setStatusModal(prev => ({ ...prev, isOpen: false }));
+    if (statusModal.status === 'success') {
+      // Refresh the page to update the data
+      window.location.reload();
+    }
+  };
+
+  // Handler for table action button
+  const handleRegistrationAction = (registration: RegistrationRow) => {
+    if (isLoadingDetail) return;
+    
+    const type = registration.jenis.toLowerCase().includes('sertifikasi') ? 'sertifikasi' : 'pkl' as 'sertifikasi' | 'pkl';
+    fetchRegistrationDetail(registration.original_id, type);
+  };
+
+  const matchesSearch = (r: typeof rows[number]) => {
+    if(!search) return true;
+    const q = search.toLowerCase();
+    return [r.nama, r.program].some(f => f?.toLowerCase().includes(q));
+  };
+  const matchesJenis = (r: typeof rows[number]) => {
+    if (activeFilters.jenisPendaftaran.length === 0) return true;
+    const jenisLower = r.jenis.toLowerCase();
+    return activeFilters.jenisPendaftaran.some(sel => jenisLower.includes(sel.toLowerCase()));
+  };
+  const matchesStatus = (r: typeof rows[number]) => {
+    return activeFilters.status.length === 0 || activeFilters.status.includes(r.status);
+  };
+  const matchesDate = (r: typeof rows[number]) => {
+    const range = activeFilters.tanggalPendaftaran;
+    if(!range || (!range.startDate && !range.endDate)) return true;
+    const rowDate = new Date(r.tanggal);
+    if(range.startDate && rowDate < new Date(range.startDate)) return false;
+    if(range.endDate && rowDate > new Date(range.endDate + 'T23:59:59')) return false;
+    return true;
+  };
+  const filteredRows = rows.filter(r => matchesSearch(r) && matchesJenis(r) && matchesStatus(r) && matchesDate(r));
+  const [page,setPage] = React.useState(1);
+  const [perPage,setPerPage] = React.useState(5);
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / perPage));
+  React.useEffect(()=>{ if(page>totalPages) setPage(1); },[totalPages,page]);
+  const paginated = filteredRows.slice((page-1)*perPage, page*perPage);
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title="Dashboard" />
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight font-heading">Dashboard</h1>
+          <p className="text-muted-foreground">Ringkasan aktifitas terbaru</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-5">
+          <StatsCard label="Peserta Sertifikasi" value={stats?.peserta_sertifikasi ?? 0} icon={<Users className="h-5 w-5" />} iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10" />
+          <StatsCard label="Siswa PKL" value={stats?.siswa_pkl ?? 0} icon={<UserCheck className="h-5 w-5" />} iconColor="text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-400/10" />
+          <StatsCard label="Jumlah Sertifikasi Aktif" value={stats?.jumlah_sertifikasi ?? 0} icon={<BookOpen className="h-5 w-5" />} iconColor="text-indigo-600 bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-400/10" />
+          <StatsCard label="Konten Terbit" value={(stats?.total_blog ?? 0)+(stats?.total_video ?? 0)} icon={<FileText className="h-5 w-5" />} iconColor="text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-400/10" />
+          <button 
+            className="transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg"
+            onClick={() => router.visit('/admin/user-management')}
+            title="Lihat semua user"
+          >
+            <StatsCard 
+              label="Total Users" 
+              value={stats?.total_users ?? 0} 
+              icon={<UserCog className="h-5 w-5" />} 
+              iconColor="text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-400/10" 
+            />
+          </button>
+        </div>
+        <RecentRegistrationsTable 
+          rows={paginated} 
+          onApprove={handleRegistrationAction} 
+          search={search}
+          onSearchChange={setSearch}
+          activeFilters={activeFilters}
+          onFiltersChange={setActiveFilters}
+        />
+        <Pagination currentPage={page} totalPages={totalPages} itemsPerPage={perPage} totalItems={filteredRows.length} onPageChange={setPage} onItemsPerPageChange={setPerPage} />
+        
+        {/* Modal for registration approval */}
+        {selectedRegistration && (
+          <DetailPendaftaranModal
+            isOpen={isModalOpen}
+            pendaftarData={selectedRegistration}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedRegistration(null);
+            }}
+            onApproval={handleApproval}
+          />
+        )}
+
+        {/* Status notification modal */}
+        <StatusNotificationModal
+          isOpen={statusModal.isOpen}
+          onClose={handleStatusModalClose}
+          status={statusModal.status}
+          title={statusModal.title}
+          message={statusModal.message}
+        />
+      </div>
+    </AppLayout>
+  );
+}
