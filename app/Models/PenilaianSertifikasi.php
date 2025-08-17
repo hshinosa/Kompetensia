@@ -15,7 +15,7 @@ class PenilaianSertifikasi extends Model
         'pendaftaran_id',
         'sertifikasi_id',
         'batch_id',
-        'status_kelulusan',
+        'status_penilaian',
         'catatan_asesor',
         'tanggal_penilaian',
         'asesor_id'
@@ -47,12 +47,17 @@ class PenilaianSertifikasi extends Model
 
     public function scopeDiterima($query)
     {
-        return $query->where('status_kelulusan', 'Diterima');
+        return $query->where('status_penilaian', 'Diterima');
     }
 
     public function scopeDitolak($query)
     {
-        return $query->where('status_kelulusan', 'Ditolak');
+        return $query->where('status_penilaian', 'Ditolak');
+    }
+
+    public function scopeBelumDinilai($query)
+    {
+        return $query->where('status_penilaian', 'Belum Dinilai');
     }
 
     // Grade removed: no numeric scoring anymore.

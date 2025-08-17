@@ -40,20 +40,21 @@ interface User {
     semester?: number;
 }
 
-interface PKL {
+interface PosisiPKL {
     id: number;
-    nama_program: string;
+    nama_posisi: string;
+    perusahaan: string;
 }
 
 interface Penilaian {
     id: number;
-    status_kelulusan: string;
+    status_penilaian: string;
 }
 
 interface PendaftaranPKL {
     id: number;
     user_id: number;
-    pkl_id: number;
+    posisi_pkl_id: number;
     status: string;
     tanggal_pendaftaran: string;
     tanggal_mulai: string;
@@ -63,7 +64,7 @@ interface PendaftaranPKL {
     semester: number;
     ipk: number;
     user: User;
-    pkl: PKL;
+    posisi_pkl: PosisiPKL;
     penilaian?: Penilaian;
 }
 
@@ -99,7 +100,8 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
     const filteredData = useMemo(() => {
         return pesertaData.filter(item =>
             item.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.pkl.nama_program.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.posisi_pkl?.nama_posisi || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.posisi_pkl?.perusahaan || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.program_studi.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.institusi_asal.toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -114,11 +116,11 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
     const totalPeserta = pesertaData.length;
     const getStatusPenilaian = (item: PendaftaranPKL) => {
         if (!item.penilaian) return 'Belum Dinilai';
-        return item.penilaian.status_kelulusan;
+        return item.penilaian.status_penilaian;
     };
     
     const sedangBerjalan = pesertaData.filter(p => p.status === 'Disetujui' && !p.penilaian).length;
-    const lulus = pesertaData.filter(p => p.penilaian?.status_kelulusan === 'Lulus').length;
+    const lulus = pesertaData.filter(p => p.penilaian?.status_penilaian === 'Diterima').length;
     const belumDinilai = pesertaData.filter(p => !p.penilaian).length;
 
     const handlePageChange = (page: number) => {
@@ -150,7 +152,7 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
         if (!item.penilaian) {
             return item.status === 'Disetujui' ? 'Sedang Berjalan' : 'Belum Dinilai';
         }
-        return item.penilaian.status_kelulusan;
+        return item.penilaian.status_penilaian;
     };
 
     return (
@@ -242,7 +244,7 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                 <TableRow>
                                     <TableHead>Nama Peserta</TableHead>
                                     <TableHead>Institusi/Program Studi</TableHead>
-                                    <TableHead>Program PKL</TableHead>
+                                    <TableHead>Posisi PKL</TableHead>
                                     <TableHead>Semester</TableHead>
                                     <TableHead>Status Penilaian</TableHead>
                                     <TableHead className="w-[120px]">Aksi</TableHead>
@@ -264,7 +266,12 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                                     <div className="text-sm text-muted-foreground">{item.program_studi}</div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>{item.pkl.nama_program}</TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="font-medium">{item.posisi_pkl?.nama_posisi || 'N/A'}</div>
+                                                    <div className="text-sm text-muted-foreground">{item.posisi_pkl?.perusahaan || ''}</div>
+                                                </div>
+                                            </TableCell>
                                             <TableCell>Semester {item.semester}</TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusBadgeVariant(item)}>

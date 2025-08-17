@@ -37,6 +37,8 @@ interface UserData {
   pendaftaran_sertifikasi_count?: number;
   pendaftaran_p_k_l_count?: number;
   activities_count?: number;
+  sertifikasi_lulus_count?: number;
+  pkl_lulus_count?: number;
 }
 
 interface PaginationMeta {
@@ -82,6 +84,15 @@ const UserManagementPage: React.FC = () => {
     last_page: 1,
     per_page: 10,
     total: 0
+  };
+
+  // Ensure stats have valid numeric values
+  const safeStats = {
+    total_users: stats?.total_users || 0,
+    active_users: stats?.active_users || 0,
+    students: stats?.students || 0,
+    admins: stats?.admins || 0,
+    pending_users: stats?.pending_users || 0
   };
   
   const [search, setSearch] = React.useState(filters?.search || '');
@@ -252,7 +263,7 @@ const UserManagementPage: React.FC = () => {
                   <Users className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
+                  <div className="text-2xl font-bold">{safeStats.total_users}</div>
                   <p className="text-sm text-muted-foreground">Total User</p>
                 </div>
               </div>
@@ -265,7 +276,7 @@ const UserManagementPage: React.FC = () => {
                   <UserCheck className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.active_users || 0}</div>
+                  <div className="text-2xl font-bold">{safeStats.active_users}</div>
                   <p className="text-sm text-muted-foreground">User Aktif</p>
                 </div>
               </div>
@@ -278,7 +289,7 @@ const UserManagementPage: React.FC = () => {
                   <UserX className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.students || 0}</div>
+                  <div className="text-2xl font-bold">{safeStats.students}</div>
                   <p className="text-sm text-muted-foreground">Student</p>
                 </div>
               </div>
@@ -291,7 +302,7 @@ const UserManagementPage: React.FC = () => {
                   <Shield className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.admins || 0}</div>
+                  <div className="text-2xl font-bold">{safeStats.admins}</div>
                   <p className="text-sm text-muted-foreground">Admin</p>
                 </div>
               </div>
@@ -304,7 +315,7 @@ const UserManagementPage: React.FC = () => {
                   <Clock className="h-5 w-5 text-yellow-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.pending_users || 0}</div>
+                  <div className="text-2xl font-bold">{safeStats.pending_users}</div>
                   <p className="text-sm text-muted-foreground">Pending</p>
                 </div>
               </div>
@@ -411,32 +422,50 @@ const UserManagementPage: React.FC = () => {
                     <TableCell>{getStatusBadge(user.account_status, user.is_active)}</TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <div className="flex items-center gap-2">
-                          <span>Sertifikasi: {user.pendaftaran_sertifikasi_count || 0}</span>
-                          {(user.pendaftaran_sertifikasi_count && user.pendaftaran_sertifikasi_count > 0) && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => router.get(route('admin.penilaian-sertifikasi'))}
-                              className="h-6 px-2 text-xs"
-                            >
-                              Lihat
-                            </Button>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span>PKL: {user.pendaftaran_p_k_l_count || 0}</span>
-                          {(user.pendaftaran_p_k_l_count && user.pendaftaran_p_k_l_count > 0) && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => router.get(route('admin.penilaian-pkl'))}
-                              className="h-6 px-2 text-xs"
-                            >
-                              Lihat
-                            </Button>
-                          )}
-                        </div>
+                        {(user.pendaftaran_sertifikasi_count || 0) === 0 && (user.pendaftaran_p_k_l_count || 0) === 0 ? (
+                          <div className="text-center text-muted-foreground py-2">
+                            <span>Belum ada aktivitas</span>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">Sertifikasi:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs">
+                                  {user.sertifikasi_lulus_count || 0} Lulus
+                                </span>
+                                {(user.pendaftaran_sertifikasi_count && user.pendaftaran_sertifikasi_count > 0) && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => router.get(route('admin.penilaian-sertifikasi'))}
+                                    className="h-6 px-2 text-xs"
+                                  >
+                                    Lihat
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">PKL:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs">
+                                  {user.pkl_lulus_count || 0} Lulus
+                                </span>
+                                {(user.pendaftaran_p_k_l_count && user.pendaftaran_p_k_l_count > 0) && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => router.get(route('admin.penilaian-pkl'))}
+                                    className="h-6 px-2 text-xs"
+                                  >
+                                    Lihat
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>

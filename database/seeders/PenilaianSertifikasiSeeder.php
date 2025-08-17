@@ -17,20 +17,13 @@ class PenilaianSertifikasiSeeder extends Seeder
         }
 
         foreach ($pendaftaran as $p) {
-            // generate random values
-            $nilaiTeori = rand(70, 95);
-            $nilaiPraktek = rand(80, 100);
-            $nilaiAkhir = round((($nilaiTeori + $nilaiPraktek) / 2), 2);
             PenilaianSertifikasi::create([
                 'pendaftaran_id'     => $p->id,
                 'sertifikasi_id'     => $p->sertifikasi_id,
                 'batch_id'           => $p->batch_id,
                 'asesor_id'          => 1, // Admin user
-                'nilai_teori'        => $nilaiTeori,
-                'nilai_praktek'      => $nilaiPraktek,
-                'nilai_akhir'        => $nilaiAkhir,
-                'status_kelulusan'   => 'Lulus',
-                'catatan_asesor'     => 'Peserta menunjukkan pemahaman yang baik.',
+                'status_penilaian'   => 'Diterima',
+                'catatan_asesor'     => 'Peserta menunjukkan pemahaman yang baik dan lulus semua komponen penilaian.',
                 'tanggal_penilaian'  => now()->subDays(rand(1, 10)),
                 'created_at'         => now(),
                 'updated_at'         => now(),

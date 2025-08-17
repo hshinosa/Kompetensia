@@ -8,16 +8,15 @@ use Illuminate\Support\Facades\DB;
 
 class PenilaianPKLService
 {
-    public function nilai(int $pendaftaranId, array $data, int $pembimbingId): void
+    public function nilai(int $pendaftaranId, array $data): void
     {
         $pendaftaran = PendaftaranPKL::findOrFail($pendaftaranId);
         $payload = [
-            'status_kelulusan' => $data['status_kelulusan'],
-            'catatan_pembimbing' => $data['catatan_pembimbing'] ?? null,
+            'status_penilaian' => $data['status_penilaian'],
+            'catatan_penilai' => $data['catatan_penilai'] ?? null,
             'tanggal_penilaian' => now(),
-            'pembimbing_id' => $pembimbingId,
             'pendaftaran_id' => $pendaftaranId,
-            'pkl_id' => $pendaftaran->pkl_id
+            'posisi_pkl_id' => $pendaftaran->posisi_pkl_id
         ];
         DB::transaction(fn () => PenilaianPKL::updateOrCreate(['pendaftaran_id' => $pendaftaranId], $payload));
     }

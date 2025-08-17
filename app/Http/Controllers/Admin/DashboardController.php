@@ -63,7 +63,7 @@ class DashboardController extends Controller
                     })
             )
             ->merge(
-                PendaftaranPKL::with(['user', 'pkl', 'posisiPKL'])
+                PendaftaranPKL::with(['user', 'posisiPKL'])
                     ->latest()
                     ->limit(10)
                     ->get()
@@ -81,7 +81,7 @@ class DashboardController extends Controller
                             'user_id' => $item->user->id,
                             'nama' => $item->user->name,
                             'jenis_pendaftaran' => 'Praktik Kerja Lapangan',
-                            'program' => $item->pkl->nama_program,
+                            'program' => $item->posisiPKL ? $item->posisiPKL->nama_posisi : 'Tidak ada posisi',
                             'batch' => $batchDisplay,
                             'tanggal_pendaftaran' => $item->tanggal_pendaftaran->format('d-m-Y'),
                             'status' => $item->status,
@@ -130,7 +130,7 @@ class DashboardController extends Controller
                     $pendaftaran->load('batch');
                 }
             } else {
-                $pendaftaran = PendaftaranPKL::with(['user', 'pkl', 'posisiPKL'])
+                $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL'])
                     ->findOrFail($id);
                     
                 \Log::info("Found PKL pendaftaran: {$pendaftaran->id}");
@@ -177,7 +177,7 @@ class DashboardController extends Controller
                     $pendaftaran->batch_id = $activeBatch->id;
                 }
             } else {
-                $pendaftaran = PendaftaranPKL::with(['pkl'])->findOrFail($id);
+                $pendaftaran = PendaftaranPKL::with(['posisiPKL'])->findOrFail($id);
                 
                 // Untuk PKL, cari posisi PKL yang tersedia
                 if ($validated['status'] === 'Disetujui') {

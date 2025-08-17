@@ -26,7 +26,11 @@ class PKLController extends Controller
         $pkl = $this->service->list($filters, 10);
 
         // Posisi PKL list for the table on the page
-        $posisiQuery = PosisiPKL::query();
+        $posisiQuery = PosisiPKL::withCount([
+            'pendaftaran as jumlah_pendaftar_aktual' => function($query) {
+                $query->where('status', 'Disetujui');
+            }
+        ]);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -41,10 +45,17 @@ class PKLController extends Controller
 
         // For now kategori filter not implemented because we treat 'perusahaan' as kategori in UI temporarily.
 
-    $perPage = 8;
+        $perPage = 8;
         $posisiPaginator = $posisiQuery->latest()->paginate($perPage)->appends($request->query());
+        
+        // Update the data to include actual count
+        $posisiData = $posisiPaginator->items();
+        foreach ($posisiData as $posisi) {
+            $posisi->jumlah_pendaftar = $posisi->jumlah_pendaftar_aktual;
+        }
+        
         $posisi = [
-            'data' => $posisiPaginator->items(),
+            'data' => $posisiData,
             'meta' => [
                 'current_page' => $posisiPaginator->currentPage(),
                 'last_page' => $posisiPaginator->lastPage(),
@@ -101,11 +112,14 @@ class PKLController extends Controller
 
     public function penilaianIndex()
     {
-        $pendaftaran = PendaftaranPKL::with(['user', 'pkl', 'posisiPKL', 'penilaian'])
+        $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])
             ->approved()
             ->latest()
             ->paginate(10);
-        return Inertia::render('admin/penilaian-pkl', ['pendaftaran' => $pendaftaran]);
+        
+        return Inertia::render('admin/penilaian-pkl', [
+            'pendaftaran' => \App\Http\Resources\PendaftaranPKLResource::collection($pendaftaran)
+        ]);
     }
 
     public function penilaianOverview(Request $request)
@@ -139,8 +153,10 @@ class PKLController extends Controller
 
     public function penilaianShow($id)
     {
-        $pendaftaran = PendaftaranPKL::with(['user', 'pkl', 'posisiPKL', 'penilaian'])->findOrFail($id);
-        return Inertia::render('admin/detail-penilaian-pkl', ['pendaftaran' => $pendaftaran]);
+        $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])->findOrFail($id);
+        return Inertia::render('admin/detail-penilaian-pkl', [
+            'pendaftaran' => new \App\Http\Resources\PendaftaranPKLResource($pendaftaran)
+        ]);
     }
 
     public function penilaianStore(StorePenilaianPKLRequest $request, $pendaftaranId)
@@ -151,7 +167,7 @@ class PKLController extends Controller
 
     public function apiIndex(Request $request)
     {
-        $query = PKL::withCount('pendaftaran');
+        $query = PKL::query();
         if ($request->has('search')) { $query->where('nama_program', 'like', '%' . $request->search . '%'); }
         if ($request->has('status')) { $query->where('status', $request->status); }
         return response()->json($query->paginate($request->get('per_page', 10)));

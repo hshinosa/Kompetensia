@@ -36,16 +36,6 @@ class PKL extends Model
         'benefit' => 'array'
     ];
 
-    public function pendaftaran()
-    {
-        return $this->hasMany(PendaftaranPKL::class, 'pkl_id');
-    }
-
-    public function penilaian()
-    {
-        return $this->hasMany(PenilaianPKL::class, 'pkl_id');
-    }
-
     public function scopeActive($query)
     {
         return $query->where('status', 'Aktif');

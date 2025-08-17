@@ -13,11 +13,10 @@ class PenilaianPKL extends Model
 
     protected $fillable = [
         'pendaftaran_id',
-        'pkl_id',
-        'status_kelulusan',
-        'catatan_pembimbing',
-        'tanggal_penilaian',
-        'pembimbing_id'
+        'posisi_pkl_id',
+        'status_penilaian',
+        'catatan_penilai',
+        'tanggal_penilaian'
     ];
 
     protected $casts = [
@@ -29,24 +28,24 @@ class PenilaianPKL extends Model
         return $this->belongsTo(PendaftaranPKL::class, 'pendaftaran_id');
     }
 
-    public function pkl()
+    public function posisiPKL()
     {
-        return $this->belongsTo(PKL::class);
+        return $this->belongsTo(PosisiPKL::class, 'posisi_pkl_id');
     }
 
-    public function pembimbing()
+    public function scopeDiterima($query)
     {
-        return $this->belongsTo(User::class, 'pembimbing_id');
+        return $query->where('status_penilaian', 'Diterima');
     }
 
-    public function scopeLulus($query)
+    public function scopeDitolak($query)
     {
-        return $query->where('status_kelulusan', 'Lulus');
+        return $query->where('status_penilaian', 'Ditolak');
     }
 
-    public function scopeTidakLulus($query)
+    public function scopeBelumDinilai($query)
     {
-        return $query->where('status_kelulusan', 'Tidak Lulus');
+        return $query->where('status_penilaian', 'Belum Dinilai');
     }
 
     // Grade removed: no numeric scoring anymore.

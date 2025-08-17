@@ -13,7 +13,6 @@ class PendaftaranPKL extends Model
 
     protected $fillable = [
         'user_id',
-        'pkl_id',
         'posisi_pkl_id',
         'status',
         'tanggal_pendaftaran',
@@ -43,14 +42,15 @@ class PendaftaranPKL extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function pkl()
-    {
-        return $this->belongsTo(PKL::class);
-    }
-
     public function posisiPKL()
     {
         return $this->belongsTo(PosisiPKL::class, 'posisi_pkl_id');
+    }
+
+    // Alias untuk konsistensi dengan frontend
+    public function posisi_pkl()
+    {
+        return $this->posisiPKL();
     }
 
     public function penilaian()

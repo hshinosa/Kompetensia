@@ -10,7 +10,7 @@ class PKLRepository implements PKLRepositoryInterface
 {
     public function paginate(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
-        $query = PKL::withCount('pendaftaran');
+        $query = PKL::query();
         if (!empty($filters['search'])) { $query->where('nama_program', 'like', '%'.$filters['search'].'%'); }
         if (!empty($filters['status'])) { $query->where('status', $filters['status']); }
         $sortBy = $filters['sort_by'] ?? 'created_at';

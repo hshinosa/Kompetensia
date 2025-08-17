@@ -22,27 +22,59 @@ interface User {
     name: string;
     email: string;
     phone?: string;
+    address?: string;
+    birth_date?: string;
+    birth_place?: string;
     institution?: string;
     major?: string;
     semester?: number;
+    gpa?: string;
+    role?: string;
+    avatar?: string;
+    is_active?: boolean;
+    account_status?: string;
+    user_type?: string;
+    full_name?: string;
 }
 
-interface PKL {
+interface PosisiPKL {
     id: number;
-    nama_program: string;
+    nama_posisi: string;
+    perusahaan: string;
+    kategori?: string;
+    deskripsi?: string;
+    persyaratan?: string;
+    lokasi?: string;
+    tipe?: string;
+    durasi_bulan?: number;
+    gaji?: number | null;
+    jumlah_pendaftar?: number;
+    status?: string;
+    tanggal_mulai?: string;
+    tanggal_selesai?: string;
+    contact_person?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    created_by?: number;
+    created_at?: string;
+    updated_at?: string;
 }
 
 interface Penilaian {
     id: number;
-    status_kelulusan: string;
-    nilai_akhir: number;
-    catatan_pembimbing?: string;
+    pendaftaran_id: number;
+    posisi_pkl_id: number;
+    status_penilaian: string;
+    catatan_penilai?: string;
+    tanggal_penilaian?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 interface PendaftaranPKL {
     id: number;
     user_id: number;
-    pkl_id: number;
+    posisi_pkl_id: number;
     status: string;
     tanggal_pendaftaran: string;
     tanggal_mulai: string;
@@ -52,7 +84,7 @@ interface PendaftaranPKL {
     semester: number;
     ipk: number;
     user: User;
-    pkl: PKL;
+    posisi_pkl: PosisiPKL;
     penilaian?: Penilaian;
 }
 
@@ -233,12 +265,12 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/admin/dashboard' },
         { title: 'Penilaian PKL', href: '/admin/penilaian-pkl' },
-        { title: pendaftaran.user.name, href: '#' }
+        { title: pendaftaran?.user?.name || 'Detail Pendaftaran', href: '#' }
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Penilaian PKL - ${pendaftaran.user.name}`} />
+            <Head title={`Penilaian PKL - ${pendaftaran?.user?.name || 'Detail Pendaftaran'}`} />
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6 overflow-x-auto">
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
@@ -249,7 +281,7 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                             </Link>
                         </Button>
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">{pendaftaran.user.name}</h1>
+                            <h1 className="text-3xl font-bold tracking-tight">{pendaftaran?.user?.name || 'Detail Pendaftaran'}</h1>
                             <p className="text-muted-foreground font-serif">
                                 Detail penilaian dan progress PKL
                             </p>
@@ -266,23 +298,45 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                 <div className="space-y-4">
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Nama</Label>
-                                        <p className="text-sm">{pendaftaran.user.name}</p>
+                                        <p className="text-sm">{pendaftaran?.user?.name || 'N/A'}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Institusi</Label>
-                                        <p className="text-sm">{pendaftaran.institusi_asal}</p>
+                                        <p className="text-sm">{pendaftaran?.institusi_asal || 'N/A'}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Program Studi</Label>
-                                        <p className="text-sm">{pendaftaran.program_studi}</p>
+                                        <p className="text-sm">{pendaftaran?.program_studi || 'N/A'}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Periode PKL</Label>
-                                        <p className="text-sm">{pendaftaran.tanggal_mulai} - {pendaftaran.tanggal_selesai}</p>
+                                        <p className="text-sm">
+                                            {(() => {
+                                                if (pendaftaran?.tanggal_mulai && pendaftaran?.tanggal_selesai) {
+                                                    return `${pendaftaran.tanggal_mulai} - ${pendaftaran.tanggal_selesai}`;
+                                                }
+                                                if (pendaftaran?.posisi_pkl?.tanggal_mulai && pendaftaran?.posisi_pkl?.tanggal_selesai) {
+                                                    return `${new Date(pendaftaran.posisi_pkl.tanggal_mulai).toLocaleDateString('id-ID')} - ${new Date(pendaftaran.posisi_pkl.tanggal_selesai).toLocaleDateString('id-ID')}`;
+                                                }
+                                                return 'Belum ditentukan';
+                                            })()}
+                                        </p>
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Program PKL</Label>
-                                        <p className="text-sm">{pendaftaran.pkl.nama_program}</p>
+                                        <Label className="text-sm font-medium text-muted-foreground">Posisi PKL</Label>
+                                        <p className="text-sm">{pendaftaran?.posisi_pkl?.nama_posisi || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <Label className="text-sm font-medium text-muted-foreground">Perusahaan</Label>
+                                        <p className="text-sm">{pendaftaran?.posisi_pkl?.perusahaan || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <Label className="text-sm font-medium text-muted-foreground">Lokasi</Label>
+                                        <p className="text-sm">{pendaftaran?.posisi_pkl?.lokasi || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <Label className="text-sm font-medium text-muted-foreground">Durasi</Label>
+                                        <p className="text-sm">{pendaftaran?.posisi_pkl?.durasi_bulan ? `${pendaftaran.posisi_pkl.durasi_bulan} Bulan` : 'N/A'}</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -294,60 +348,52 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                 <CardTitle className="text-lg">Penilaian Akhir Program</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="space-y-3">
-                                    <div>
-                                        <Label className="text-sm font-medium">Kelulusan?</Label>
-                                        <div className="flex gap-4 mt-2">
-                                            <label className="flex items-center space-x-2 opacity-50 cursor-not-allowed">
-                                                <input
-                                                    type="radio"
-                                                    name="kelulusan"
-                                                    value="Lulus"
-                                                    disabled
-                                                    className="text-gray-400"
-                                                />
-                                                <span className="text-gray-400">Lulus</span>
-                                            </label>
-                                            <label className="flex items-center space-x-2 opacity-50 cursor-not-allowed">
-                                                <input
-                                                    type="radio"
-                                                    name="kelulusan"
-                                                    value="Tidak Lulus"
-                                                    disabled
-                                                    className="text-gray-400"
-                                                />
-                                                <span className="text-gray-400">Tidak Lulus</span>
-                                            </label>
+                                {pendaftaran?.penilaian ? (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <Label className="text-sm font-medium text-muted-foreground">Status Penilaian</Label>
+                                            <div className="mt-2">
+                                                <Badge 
+                                                    variant={pendaftaran.penilaian.status_penilaian === 'Diterima' ? 'default' : 'destructive'}
+                                                    className="text-sm px-3 py-1"
+                                                >
+                                                    {pendaftaran.penilaian.status_penilaian}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        
+                                        {pendaftaran.penilaian.catatan_penilai && (
+                                            <div>
+                                                <Label className="text-sm font-medium text-muted-foreground">Catatan Penilai</Label>
+                                                <p className="text-sm mt-1 p-3 bg-muted rounded-md">
+                                                    {pendaftaran.penilaian.catatan_penilai}
+                                                </p>
+                                            </div>
+                                        )}
+                                        
+                                        <div>
+                                            <Label className="text-sm font-medium text-muted-foreground">Tanggal Penilaian</Label>
+                                            <p className="text-sm mt-1">
+                                                {pendaftaran.penilaian.tanggal_penilaian 
+                                                    ? new Date(pendaftaran.penilaian.tanggal_penilaian).toLocaleDateString('id-ID', {
+                                                        weekday: 'long',
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })
+                                                    : 'Belum dinilai'
+                                                }
+                                            </p>
                                         </div>
                                     </div>
-
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-400">Link Sertifikat Kelulusan</Label>
-                                        <input
-                                            type="url"
-                                            disabled
-                                            className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-400 cursor-not-allowed"
-                                            placeholder="https://example.com/certificate"
-                                        />
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <div className="text-muted-foreground">
+                                            <p className="text-lg font-medium">Belum Ada Penilaian</p>
+                                            <p className="text-sm">Penilaian untuk peserta PKL ini belum tersedia</p>
+                                        </div>
                                     </div>
-
-                                    <div>
-                                        <Label className="text-sm font-medium text-gray-400">Catatan & Feedback Final</Label>
-                                        <Textarea
-                                            disabled
-                                            className="mt-1 bg-gray-50 text-gray-400 cursor-not-allowed"
-                                            placeholder="Catatan penilaian akhir..."
-                                            rows={4}
-                                        />
-                                    </div>
-                                </div>
-
-                                <Button 
-                                    disabled 
-                                    className="w-full bg-gray-300 text-gray-500 cursor-not-allowed"
-                                >
-                                    Simpan Penilaian & Selesaikan PKL
-                                </Button>
+                                )}
                             </CardContent>
                         </Card>
                     </div>

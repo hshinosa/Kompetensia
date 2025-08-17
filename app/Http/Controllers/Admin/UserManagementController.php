@@ -48,13 +48,29 @@ class UserManagementController extends Controller
         // Add counts separately to avoid errors if relations don't exist
         foreach ($users as $user) {
             try {
+                // Hitung pendaftaran sertifikasi dan PKL
                 $user->pendaftaran_sertifikasi_count = $user->pendaftaranSertifikasi()->count();
                 $user->pendaftaran_p_k_l_count = $user->pendaftaranPKL()->count();
                 $user->activities_count = $user->activities()->count();
+                
+                // Hitung penilaian sertifikasi yang sudah selesai (lulus)
+                $user->sertifikasi_lulus_count = $user->pendaftaranSertifikasi()
+                    ->whereHas('penilaian', function($query) {
+                        $query->where('status_kelulusan', 'Lulus');
+                    })->count();
+                
+                // Hitung penilaian PKL yang sudah selesai (lulus)
+                $user->pkl_lulus_count = $user->pendaftaranPKL()
+                    ->whereHas('penilaian', function($query) {
+                        $query->where('status_kelulusan', 'Lulus');
+                    })->count();
+                
             } catch (\Exception $e) {
                 $user->pendaftaran_sertifikasi_count = 0;
                 $user->pendaftaran_p_k_l_count = 0;
                 $user->activities_count = 0;
+                $user->sertifikasi_lulus_count = 0;
+                $user->pkl_lulus_count = 0;
             }
         }
 
@@ -66,6 +82,11 @@ class UserManagementController extends Controller
             'admins' => User::where('user_type', 'admin')->count(),
             'pending_users' => User::where('account_status', 'pending')->count(),
         ];
+
+        // Ensure all stats have valid numeric values
+        foreach ($stats as $key => $value) {
+            $stats[$key] = (int) $value;
+        }
 
         return Inertia::render('admin/user-management', [
             'users' => $users,
