@@ -13,6 +13,7 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\PendaftaranPKL;
 use App\Models\PosisiPKL;
+use App\Models\PenilaianPKL;
 
 class PKLController extends Controller
 {
@@ -27,8 +28,8 @@ class PKLController extends Controller
 
         // Posisi PKL list for the table on the page
         $posisiQuery = PosisiPKL::withCount([
-            'pendaftaran as jumlah_pendaftar_aktual' => function($query) {
-                $query->where('status', 'Disetujui');
+        'pendaftaran as jumlah_pendaftar_aktual' => function($query) {
+            $query->where('status', 'Disetujui');
             }
         ]);
 
@@ -45,7 +46,7 @@ class PKLController extends Controller
 
         // For now kategori filter not implemented because we treat 'perusahaan' as kategori in UI temporarily.
 
-        $perPage = 8;
+        $perPage = 5;
         $posisiPaginator = $posisiQuery->latest()->paginate($perPage)->appends($request->query());
         
         // Update the data to include actual count
@@ -54,13 +55,15 @@ class PKLController extends Controller
             $posisi->jumlah_pendaftar = $posisi->jumlah_pendaftar_aktual;
         }
         
+        // Ambil total posisi dari seluruh data (tanpa paginasi/filter)
+        $totalPosisi = PosisiPKL::count();
         $posisi = [
             'data' => $posisiData,
             'meta' => [
                 'current_page' => $posisiPaginator->currentPage(),
                 'last_page' => $posisiPaginator->lastPage(),
                 'per_page' => $posisiPaginator->perPage(),
-                'total' => $posisiPaginator->total(),
+                'total' => $totalPosisi,
             ],
         ];
 
@@ -153,9 +156,26 @@ class PKLController extends Controller
 
     public function penilaianShow($id)
     {
-        $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])->findOrFail($id);
+        // 1. Perbarui query untuk menyertakan relasi 'laporanMingguan'
+        //    Kita memuatnya melalui pendaftaran: 'pendaftaran.laporanMingguan'
+        $penilaian = PenilaianPKL::with([
+            'pendaftaran.user', 
+            'pendaftaran.pkl', 
+            'pendaftaran.posisi',
+            'pendaftaran.penilaian',
+            'pendaftaran.laporanMingguan'
+        ])->findOrFail($id);
+
+        // 2. Ambil data laporan dari relasi yang sudah dimuat
+        $weeklyReports = $penilaian->pendaftaran->laporanMingguan ?? [];
+        
+        // 3. Hapus array $weeklyReports yang di-hardcode.
+        //    Data sekarang sepenuhnya berasal dari database.
+
+        // 4. Kirim data ke komponen React
         return Inertia::render('admin/detail-penilaian-pkl', [
-            'pendaftaran' => new \App\Http\Resources\PendaftaranPKLResource($pendaftaran)
+            'penilaian' => $penilaian,
+            'weeklyReports' => $weeklyReports, // Variabel ini sekarang berisi data asli
         ]);
     }
 

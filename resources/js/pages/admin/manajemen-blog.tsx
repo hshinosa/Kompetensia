@@ -70,8 +70,8 @@ export default function ManajemenBlog() {
     meta_description: ''
   });
 
-  // Derived stats
-  const total = blogs?.meta?.total ?? 0;
+  // Statistik agregat berdasarkan data yang tampil di tabel
+  const total = initialData.length;
   const publishCount = initialData.filter(b => b.status === 'Publish').length;
   const draftCount = initialData.filter(b => b.status === 'Draft').length;
 

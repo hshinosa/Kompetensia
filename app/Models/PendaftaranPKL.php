@@ -1,9 +1,11 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PendaftaranPKL extends Model
 {
@@ -37,25 +39,40 @@ class PendaftaranPKL extends Model
         'berkas_persyaratan' => 'array'
     ];
 
-    public function user()
+    public function pkl(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(PKL::class, 'pkl_id');
     }
 
-    public function posisiPKL()
+    /**
+     * Mendapatkan data user (peserta) yang terkait dengan pendaftaran ini.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function posisi(): BelongsTo
     {
         return $this->belongsTo(PosisiPKL::class, 'posisi_pkl_id');
     }
 
-    // Alias untuk konsistensi dengan frontend
-    public function posisi_pkl()
+    /**
+     * Mendapatkan data posisi PKL yang terkait dengan pendaftaran ini.
+     */
+    public function posisiPKL(): BelongsTo
     {
-        return $this->posisiPKL();
+        return $this->belongsTo(PosisiPKL::class, 'posisi_pkl_id');
     }
 
-    public function penilaian()
+    public function penilaian(): HasOne
     {
         return $this->hasOne(PenilaianPKL::class, 'pendaftaran_id');
+    }
+
+    public function laporanMingguan(): HasMany
+    {
+        return $this->hasMany(LaporanMingguan::class, 'pendaftaran_id');
     }
 
     public function scopeByStatus($query, $status)

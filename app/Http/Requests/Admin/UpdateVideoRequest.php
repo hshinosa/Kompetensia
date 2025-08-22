@@ -14,14 +14,12 @@ class UpdateVideoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama_video' => 'required|string|max:255',
+            'judul' => 'required|string|max:255',
             'deskripsi' => 'required|string',
             'thumbnail' => 'nullable|image|max:2048',
-            'video_url' => 'required|url',
-            'durasi' => 'required|integer|min:1',
-            // konsistensi
+            'link_video' => 'required|url',
             'status' => 'required|in:Draft,Publish',
-            'uploader' => 'required|string|max:255',
+            'penulis' => 'required|string|max:255',
             'featured' => 'boolean'
         ];
     }

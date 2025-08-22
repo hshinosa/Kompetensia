@@ -7,9 +7,11 @@ use App\Http\Controllers\Admin\VideoController;
 use App\Http\Controllers\Admin\PKLController;
 use App\Http\Controllers\Admin\PenilaianSertifikasiController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\PenilaianPKLSubmissionController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified','role:admin'])->group(function () {
+    // API untuk penilaian submisi laporan mingguan PKL
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/pendaftaran/{type}/{id}', [DashboardController::class, 'pendaftaranDetail'])->name('pendaftaran.detail');
     Route::patch('/pendaftaran/{type}/{id}/approve', [DashboardController::class, 'approvePendaftaran'])->name('pendaftaran.approve');
@@ -77,6 +79,7 @@ Route::middleware(['auth', 'verified','role:admin'])->group(function () {
     Route::get('/penilaian-pkl/overview', [PKLController::class, 'penilaianOverview'])->name('penilaian-pkl.overview');
     Route::get('/penilaian-pkl/{id}', [PKLController::class, 'penilaianShow'])->name('detail-penilaian-pkl');
     Route::post('/penilaian-pkl/{pendaftaranId}', [PKLController::class, 'penilaianStore'])->name('penilaian-pkl.store');
+    Route::post('/penilaian-pkl/assessment/{submissionId}', [PenilaianPKLSubmissionController::class, 'store'])->name('penilaian-pkl.submission.assessment');
 
     Route::get('/penilaian-sertifikasi', [PenilaianSertifikasiController::class, 'index'])->name('penilaian-sertifikasi');
     Route::get('/penilaian-sertifikasi/{id}', [PenilaianSertifikasiController::class, 'show'])->name('detail-penilaian-sertifikasi');

@@ -27,8 +27,17 @@ class VideoController extends Controller
 
     public function store(StoreVideoRequest $request)
     {
-        $data = $request->validated();
-        if ($request->hasFile('thumbnail')) { $data['thumbnail'] = $request->file('thumbnail'); }
+        $data = $request->only([
+            'judul',
+            'deskripsi',
+            'status',
+            'penulis',
+            'featured',
+            'link_video'
+        ]);
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail');
+        }
         $data['views'] = 0;
         $this->service->create($data);
         return redirect()->route('admin.manajemen-video')->with('success', 'Video berhasil dibuat');
@@ -48,8 +57,17 @@ class VideoController extends Controller
     public function update(UpdateVideoRequest $request, $id)
     {
         $video = $this->service->detail($id);
-        $data = $request->validated();
-        if ($request->hasFile('thumbnail')) { $data['thumbnail'] = $request->file('thumbnail'); }
+        $data = $request->only([
+            'judul',
+            'deskripsi',
+            'status',
+            'penulis',
+            'featured',
+            'link_video'
+        ]);
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail');
+        }
         $this->service->update($video, $data);
         return redirect()->route('admin.manajemen-video')->with('success', 'Video berhasil diperbarui');
     }
@@ -71,8 +89,18 @@ class VideoController extends Controller
 
     public function apiStore(StoreVideoRequest $request)
     {
-        $data = $request->validated();
+        $data = $request->only([
+            'judul',
+            'deskripsi',
+            'status',
+            'penulis',
+            'featured',
+            'link_video'
+        ]);
         $data['views'] = 0;
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail');
+        }
         $video = $this->service->create($data);
         return response()->json(['message' => 'Video berhasil dibuat', 'data' => $video], 201);
     }
@@ -80,7 +108,17 @@ class VideoController extends Controller
     public function apiUpdate(UpdateVideoRequest $request, $id)
     {
         $video = $this->service->detail($id);
-        $data = $request->validated();
+        $data = $request->only([
+            'judul',
+            'deskripsi',
+            'status',
+            'penulis',
+            'featured',
+            'link_video'
+        ]);
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail');
+        }
         $video = $this->service->update($video, $data);
         return response()->json(['message' => 'Video berhasil diperbarui', 'data' => $video]);
     }

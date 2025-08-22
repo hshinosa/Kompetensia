@@ -66,7 +66,8 @@ export default function ManajemenVideo() {
 
   useEffect(()=>{ const t = setTimeout(()=>{ router.get('/admin/manajemen-video', { search }, { preserveState:true, replace:true }); },400); return ()=>clearTimeout(t); },[search]);
 
-  const total = videos?.meta?.total ?? 0;
+  // Statistik agregat berdasarkan data yang tampil di tabel
+  const total = data.length;
   const publishCount = data.filter(v=>v.status==='Publish').length;
   const draftCount = data.filter(v=>v.status==='Draft').length;
 
@@ -86,12 +87,62 @@ export default function ManajemenVideo() {
   const openDelete = (v:VideoItem)=> { setDeleting(v); setShowDelete(true); };
 
   const submitForm = () => {
-    const data: any = { ...form };
-    if(form.thumbnail) data.thumbnail = form.thumbnail;
-    if (editing) {
-      router.post(`/admin/video/${editing.id}`, { ...data, _method:'PUT' }, { onSuccess: ()=> setShowForm(false) });
+    // Validasi frontend
+    const requiredFields: (keyof typeof form)[] = ['judul', 'deskripsi', 'link_video', 'status', 'penulis'];
+    for (const field of requiredFields) {
+      const value = form[field];
+      if (!value || (typeof value === 'string' && value.trim() === '')) {
+        alert('Field ' + field + ' wajib diisi!');
+        return;
+      }
+    }
+
+    // Siapkan data hanya field yang diperlukan
+    const sendData: Record<string, any> = {
+      judul: form.judul,
+      deskripsi: form.deskripsi,
+      link_video: form.link_video,
+      status: form.status,
+      penulis: form.penulis,
+      featured: form.featured,
+    };
+    let data: any;
+    let options: any = {
+      onSuccess: () => setShowForm(false),
+      onError: (errors: any) => {
+        let msg = 'Gagal menambah video. Pastikan semua data sudah benar.';
+        if (errors && typeof errors === 'object') {
+          msg += '\n';
+          msg += Object.values(errors).map(e => Array.isArray(e) ? e.join(', ') : e).join('\n');
+        }
+        alert(msg);
+      }
+    };
+    if (form.thumbnail) {
+      // Kirim sebagai FormData jika ada file
+      const formData = new FormData();
+      Object.entries(sendData).forEach(([key, value]) => {
+        if (typeof value === 'boolean') {
+          formData.append(key, value ? '1' : '0');
+        } else {
+          formData.append(key, String(value));
+        }
+      });
+      formData.append('thumbnail', form.thumbnail);
+      data = formData;
+      options.forceFormData = true;
     } else {
-      router.post('/admin/video', data, { onSuccess: ()=> setShowForm(false) });
+      data = sendData;
+    }
+    if (editing) {
+      if (form.thumbnail) {
+        data.append('_method', 'PUT');
+        router.post(`/admin/video/${editing.id}`, data, options);
+      } else {
+        router.post(`/admin/video/${editing.id}`, { ...sendData, _method: 'PUT' }, options);
+      }
+    } else {
+      router.post('/admin/video', data, options);
     }
   };
 

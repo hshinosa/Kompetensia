@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PosisiPKL extends Model
 {
@@ -44,9 +45,9 @@ class PosisiPKL extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function pendaftaran()
+    public function pendaftaran(): HasMany
     {
-        return $this->hasMany(PendaftaranPKL::class);
+        return $this->hasMany(PendaftaranPKL::class, 'posisi_pkl_id');
     }
 
     public function scopeActive($query)

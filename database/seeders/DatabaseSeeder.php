@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             PenilaianPKLSeeder::class,
             BlogSeeder::class,
             VideoSeeder::class,
+            LaporanMingguanSeeder::class,
         ]);
     }
 }
