@@ -13,10 +13,6 @@ return new class extends Migration {
             $table->string('nama_batch');
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
-            $table->time('jam_mulai')->nullable();
-            $table->time('jam_selesai')->nullable();
-            $table->string('tempat')->nullable();
-            // kuota removed in later migration
             $table->integer('jumlah_pendaftar')->default(0);
             $table->enum('status', ['Draf', 'Aktif', 'Selesai', 'Ditutup'])->default('Draf');
             $table->string('instruktur')->nullable();

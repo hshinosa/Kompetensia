@@ -13,7 +13,6 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\PendaftaranPKL;
 use App\Models\PosisiPKL;
-use App\Models\PenilaianPKL;
 
 class PKLController extends Controller
 {
@@ -27,11 +26,7 @@ class PKLController extends Controller
         $pkl = $this->service->list($filters, 10);
 
         // Posisi PKL list for the table on the page
-        $posisiQuery = PosisiPKL::withCount([
-        'pendaftaran as jumlah_pendaftar_aktual' => function($query) {
-            $query->where('status', 'Disetujui');
-            }
-        ]);
+        $posisiQuery = PosisiPKL::query();
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -46,24 +41,15 @@ class PKLController extends Controller
 
         // For now kategori filter not implemented because we treat 'perusahaan' as kategori in UI temporarily.
 
-        $perPage = 5;
+    $perPage = 8;
         $posisiPaginator = $posisiQuery->latest()->paginate($perPage)->appends($request->query());
-        
-        // Update the data to include actual count
-        $posisiData = $posisiPaginator->items();
-        foreach ($posisiData as $posisi) {
-            $posisi->jumlah_pendaftar = $posisi->jumlah_pendaftar_aktual;
-        }
-        
-        // Ambil total posisi dari seluruh data (tanpa paginasi/filter)
-        $totalPosisi = PosisiPKL::count();
         $posisi = [
-            'data' => $posisiData,
+            'data' => $posisiPaginator->items(),
             'meta' => [
                 'current_page' => $posisiPaginator->currentPage(),
                 'last_page' => $posisiPaginator->lastPage(),
                 'per_page' => $posisiPaginator->perPage(),
-                'total' => $totalPosisi,
+                'total' => $posisiPaginator->total(),
             ],
         ];
 
@@ -115,14 +101,11 @@ class PKLController extends Controller
 
     public function penilaianIndex()
     {
-        $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])
+        $pendaftaran = PendaftaranPKL::with(['user', 'pkl', 'posisiPKL', 'penilaian'])
             ->approved()
             ->latest()
             ->paginate(10);
-        
-        return Inertia::render('admin/penilaian-pkl', [
-            'pendaftaran' => \App\Http\Resources\PendaftaranPKLResource::collection($pendaftaran)
-        ]);
+        return Inertia::render('admin/penilaian-pkl', ['pendaftaran' => $pendaftaran]);
     }
 
     public function penilaianOverview(Request $request)
@@ -156,27 +139,8 @@ class PKLController extends Controller
 
     public function penilaianShow($id)
     {
-        // 1. Perbarui query untuk menyertakan relasi 'laporanMingguan'
-        //    Kita memuatnya melalui pendaftaran: 'pendaftaran.laporanMingguan'
-        $penilaian = PenilaianPKL::with([
-            'pendaftaran.user', 
-            'pendaftaran.pkl', 
-            'pendaftaran.posisi',
-            'pendaftaran.penilaian',
-            'pendaftaran.laporanMingguan'
-        ])->findOrFail($id);
-
-        // 2. Ambil data laporan dari relasi yang sudah dimuat
-        $weeklyReports = $penilaian->pendaftaran->laporanMingguan ?? [];
-        
-        // 3. Hapus array $weeklyReports yang di-hardcode.
-        //    Data sekarang sepenuhnya berasal dari database.
-
-        // 4. Kirim data ke komponen React
-        return Inertia::render('admin/detail-penilaian-pkl', [
-            'penilaian' => $penilaian,
-            'weeklyReports' => $weeklyReports, // Variabel ini sekarang berisi data asli
-        ]);
+        $pendaftaran = PendaftaranPKL::with(['user', 'pkl', 'posisiPKL', 'penilaian'])->findOrFail($id);
+        return Inertia::render('admin/detail-penilaian-pkl', ['pendaftaran' => $pendaftaran]);
     }
 
     public function penilaianStore(StorePenilaianPKLRequest $request, $pendaftaranId)
@@ -187,7 +151,7 @@ class PKLController extends Controller
 
     public function apiIndex(Request $request)
     {
-        $query = PKL::query();
+        $query = PKL::withCount('pendaftaran');
         if ($request->has('search')) { $query->where('nama_program', 'like', '%' . $request->search . '%'); }
         if ($request->has('status')) { $query->where('status', $request->status); }
         return response()->json($query->paginate($request->get('per_page', 10)));

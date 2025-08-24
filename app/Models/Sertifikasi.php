@@ -32,8 +32,8 @@ class Sertifikasi extends Model
         'kapasitas_peserta' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-    'deleted_at' => 'datetime',
-    'tipe_sertifikat' => 'array'
+        'deleted_at' => 'datetime',
+        'tipe_sertifikat' => 'array'
     ];
 
     public function modul()

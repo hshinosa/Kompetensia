@@ -28,7 +28,6 @@ class UpdateSertifikasiRequest extends FormRequest
             'foto_asesor' => $nullableImage,
             'tipe_sertifikat' => 'required|array|min:1',
             'tipe_sertifikat.*' => 'in:Sertifikat Keahlian,Sertifikat Kompetensi,Sertifikat Pelatihan',
-            // kapasitas_peserta removed
             'modul' => $reqArrayMin1,
             'modul.*.judul' => $reqString255,
             'modul.*.deskripsi' => $reqString,

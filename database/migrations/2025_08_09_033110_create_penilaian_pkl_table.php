@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->date('tanggal_penilaian')->nullable();
             $table->timestamps();
             $table->foreign('pendaftaran_id')->references('id')->on('pendaftaran_pkl')->cascadeOnDelete();
-            $table->foreign('pkl_id')->references('id')->on('pkl')->cascadeOnDelete();
+            $table->foreign('pkl_id')->references('id')->on('posisi_pkl')->cascadeOnDelete();
             $table->foreign('pembimbing_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }

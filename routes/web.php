@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('client/LandingPage');
+    return Inertia::render('welcome');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'sertifikasiId' => $sertifikasiId,
         'batchId' => $batchId
     ]))->name('admin.batch-penilaian-sertifikasi');
+    Route::get('admin/sertifikasi/{id}/edit', [\App\Http\Controllers\Admin\SertifikasiController::class, 'edit'])->name('admin.sertifikasi.edit');
     Route::get('admin/manajemen-blog', fn() => Inertia::render('admin/manajemen-blog'))->name('admin.manajemen-blog');
     Route::get('admin/manajemen-video', fn() => Inertia::render('admin/manajemen-video'))->name('admin.manajemen-video');
     Route::get('admin/form-sertifikasi', fn() => Inertia::render('admin/form-sertifikasi'))->name('admin.form-sertifikasi');

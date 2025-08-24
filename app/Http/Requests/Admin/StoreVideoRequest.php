@@ -14,12 +14,14 @@ class StoreVideoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'judul' => 'required|string|max:255',
+            'nama_video' => 'required|string|max:255',
             'deskripsi' => 'required|string',
             'thumbnail' => 'nullable|image|max:2048',
-            'link_video' => 'required|url',
+            'video_url' => 'required|url',
+            'durasi' => 'required|integer|min:1',
+            // konsistensi dengan enum migrasi video (Draft)
             'status' => 'required|in:Draft,Publish',
-            'penulis' => 'required|string|max:255',
+            'uploader' => 'required|string|max:255',
             'featured' => 'boolean'
         ];
     }

@@ -25,17 +25,17 @@ class PendaftaranSertifikasiSeeder extends Seeder
 
         $pendaftaran = [
             [
-                'user_id' => $users->get(0)->id,  // User pertama (Ahmad Rizki)
+                'user_id' => $users->get(0)->id,  // User pertama
                 'sertifikasi_id' => $sertifikasi->first()->id,
                 'batch_id' => $batches->where('sertifikasi_id', $sertifikasi->first()->id)->first()?->id,
                 'tanggal_pendaftaran' => now()->subDays(5),
-                'status' => 'Disetujui',
+                'status' => 'Pengajuan',
                 'motivasi' => 'Ingin meningkatkan skill digital marketing untuk karir.',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'user_id' => $users->get(1)->id,  // User kedua (Sari Wulandari)
+                'user_id' => $users->get(1)->id,  // User kedua
                 'sertifikasi_id' => $sertifikasi->first()->id,
                 'batch_id' => $batches->where('sertifikasi_id', $sertifikasi->first()->id)->skip(1)->first()?->id,
                 'tanggal_pendaftaran' => now()->subDays(3),
@@ -45,7 +45,7 @@ class PendaftaranSertifikasiSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'user_id' => $users->get(2)->id,  // User ketiga (Budi Santoso)
+                'user_id' => $users->get(2)->id,  // User ketiga
                 'sertifikasi_id' => $sertifikasi->skip(1)->first()->id,
                 'batch_id' => $batches->where('sertifikasi_id', $sertifikasi->skip(1)->first()->id)->first()?->id,
                 'tanggal_pendaftaran' => now()->subDays(2),

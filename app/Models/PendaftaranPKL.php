@@ -1,11 +1,9 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PendaftaranPKL extends Model
 {
@@ -15,6 +13,7 @@ class PendaftaranPKL extends Model
 
     protected $fillable = [
         'user_id',
+        'pkl_id',
         'posisi_pkl_id',
         'status',
         'tanggal_pendaftaran',
@@ -39,40 +38,24 @@ class PendaftaranPKL extends Model
         'berkas_persyaratan' => 'array'
     ];
 
-    public function pkl(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(PKL::class, 'pkl_id');
+        return $this->belongsTo(User::class);
     }
 
-    /**
-     * Mendapatkan data user (peserta) yang terkait dengan pendaftaran ini.
-     */
-    public function user(): BelongsTo
+    public function pkl()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(PKL::class);
     }
 
-    public function posisi(): BelongsTo
+    public function posisiPKL()
     {
         return $this->belongsTo(PosisiPKL::class, 'posisi_pkl_id');
     }
 
-    /**
-     * Mendapatkan data posisi PKL yang terkait dengan pendaftaran ini.
-     */
-    public function posisiPKL(): BelongsTo
-    {
-        return $this->belongsTo(PosisiPKL::class, 'posisi_pkl_id');
-    }
-
-    public function penilaian(): HasOne
+    public function penilaian()
     {
         return $this->hasOne(PenilaianPKL::class, 'pendaftaran_id');
-    }
-
-    public function laporanMingguan(): HasMany
-    {
-        return $this->hasMany(LaporanMingguan::class, 'pendaftaran_id');
     }
 
     public function scopeByStatus($query, $status)

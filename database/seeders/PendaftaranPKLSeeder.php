@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\PendaftaranPKL;
 use App\Models\User;
+use App\Models\PKL;
 use App\Models\PosisiPKL;
 use Illuminate\Database\Seeder;
 
@@ -15,49 +16,37 @@ class PendaftaranPKLSeeder extends Seeder
         PendaftaranPKL::query()->delete();
         
         $users = User::where('role', 'user')->get();
-        $posisiPKL = PosisiPKL::all();
+        $pkl = PKL::all();
 
-        if ($users->count() === 0 || $posisiPKL->count() === 0) {
+        if ($users->count() === 0 || $pkl->count() === 0) {
             return;
         }
 
         $pendaftaran = [
             [
-                'user_id' => $users->get(0)->id,  // User pertama (Ahmad Rizki)
-                'posisi_pkl_id' => $posisiPKL->get(0)->id,  // UI/UX Designer
+                'user_id' => $users->get(0)->id,  // User pertama
+                'pkl_id' => $pkl->first()->id,
                 'tanggal_pendaftaran' => now()->subDays(4),
-                'status' => 'Disetujui',
+                'status' => 'Pengajuan',
                 'motivasi' => 'Ingin mendapatkan pengalaman kerja di bidang teknologi.',
-                'institusi_asal' => 'Universitas Indonesia',
-                'program_studi' => 'Sistem Informasi',
-                'semester' => 6,
-                'ipk' => 3.75,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'user_id' => $users->get(1)->id,  // User kedua (Sari Wulandari)
-                'posisi_pkl_id' => $posisiPKL->get(1)->id,  // Backend Developer
+                'user_id' => $users->get(1)->id,  // User kedua
+                'pkl_id' => $pkl->skip(1)->first()->id,
                 'tanggal_pendaftaran' => now()->subDays(2),
                 'status' => 'Disetujui',
                 'motivasi' => 'Untuk menerapkan ilmu yang sudah dipelajari di kampus.',
-                'institusi_asal' => 'Institut Teknologi Bandung',
-                'program_studi' => 'Teknik Informatika',
-                'semester' => 7,
-                'ipk' => 3.85,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'user_id' => $users->get(2)->id,  // User ketiga (Budi Santoso)
-                'posisi_pkl_id' => $posisiPKL->get(2)->id,  // Frontend Developer
+                'user_id' => $users->get(2)->id,  // User ketiga
+                'pkl_id' => $pkl->skip(2)->first()->id,
                 'tanggal_pendaftaran' => now()->subDays(1),
-                'status' => 'Disetujui',
+                'status' => 'Pengajuan',
                 'motivasi' => 'Mempersiapkan diri untuk dunia kerja.',
-                'institusi_asal' => 'Universitas Gadjah Mada',
-                'program_studi' => 'Ilmu Komputer',
-                'semester' => 5,
-                'ipk' => 3.60,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -65,12 +54,6 @@ class PendaftaranPKLSeeder extends Seeder
 
         foreach ($pendaftaran as $data) {
             PendaftaranPKL::create($data);
-            
-            // Update jumlah pendaftar di posisi PKL
-            $posisi = PosisiPKL::find($data['posisi_pkl_id']);
-            if ($posisi) {
-                $posisi->increment('jumlah_pendaftar');
-            }
         }
     }
 }

@@ -37,7 +37,9 @@ export default function DetailSertifikasi(){
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button onClick={()=>router.visit(`/admin/sertifikasi/${s.id}/edit`)} className="flex items-center gap-2"><Edit className="h-4 w-4" />Edit Sertifikasi</Button>
+            <Button asChild className="flex items-center gap-2">
+              <Link href={`/admin/sertifikasi/${s.id}/edit`}><Edit className="h-4 w-4" />Edit Sertifikasi</Link>
+            </Button>
           </div>
         </div>
 

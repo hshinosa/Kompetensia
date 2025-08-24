@@ -8,20 +8,23 @@ use Illuminate\Database\Eloquent\Model;
 class Video extends Model
 {
     use HasFactory;
+
     protected $table = 'video';
 
     protected $fillable = [
-        'judul',
+        'nama_video',
         'deskripsi',
         'thumbnail',
-        'link_video',
-        'status',
-        'penulis',
+        'video_url',
+        'durasi',
+        'views',
         'featured',
-        'views'
+        'status',
+        'uploader'
     ];
 
     protected $casts = [
+        'durasi' => 'integer',
         'views' => 'integer',
         'featured' => 'boolean',
         'created_at' => 'datetime',
@@ -41,6 +44,13 @@ class Video extends Model
     public function getThumbnailUrlAttribute()
     {
         return $this->thumbnail ? asset('storage/' . $this->thumbnail) : null;
+    }
+
+    public function getDurasiFormattedAttribute()
+    {
+        $minutes = floor($this->durasi / 60);
+        $seconds = $this->durasi % 60;
+        return sprintf('%02d:%02d', $minutes, $seconds);
     }
 
     public function incrementViews()

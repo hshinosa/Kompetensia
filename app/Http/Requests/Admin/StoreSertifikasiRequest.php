@@ -28,7 +28,6 @@ class StoreSertifikasiRequest extends FormRequest
             'foto_asesor' => $nullableImg,
             'tipe_sertifikat' => 'required|array|min:1',
             'tipe_sertifikat.*' => 'in:Sertifikat Keahlian,Sertifikat Kompetensi,Sertifikat Pelatihan',
-            // kapasitas_peserta removed
             'modul' => $reqArrayMin1,
             'modul.*.judul' => $reqStr255,
             'modul.*.deskripsi' => $reqStr,

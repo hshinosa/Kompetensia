@@ -16,9 +16,6 @@ class BatchSertifikasi extends Model
         'nama_batch',
         'tanggal_mulai',
         'tanggal_selesai',
-        'jam_mulai',
-        'jam_selesai',
-    'tempat',
         'jumlah_pendaftar',
         'status',
         'instruktur',
@@ -28,8 +25,6 @@ class BatchSertifikasi extends Model
     protected $casts = [
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
-        'jam_mulai' => 'datetime:H:i',
-    'jam_selesai' => 'datetime:H:i',
         'jumlah_pendaftar' => 'integer'
     ];
 
@@ -64,5 +59,4 @@ class BatchSertifikasi extends Model
         return $this->tanggal_selesai ? $this->tanggal_selesai->format('d/m/Y') : null;
     }
 
-    // Kuota logic removed
 }

@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->timestamp('tanggal_diproses')->nullable();
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('pkl_id')->references('id')->on('pkl')->cascadeOnDelete();
+            $table->foreign('pkl_id')->references('id')->on('posisi_pkl')->cascadeOnDelete();
         });
     }
 

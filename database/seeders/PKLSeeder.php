@@ -23,7 +23,7 @@ class PKLSeeder extends Seeder
                     'Familiar dengan framework Laravel atau React',
                     'IPK minimal 3.0'
                 ],
-                'benefit' => [
+                'benefits' => [
                     'Uang saku Rp 1.500.000/bulan',
                     'Sertifikat PKL',
                     'Mentor berpengalaman',
@@ -42,7 +42,7 @@ class PKLSeeder extends Seeder
                     'Pengalaman dengan React Native/Flutter lebih disukai',
                     'IPK minimal 2.75'
                 ],
-                'benefit' => [
+                'benefits' => [
                     'Uang saku Rp 1.200.000/bulan',
                     'Sertifikat PKL',
                     'Training mobile development',
@@ -61,7 +61,7 @@ class PKLSeeder extends Seeder
                     'Familiar dengan Excel/Google Sheets',
                     'Pengalaman dengan visualization tools (Tableau/Power BI) lebih disukai'
                 ],
-                'benefit' => [
+                'benefits' => [
                     'Uang saku Rp 1.300.000/bulan',
                     'Sertifikat PKL',
                     'Training data analysis',
@@ -80,7 +80,7 @@ class PKLSeeder extends Seeder
                     'Memahami prinsip design',
                     'Portfolio design yang baik'
                 ],
-                'benefit' => [
+                'benefits' => [
                     'Uang saku Rp 1.100.000/bulan',
                     'Sertifikat PKL',
                     'Mentoring dari senior designer',
@@ -99,7 +99,7 @@ class PKLSeeder extends Seeder
                     'Kemampuan content creation',
                     'Familiar dengan Google Analytics/Ads'
                 ],
-                'benefit' => [
+                'benefits' => [
                     'Uang saku Rp 1.000.000/bulan',
                     'Sertifikat PKL',
                     'Training digital marketing',

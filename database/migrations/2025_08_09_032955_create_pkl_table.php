@@ -12,7 +12,6 @@ return new class extends Migration {
             $table->string('nama_program');
             $table->text('deskripsi')->nullable();
             $table->integer('durasi_minggu');
-            // kuota removed in later migration
             $table->integer('peserta_terdaftar')->default(0);
             $table->enum('status', ['Aktif','Non-Aktif','Penuh'])->default('Aktif');
             $table->json('persyaratan')->nullable();

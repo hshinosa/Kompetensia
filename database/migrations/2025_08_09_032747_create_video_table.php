@@ -9,14 +9,14 @@ return new class extends Migration {
     {
         Schema::create('video', function (Blueprint $table) {
             $table->id();
-            $table->string('judul');
+            $table->string('nama_video');
             $table->text('deskripsi');
-            $table->string('thumbnail')->nullable();
-            $table->string('link_video');
-            $table->enum('status', ['Draft', 'Publish', 'Archived'])->default('Draft');
-            $table->string('penulis');
-            $table->boolean('featured')->default(false);
+            $table->string('video_url');
+            $table->integer('durasi');
             $table->integer('views')->default(0);
+            $table->boolean('featured')->default(false);
+            $table->enum('status', ['Draft', 'Publish', 'Archived'])->default('Draft');
+            $table->string('uploader');
             $table->timestamps();
         });
     }
