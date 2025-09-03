@@ -10,21 +10,14 @@ return new class extends Migration {
         Schema::create('posisi_pkl', function (Blueprint $table) {
             $table->id();
             $table->string('nama_posisi');
-            $table->string('perusahaan');
+            $table->string('kategori');
             $table->text('deskripsi');
             $table->text('persyaratan');
-            $table->string('lokasi');
+            $table->text('benefits');
             $table->enum('tipe', ['Full-time', 'Part-time', 'Remote', 'Hybrid']);
             $table->integer('durasi_bulan');
-            $table->decimal('gaji', 10, 2)->nullable();
-            // kuota removed in later migration
             $table->integer('jumlah_pendaftar')->default(0);
             $table->enum('status', ['Aktif', 'Non-Aktif', 'Penuh'])->default('Aktif');
-            $table->date('tanggal_mulai');
-            $table->date('tanggal_selesai');
-            $table->string('contact_person');
-            $table->string('contact_email');
-            $table->string('contact_phone')->nullable();
             $table->unsignedBigInteger('created_by');
             $table->timestamps();
             $table->foreign('created_by')->references('id')->on('users')->cascadeOnDelete();

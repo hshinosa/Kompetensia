@@ -11,6 +11,7 @@ import { Users, UserCheck, UserX, Shield, Clock, Filter, Plus, Eye, Edit, Trash2
 import SearchBar from '@/components/SearchBar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import AddUserDialog from '@/components/AddUserDialog';
 
 interface UserActivity {
   id: number;
@@ -33,10 +34,6 @@ interface UserData {
   school_university?: string;
   major_concentration?: string;
   created_at: string;
-  activities?: UserActivity[];
-  pendaftaran_sertifikasi_count?: number;
-  pendaftaran_p_k_l_count?: number;
-  activities_count?: number;
 }
 
 interface PaginationMeta {
@@ -62,10 +59,7 @@ interface Stats {
 }
 
 interface PageProps {
-  users?: {
-    data: UserData[];
-    meta: PaginationMeta;
-  };
+  users?: UserData[];
   filters?: Filters;
   stats?: Stats;
   [key: string]: any;
@@ -73,23 +67,24 @@ interface PageProps {
 
 const UserManagementPage: React.FC = () => {
   const { props } = usePage<PageProps>();
-  const { users, filters, stats } = props;
+  const { users = [], filters, stats } = props;
   
-  // Safe defaults for users data
-  const userData = users?.data || [];
-  const userMeta = users?.meta || {
-    current_page: 1,
-    last_page: 1,
-    per_page: 10,
-    total: 0
-  };
+  // Client-side pagination setup
+  const userData: UserData[] = users;
+  const [page, setPage] = React.useState(1);
+  const [perPage, setPerPage] = React.useState(filters?.per_page || 5);
+  const totalItems = userData.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+  React.useEffect(() => { if (page > totalPages) setPage(1); }, [totalPages, page]);
+  const paginatedData = userData.slice((page - 1) * perPage, page * perPage);
   
   const [search, setSearch] = React.useState(filters?.search || '');
   const [userType, setUserType] = React.useState<string>(filters?.user_type || '');
   const [accountStatus, setAccountStatus] = React.useState<string>(filters?.account_status || '');
-  const [perPage, setPerPage] = React.useState(filters?.per_page || 10);
-
+ 
   // Modal states
+  const [addUserModal, setAddUserModal] = React.useState(false);
+  
   const [toggleModal, setToggleModal] = React.useState<{
     isOpen: boolean;
     user: UserData | null;
@@ -111,6 +106,24 @@ const UserManagementPage: React.FC = () => {
   });
 
   const firstLoad = React.useRef(true);
+
+  // Force clean URL on first load if per_page is invalid
+  React.useEffect(() => {
+    if (firstLoad.current) {
+      const filterPerPage = parseInt(filters?.per_page?.toString() || '5');
+      if (!filterPerPage) {
+        router.get(route('admin.user-management'), {
+          search: '',
+          user_type: '',
+          account_status: '',
+          per_page: 5,
+        }, {
+          replace: true
+        });
+      }
+      firstLoad.current = false;
+    }
+  }, []);
 
   // Debounce search & filter changes
   React.useEffect(() => {
@@ -134,16 +147,7 @@ const UserManagementPage: React.FC = () => {
   }, [search, userType, accountStatus, perPage]);
 
   const changePage = (page: number) => {
-    router.get(route('admin.user-management'), {
-      search,
-      user_type: userType,
-      account_status: accountStatus,
-      per_page: perPage,
-      page
-    }, {
-      preserveState: true,
-      replace: true
-    });
+    setPage(page);
   };
 
   const handleDeleteUser = (user: UserData) => {
@@ -230,21 +234,21 @@ const UserManagementPage: React.FC = () => {
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Manajemen User" />
-      <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6 overflow-x-auto">
+      <div className="flex flex-col gap-6 p-6">
         {/* Header Section */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Manajemen User</h1>
             <p className="text-muted-foreground">Kelola akun pengguna sistem</p>
           </div>
-          <Button onClick={() => router.get(route('admin.users.create'))}>
+          <Button onClick={() => setAddUserModal(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Tambah User
+            Tambah Admin
           </Button>
         </div>
 
         {/* Stats */}
-        <div className="grid auto-rows-min gap-4 md:grid-cols-5">
+        <div className="grid auto-rows-min gap-4 md:grid-cols-4">
           <Card className="p-6">
             <CardContent className="p-0">
               <div className="flex items-center gap-3">
@@ -252,8 +256,8 @@ const UserManagementPage: React.FC = () => {
                   <Users className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
                   <p className="text-sm text-muted-foreground">Total User</p>
+                  <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
                 </div>
               </div>
             </CardContent>
@@ -265,8 +269,8 @@ const UserManagementPage: React.FC = () => {
                   <UserCheck className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.active_users || 0}</div>
                   <p className="text-sm text-muted-foreground">User Aktif</p>
+                  <div className="text-2xl font-bold">{stats?.active_users || 0}</div>
                 </div>
               </div>
             </CardContent>
@@ -278,8 +282,8 @@ const UserManagementPage: React.FC = () => {
                   <UserX className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.students || 0}</div>
                   <p className="text-sm text-muted-foreground">Student</p>
+                  <div className="text-2xl font-bold">{stats?.students || 0}</div>
                 </div>
               </div>
             </CardContent>
@@ -291,21 +295,8 @@ const UserManagementPage: React.FC = () => {
                   <Shield className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{stats?.admins || 0}</div>
                   <p className="text-sm text-muted-foreground">Admin</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Clock className="h-5 w-5 text-yellow-600" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold">{stats?.pending_users || 0}</div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <div className="text-2xl font-bold">{stats?.admins || 0}</div>
                 </div>
               </div>
             </CardContent>
@@ -387,16 +378,15 @@ const UserManagementPage: React.FC = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Tipe</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Aktivitas</TableHead>
                   <TableHead>Terdaftar</TableHead>
                   <TableHead>Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {userData?.length ? userData.map((user, idx) => (
+                {paginatedData.length > 0 ? paginatedData.map((user, idx) => (
                   <TableRow key={user.id} className="hover:bg-muted/50">
                     <TableCell className="font-medium">
-                      {(userMeta.current_page - 1) * userMeta.per_page + idx + 1}
+                      {(page - 1) * perPage + idx + 1}
                     </TableCell>
                     <TableCell>
                       <div>
@@ -407,39 +397,8 @@ const UserManagementPage: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell>{getUserTypeBadge(user.user_type)}</TableCell>
-                    <TableCell>{getStatusBadge(user.account_status, user.is_active)}</TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div className="flex items-center gap-2">
-                          <span>Sertifikasi: {user.pendaftaran_sertifikasi_count || 0}</span>
-                          {(user.pendaftaran_sertifikasi_count && user.pendaftaran_sertifikasi_count > 0) && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => router.get(route('admin.penilaian-sertifikasi'))}
-                              className="h-6 px-2 text-xs"
-                            >
-                              Lihat
-                            </Button>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span>PKL: {user.pendaftaran_p_k_l_count || 0}</span>
-                          {(user.pendaftaran_p_k_l_count && user.pendaftaran_p_k_l_count > 0) && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => router.get(route('admin.penilaian-pkl'))}
-                              className="h-6 px-2 text-xs"
-                            >
-                              Lihat
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
+                    <TableCell>{getUserTypeBadge(user.role)}</TableCell>
+                    <TableCell>{getStatusBadge(user.account_status, user.is_active)}</TableCell><TableCell>
                       <div className="text-sm text-muted-foreground">
                         {new Date(user.created_at).toLocaleDateString('id-ID')}
                       </div>
@@ -491,26 +450,26 @@ const UserManagementPage: React.FC = () => {
                 )) : (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      {search || userType || accountStatus ? 'Tidak ada data sesuai filter' : 'Tidak ada data user'}
+                      {(search || userType || accountStatus) ? 'Tidak ada data sesuai filter' : 'Tidak ada data user'}
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
           </CardContent>
-          {userData?.length > 0 && (
-            <div className="px-4 pb-4">
-              <Pagination
-                currentPage={userMeta.current_page}
-                totalPages={userMeta.last_page}
-                itemsPerPage={userMeta.per_page}
-                totalItems={userMeta.total}
-                onPageChange={changePage}
-                onItemsPerPageChange={(n) => setPerPage(n)}
-              />
-            </div>
-          )}
         </Card>
+        
+        {/* Pagination - always show if there are any pages */}
+        <div className="mt-4">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            itemsPerPage={perPage}
+            totalItems={totalItems}
+            onPageChange={setPage}
+            onItemsPerPageChange={(n) => { setPerPage(n); setPage(1); }}
+          />
+        </div>
       </div>
 
       {/* Toggle Status Modal */}
@@ -539,6 +498,12 @@ const UserManagementPage: React.FC = () => {
         confirmText="Hapus"
         variant="destructive"
         isLoading={deleteModal.isLoading}
+      />
+
+      {/* Add User Dialog */}
+      <AddUserDialog
+        isOpen={addUserModal}
+        onClose={() => setAddUserModal(false)}
       />
     </AppLayout>
   );

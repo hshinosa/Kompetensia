@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\Contracts\PKLRepositoryInterface;
-use App\Models\PKL;
+use App\Models\PosisiPKL;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class PKLService
@@ -15,23 +15,23 @@ class PKLService
         return $this->repo->paginate($filters, $perPage);
     }
 
-    public function detail(int $id): PKL
+    public function detail(int $id): PosisiPKL
     {
         return $this->repo->find($id);
     }
 
-    public function create(array $data): PKL
+    public function create(array $data): PosisiPKL
     {
         return $this->repo->create($data);
     }
 
-    public function update(PKL $pkl, array $data): PKL
+    public function update(PosisiPKL $posisiPkl, array $data): PosisiPKL
     {
-        return $this->repo->update($pkl, $data);
+        return $this->repo->update($posisiPkl, $data);
     }
 
-    public function delete(PKL $pkl): void
+    public function delete(PosisiPKL $posisiPkl): void
     {
-        $this->repo->delete($pkl);
+        $this->repo->delete($posisiPkl);
     }
 }

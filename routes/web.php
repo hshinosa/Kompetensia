@@ -2,10 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\User;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', [\App\Http\Controllers\ClientController::class, 'landingPage'])->name('home');
+
+Route::get('/sertifikasi', function () {
+    return Inertia::render('client/SertifikasiPage');
+})->name('sertifikasi');
+
+Route::get('/pkl', [\App\Http\Controllers\ClientController::class, 'pklPage'])->name('pkl');
+
+Route::get('/detailsertifikasi/{slug}', [\App\Http\Controllers\ClientController::class, 'previewSertifikasi'])->name('detailsertifikasi');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {

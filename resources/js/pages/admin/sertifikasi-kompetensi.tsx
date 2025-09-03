@@ -55,7 +55,8 @@ export default function SertifikasiKompetensi() {
     if (Array.isArray(rawTipe)) {
       tipe = rawTipe as string[];
     } else if (typeof rawTipe === 'string' && rawTipe) {
-      tipe = [rawTipe];
+      // Handle comma-separated string from controller
+      tipe = rawTipe.split(',').map(t => t.trim()).filter(t => t.length > 0);
     }
     return {
       id: item.id,

@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sertifikasi', function (Blueprint $table) {
-            //
+            // Tambah kolom asesor_id
+            $table->unsignedBigInteger('asesor_id')->nullable()->after('thumbnail');
+            $table->foreign('asesor_id')->references('id')->on('asesors')->nullOnDelete();
+            
+            // Hapus kolom asesor yang lama (akan dilakukan setelah migrasi data)
+            // Untuk sementara kita biarkan kolom lama tetap ada
         });
     }
 
@@ -22,7 +27,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('sertifikasi', function (Blueprint $table) {
-            //
+            $table->dropForeign(['asesor_id']);
+            $table->dropColumn('asesor_id');
         });
     }
 };

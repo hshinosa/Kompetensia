@@ -54,10 +54,13 @@ interface UserDetailData {
   name: string;
   email: string;
   full_name?: string;
-  phone_number?: string;
+  phone?: string; // Changed from phone_number to phone (sesuai migrasi)
   gender?: string;
   place_of_birth?: string;
   date_of_birth?: string;
+  // Legacy fields (untuk backward compatibility)
+  birth_place?: string;
+  birth_date?: string;
   address?: string;
   user_type: string;
   role: string;
@@ -267,25 +270,35 @@ const UserDetailPage: React.FC = () => {
                   <label className="text-sm font-medium text-muted-foreground">No. Telepon</label>
                   <p className="text-sm font-medium flex items-center gap-2">
                     <Phone className="h-4 w-4" />
-                    {user.phone_number || '-'}
+                    {user.phone || '-'}
                   </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Jenis Kelamin</label>
                   <p className="text-sm font-medium">
-                    {user.gender === 'L' ? 'Laki-laki' : user.gender === 'P' ? 'Perempuan' : '-'}
+                    {(() => {
+                      console.log('Gender value:', user.gender, 'Type:', typeof user.gender);
+                      if (user.gender === 'L') return 'Laki-laki';
+                      if (user.gender === 'P') return 'Perempuan';
+                      if (user.gender === 'Laki-laki') return 'Laki-laki';
+                      if (user.gender === 'Perempuan') return 'Perempuan';
+                      return user.gender || '-';
+                    })()}
                   </p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Tempat Lahir</label>
-                  <p className="text-sm font-medium">{user.place_of_birth || '-'}</p>
+                  <p className="text-sm font-medium">{user.place_of_birth || user.birth_place || '-'}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Tanggal Lahir</label>
                   <p className="text-sm font-medium">
-                    {user.date_of_birth ? new Date(user.date_of_birth).toLocaleDateString('id-ID') : '-'}
+                    {(() => {
+                      const dateValue = user.date_of_birth || user.birth_date;
+                      return dateValue ? new Date(dateValue).toLocaleDateString('id-ID') : '-';
+                    })()}
                   </p>
                 </div>
               </div>

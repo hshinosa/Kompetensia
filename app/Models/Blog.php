@@ -55,7 +55,7 @@ class Blog extends Model
 
     public function getExcerptAttribute()
     {
-        return str(limit(strip_tags($this->konten), 150));
+        return \Illuminate\Support\Str::limit(strip_tags($this->konten), 150);
     }
 
     public function getRouteKeyName()

@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\PendaftaranPKL;
-use App\Models\PKL;
+use App\Models\PosisiPKL;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,8 +15,10 @@ class PendaftaranPKLFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'pkl_id' => PKL::factory(),
-            'status' => 'Approved'
+            'posisi_pkl_id' => PosisiPKL::factory(),
+            'tanggal_pendaftaran' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'status' => $this->faker->randomElement(['Pengajuan', 'Disetujui', 'Ditolak']),
+            'motivasi' => $this->faker->paragraph()
         ];
     }
 }

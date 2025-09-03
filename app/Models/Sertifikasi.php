@@ -17,11 +17,7 @@ class Sertifikasi extends Model
         'jenis_sertifikasi',
         'deskripsi',
         'thumbnail',
-        'nama_asesor',
-        'jabatan_asesor',
-        'instansi_asesor',
-        'pengalaman_asesor',
-        'foto_asesor',
+        'asesor_id',
         'tipe_sertifikat',
         'status',
         'created_by',
@@ -61,6 +57,14 @@ class Sertifikasi extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    /**
+     * Relasi ke tabel asesor
+     */
+    public function asesor()
+    {
+        return $this->belongsTo(Asesor::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'Aktif');
@@ -76,8 +80,19 @@ class Sertifikasi extends Model
         return $this->thumbnail ? asset('storage/' . $this->thumbnail) : null;
     }
 
-    public function getFotoAsesorUrlAttribute()
+    /**
+     * Generate slug from nama_sertifikasi
+     */
+    public function getSlugAttribute()
     {
-        return $this->foto_asesor ? asset('storage/' . $this->foto_asesor) : null;
+        return \Illuminate\Support\Str::slug($this->nama_sertifikasi);
+    }
+
+    /**
+     * Find sertifikasi by slug
+     */
+    public static function findBySlug($slug)
+    {
+        return static::active()->get()->firstWhere('slug', $slug);
     }
 }

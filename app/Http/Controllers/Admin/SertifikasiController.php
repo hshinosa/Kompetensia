@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sertifikasi;
+use App\Models\Asesor;
 use App\Models\ModulSertifikasi;
 use App\Models\BatchSertifikasi;
 use App\Http\Requests\Admin\StoreSertifikasiRequest;
@@ -26,13 +27,15 @@ class SertifikasiController extends Controller
     public function index(\Illuminate\Http\Request $request)
     {
         $perPage = $request->integer('per_page', 10);
-        $query = Sertifikasi::query();
+        $query = Sertifikasi::with(['asesor', 'batch']);
         
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function($q) use ($search){
                 $q->where('nama_sertifikasi','like','%'.$search.'%')
-                  ->orWhere('nama_asesor','like','%'.$search.'%');
+                  ->orWhereHas('asesor', function($asesorQuery) use ($search) {
+                      $asesorQuery->where('nama_asesor', 'like', '%'.$search.'%');
+                  });
             });
         }
         if ($request->filled('jenis')) { $query->where('jenis_sertifikasi', $request->get('jenis')); }
@@ -40,16 +43,38 @@ class SertifikasiController extends Controller
         
         $sertifikasi = $query->latest()->paginate($perPage)->appends($request->all())
             ->through(function ($s) {
+                // Hitung total batch aktif
+                $totalBatch = $s->batch->where('status', 'Aktif')->count();
+                
+                // Format tipe sertifikat yang benar
+                $tipeSertifikat = [];
+                if (is_array($s->tipe_sertifikat)) {
+                    $tipeSertifikat = $s->tipe_sertifikat;
+                } elseif (is_string($s->tipe_sertifikat) && !empty($s->tipe_sertifikat)) {
+                    // Coba parse JSON jika string
+                    $decoded = json_decode($s->tipe_sertifikat, true);
+                    if (is_array($decoded)) {
+                        $tipeSertifikat = $decoded;
+                    } else {
+                        $tipeSertifikat = [$s->tipe_sertifikat];
+                    }
+                }
+                
+                // Default tipe sertifikat jika kosong
+                if (empty($tipeSertifikat)) {
+                    $tipeSertifikat = ['Sertifikat Kompetensi'];
+                }
+                
                 return [
                     'id' => $s->id,
                     'namaSertifikasi' => $s->nama_sertifikasi,
                     'jenisSertifikasi' => $s->jenis_sertifikasi,
                     'status' => $s->status === 'Aktif' ? 'Aktif' : 'Draf',
                     'thumbnail' => $s->thumbnail_url,
-                    'assessor' => $s->nama_asesor,
-                    'tipe_sertifikat' => is_string($s->tipe_sertifikat) ? $s->tipe_sertifikat : 'Sertifikat Kompetensi',
-                    'totalBatch' => 0, // Sementara hardcode 0
-                    'jadwalSertifikasi' => 'Belum dijadwalkan', // Sementara hardcode
+                    'assessor' => $s->asesor ? $s->asesor->nama_asesor : 'Belum dipilih',
+                    'tipe_sertifikat' => is_array($tipeSertifikat) ? implode(', ', $tipeSertifikat) : implode(', ', ['Sertifikat Kompetensi']),
+                    'totalBatch' => $totalBatch,
+                    'jadwalSertifikasi' => $totalBatch > 0 ? "{$totalBatch} batch aktif" : 'Belum dijadwalkan',
                 ];
             });
             
@@ -66,10 +91,11 @@ class SertifikasiController extends Controller
 
     public function show($id)
     {
-        // Correct eager loading: cannot reference scope in relation name
+        // Load sertifikasi with asesor relation
         $sertifikasi = Sertifikasi::with([
             'modul' => function($q){ $q->ordered(); },
-            'batch'
+            'batch',
+            'asesor'
         ])->findOrFail($id);
 
         // Transform to rich detail structure similar to chlorine-portal design
@@ -78,12 +104,16 @@ class SertifikasiController extends Controller
             'nama_sertifikasi' => $sertifikasi->nama_sertifikasi,
             'jenis_sertifikasi' => $sertifikasi->jenis_sertifikasi,
             'deskripsi' => $sertifikasi->deskripsi,
-            'nama_asesor' => $sertifikasi->nama_asesor,
-            'jabatan_asesor' => $sertifikasi->jabatan_asesor,
-            'instansi_asesor' => $sertifikasi->instansi_asesor,
+            'asesor' => $sertifikasi->asesor ? [
+                'id' => $sertifikasi->asesor->id,
+                'nama_asesor' => $sertifikasi->asesor->nama_asesor,
+                'jabatan_asesor' => $sertifikasi->asesor->jabatan_asesor,
+                'instansi_asesor' => $sertifikasi->asesor->instansi_asesor,
+                'pengalaman_asesor' => $sertifikasi->asesor->pengalaman_asesor,
+                'foto_asesor' => $sertifikasi->asesor->foto_asesor ? asset('storage/' . $sertifikasi->asesor->foto_asesor) : null,
+            ] : null,
             'tipe_sertifikat' => $sertifikasi->tipe_sertifikat,
             'thumbnail_url' => $sertifikasi->thumbnail_url,
-            'foto_asesor_url' => $sertifikasi->foto_asesor_url,
             'modul' => $sertifikasi->modul->map(function($m){
                 return [
                     'id' => $m->id,
@@ -111,7 +141,23 @@ class SertifikasiController extends Controller
 
     public function create()
     {
-        return Inertia::render('admin/form-sertifikasi');
+        // Pass active asesors for dropdown/autocomplete
+        $asesors = Asesor::where('status', 'Aktif')
+            ->select('id', 'nama_asesor', 'jabatan_asesor', 'instansi_asesor')
+            ->get()
+            ->map(function($asesor) {
+                return [
+                    'id' => $asesor->id,
+                    'name' => $asesor->nama_asesor,
+                    'label' => $asesor->nama_asesor . ' - ' . $asesor->jabatan_asesor . ' (' . $asesor->instansi_asesor . ')',
+                    'jabatan' => $asesor->jabatan_asesor,
+                    'instansi' => $asesor->instansi_asesor
+                ];
+            });
+
+        return Inertia::render('admin/form-sertifikasi', [
+            'asesors' => $asesors
+        ]);
     }
 
     public function store(StoreSertifikasiRequest $request)
@@ -119,12 +165,41 @@ class SertifikasiController extends Controller
         $validated = $request->validated();
         $slug = Str::slug($validated['nama_sertifikasi']);
 
+        // Handle asesor - jika buat baru atau pilih existing
+        if (!empty($validated['nama_asesor'])) {
+            // Buat asesor baru
+            $asesorData = [
+                'nama_asesor' => $validated['nama_asesor'],
+                'jabatan_asesor' => $validated['jabatan_asesor'],
+                'instansi_asesor' => $validated['instansi_asesor'],
+                'status' => 'Aktif'
+            ];
+            
+            if ($request->hasFile('foto_asesor')) {
+                $asesorData['foto_asesor'] = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
+            }
+            
+            $asesor = \App\Models\Asesor::create($asesorData);
+            $validated['asesor_id'] = $asesor->id;
+        } elseif ($request->hasFile('foto_asesor') && $validated['asesor_id']) {
+            // Update foto asesor yang sudah ada
+            $asesor = \App\Models\Asesor::find($validated['asesor_id']);
+            if ($asesor) {
+                // Delete old photo if exists
+                if ($asesor->foto_asesor && Storage::disk('public')->exists($asesor->foto_asesor)) {
+                    Storage::disk('public')->delete($asesor->foto_asesor);
+                }
+                
+                // Upload new photo
+                $fotoPath = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
+                $asesor->update(['foto_asesor' => $fotoPath]);
+            }
+        }
+
         if ($request->hasFile('thumbnail')) {
             $validated['thumbnail'] = $this->storeSertifikasiFile($request->file('thumbnail'), $slug, 'thumbnail');
         }
-        if ($request->hasFile('foto_asesor')) {
-            $validated['foto_asesor'] = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
-        }
+        
         $validated['created_by'] = auth()->id();
         $validated['status'] = 'Aktif';
         $sertifikasi = Sertifikasi::create($validated);
@@ -143,7 +218,6 @@ class SertifikasiController extends Controller
                 'tanggal_mulai' => $batchData['tanggal_mulai'],
                 'tanggal_selesai' => $batchData['tanggal_selesai'],
                 'status' => $batchData['status'] ?? 'Draf',
-                // kuota dihapus dari requirement
                 'jumlah_pendaftar' => $batchData['jumlah_pendaftar'] ?? 0,
             ]);
         }
@@ -154,8 +228,23 @@ class SertifikasiController extends Controller
     {
         $sertifikasi = Sertifikasi::with([
             'modul' => function($q){ $q->ordered(); },
-            'batch'
+            'batch',
+            'asesor'
         ])->findOrFail($id);
+
+        // Pass active asesors for dropdown/autocomplete
+        $asesors = Asesor::where('status', 'Aktif')
+            ->select('id', 'nama_asesor', 'jabatan_asesor', 'instansi_asesor')
+            ->get()
+            ->map(function($asesor) {
+                return [
+                    'id' => $asesor->id,
+                    'name' => $asesor->nama_asesor,
+                    'label' => $asesor->nama_asesor . ' - ' . $asesor->jabatan_asesor . ' (' . $asesor->instansi_asesor . ')',
+                    'jabatan' => $asesor->jabatan_asesor,
+                    'instansi' => $asesor->instansi_asesor
+                ];
+            });
 
         // Adapt data shape for the React form (expects modul.order aliasing urutan)
         $formData = [
@@ -163,13 +252,16 @@ class SertifikasiController extends Controller
             'nama_sertifikasi' => $sertifikasi->nama_sertifikasi,
             'jenis_sertifikasi' => $sertifikasi->jenis_sertifikasi,
             'deskripsi' => $sertifikasi->deskripsi,
-            'nama_asesor' => $sertifikasi->nama_asesor,
-            'jabatan_asesor' => $sertifikasi->jabatan_asesor,
-            'instansi_asesor' => $sertifikasi->instansi_asesor,
-            'pengalaman_asesor' => $sertifikasi->pengalaman_asesor,
+            'asesor_id' => $sertifikasi->asesor_id,
+            'selectedAsesor' => $sertifikasi->asesor ? [
+                'id' => $sertifikasi->asesor->id,
+                'name' => $sertifikasi->asesor->nama_asesor,
+                'label' => $sertifikasi->asesor->nama_asesor . ' - ' . $sertifikasi->asesor->jabatan_asesor . ' (' . $sertifikasi->asesor->instansi_asesor . ')',
+                'jabatan' => $sertifikasi->asesor->jabatan_asesor,
+                'instansi' => $sertifikasi->asesor->instansi_asesor
+            ] : null,
             'tipe_sertifikat' => $sertifikasi->tipe_sertifikat,
             'thumbnail_url' => $sertifikasi->thumbnail_url,
-            'foto_asesor_url' => $sertifikasi->foto_asesor_url,
             'modul' => $sertifikasi->modul->map(function($m){
                 return [
                     'id' => $m->id,
@@ -188,7 +280,12 @@ class SertifikasiController extends Controller
                 ];
             })->values(),
         ];
-        return Inertia::render('admin/form-sertifikasi', ['sertifikasi' => $formData, 'isEdit' => true]);
+        
+        return Inertia::render('admin/form-sertifikasi', [
+            'sertifikasi' => $formData, 
+            'isEdit' => true,
+            'asesors' => $asesors
+        ]);
     }
 
     public function update(UpdateSertifikasiRequest $request, $id)
@@ -196,14 +293,43 @@ class SertifikasiController extends Controller
         $sertifikasi = Sertifikasi::findOrFail($id);
         $validated = $request->validated();
         $slug = Str::slug($validated['nama_sertifikasi']);
+        
+        // Handle asesor - jika buat baru atau pilih existing
+        if (!empty($validated['nama_asesor'])) {
+            // Buat asesor baru
+            $asesorData = [
+                'nama_asesor' => $validated['nama_asesor'],
+                'jabatan_asesor' => $validated['jabatan_asesor'],
+                'instansi_asesor' => $validated['instansi_asesor'],
+                'status' => 'Aktif'
+            ];
+            
+            if ($request->hasFile('foto_asesor')) {
+                $asesorData['foto_asesor'] = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
+            }
+            
+            $asesor = \App\Models\Asesor::create($asesorData);
+            $validated['asesor_id'] = $asesor->id;
+        } elseif ($request->hasFile('foto_asesor') && $validated['asesor_id']) {
+            // Update foto asesor yang sudah ada
+            $asesor = \App\Models\Asesor::find($validated['asesor_id']);
+            if ($asesor) {
+                // Delete old photo if exists
+                if ($asesor->foto_asesor && Storage::disk('public')->exists($asesor->foto_asesor)) {
+                    Storage::disk('public')->delete($asesor->foto_asesor);
+                }
+                
+                // Upload new photo
+                $fotoPath = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
+                $asesor->update(['foto_asesor' => $fotoPath]);
+            }
+        }
+        
         if ($request->hasFile('thumbnail')) {
             if ($sertifikasi->thumbnail) { Storage::disk('public')->delete($sertifikasi->thumbnail); }
             $validated['thumbnail'] = $this->storeSertifikasiFile($request->file('thumbnail'), $slug, 'thumbnail');
         }
-        if ($request->hasFile('foto_asesor')) {
-            if ($sertifikasi->foto_asesor) { Storage::disk('public')->delete($sertifikasi->foto_asesor); }
-            $validated['foto_asesor'] = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
-        }
+        
         $validated['updated_by'] = auth()->id();
         $sertifikasi->update($validated);
         $sertifikasi->modul()->delete();
@@ -243,7 +369,7 @@ class SertifikasiController extends Controller
         if ($request->has('search')) { $query->where('nama_sertifikasi', 'like', '%' . $request->search . '%'); }
         if ($request->has('jenis')) { $query->where('jenis_sertifikasi', $request->jenis); }
         if ($request->has('status')) { $query->where('status', $request->status); }
-        return response()->json($query->paginate($request->get('per_page', 10)));
+        return response()->json($query->paginate($request->get('per_page', 5)));
     }
 
     public function apiShow($id)

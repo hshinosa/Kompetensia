@@ -15,7 +15,6 @@ return new class extends Migration {
             $table->string('institution')->nullable();
             $table->string('major')->nullable();
             $table->unsignedInteger('semester')->nullable();
-            $table->decimal('gpa', 3, 2)->nullable();
             $table->string('role')->default('user');
             $table->string('avatar')->nullable();
         });
@@ -24,7 +23,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['phone','address','birth_date','birth_place','institution','major','semester','gpa','role','avatar']);
+            $table->dropColumn(['phone','address','birth_date','birth_place','institution','major','semester','role','avatar']);
         });
     }
 };

@@ -21,7 +21,7 @@ class UserManagementController extends Controller
         $search = $request->get('search', '');
         $userType = $request->get('user_type', '');
         $accountStatus = $request->get('account_status', '');
-        $perPage = $request->get('per_page', 10);
+    // Fetch all users for client-side pagination
 
         $users = User::query()
             ->when($search, function ($query, $search) {
@@ -43,7 +43,7 @@ class UserManagementController extends Controller
                 $query->latest()->limit(3);
             }])
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+                ->get();
 
         // Add counts separately to avoid errors if relations don't exist
         foreach ($users as $user) {
@@ -62,8 +62,8 @@ class UserManagementController extends Controller
         $stats = [
             'total_users' => User::count(),
             'active_users' => User::where('is_active', true)->count(),
-            'students' => User::where('user_type', 'student')->count(),
-            'admins' => User::where('user_type', 'admin')->count(),
+            'students' => User::where('role', 'student')->count(),
+            'admins' => User::where('role', 'admin')->count(),
             'pending_users' => User::where('account_status', 'pending')->count(),
         ];
 
@@ -73,7 +73,6 @@ class UserManagementController extends Controller
                 'search' => $search,
                 'user_type' => $userType,
                 'account_status' => $accountStatus,
-                'per_page' => $perPage,
             ],
             'stats' => $stats,
         ]);
@@ -89,6 +88,22 @@ class UserManagementController extends Controller
             },
             'documents'
         ])->findOrFail($id);
+
+        // Debug: Log user data untuk melihat field apa yang benar-benar ada
+        \Log::info('User detail data for debugging:', [
+            'user_id' => $id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'full_name' => $user->full_name,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'place_of_birth' => $user->place_of_birth,
+            'date_of_birth' => $user->date_of_birth,
+            'birth_place' => $user->birth_place ?? 'NOT_SET',
+            'birth_date' => $user->birth_date ?? 'NOT_SET',
+            'address' => $user->address,
+            'all_attributes' => array_keys($user->getAttributes())
+        ]);
 
         // Get detailed statistics
         $userStats = [
@@ -122,24 +137,15 @@ class UserManagementController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => 'required|in:admin,user',
             'user_type' => 'required|in:student,instructor,assessor,admin',
-            'full_name' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'gender' => 'nullable|in:L,P',
-            'school_university' => 'nullable|string|max:255',
-            'major_concentration' => 'nullable|string|max:255',
         ]);
 
-        $user = User::create([
+                $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'user_type' => $request->user_type,
-            'full_name' => $request->full_name,
-            'phone_number' => $request->phone_number,
-            'gender' => $request->gender,
-            'school_university' => $request->school_university,
-            'major_concentration' => $request->major_concentration,
+            'full_name' => $request->name, // Use name as full_name for admin
             'is_active' => true,
             'account_status' => 'active',
         ]);
@@ -265,7 +271,7 @@ class UserManagementController extends Controller
         $sertifikasi = $user->pendaftaranSertifikasi()
             ->with(['sertifikasi', 'penilaian'])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(5);
 
         return response()->json($sertifikasi);
     }
@@ -277,7 +283,7 @@ class UserManagementController extends Controller
         $pkl = $user->pendaftaranPKL()
             ->with(['posisiPKL', 'penilaian'])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(5);
 
         return response()->json($pkl);
     }

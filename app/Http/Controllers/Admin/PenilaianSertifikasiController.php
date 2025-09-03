@@ -18,6 +18,7 @@ class PenilaianSertifikasiController extends Controller
     public function index(Request $request)
     {
         $query = \App\Models\Sertifikasi::with([
+            'asesor', // Add asesor relationship
             'batch' => function($q) {
                 $q->withCount(['pendaftaran' => function($query) {
                     $query->where('status', 'Disetujui'); // Only count approved registrations
@@ -29,18 +30,20 @@ class PenilaianSertifikasiController extends Controller
             $search = $request->string('search');
             $query->where(function($q) use ($search){
                 $q->where('nama_sertifikasi','like','%'.$search.'%')
-                  ->orWhere('nama_asesor','like','%'.$search.'%');
+                  ->orWhereHas('asesor', function($subQuery) use ($search) {
+                      $subQuery->where('nama_asesor','like','%'.$search.'%');
+                  });
             });
         }
         if($request->filled('jenis')){ $query->where('jenis_sertifikasi',$request->jenis); }
         
-        $paginator = $query->latest()->paginate($request->integer('per_page',10))->appends($request->all());
+        $paginator = $query->latest()->paginate($request->integer('per_page',5))->appends($request->all());
         $focusBatchId = $request->integer('batch');
         $mapped = $paginator->through(function($s) use ($focusBatchId){
             return [
                 'id' => $s->id,
                 'namaSertifikasi' => $s->nama_sertifikasi,
-                'assessor' => $s->nama_asesor,
+                'assessor' => $s->asesor?->nama_asesor, // Use asesor relationship
                 'penyelenggara' => $s->jenis_sertifikasi,
                 'batches' => $s->batch->when($focusBatchId, fn($c) => $c->where('id', $focusBatchId))->map(fn($b) => [
                     'id' => $b->id,
@@ -170,7 +173,7 @@ class PenilaianSertifikasiController extends Controller
                 $q->where('status_kelulusan', $request->status_kelulusan);
             });
         }
-        return response()->json($query->paginate($request->get('per_page', 10)));
+        return response()->json($query->paginate($request->get('per_page', 5)));
     }
 
     public function apiStore(StorePenilaianSertifikasiRequest $request)

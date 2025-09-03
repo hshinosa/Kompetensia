@@ -1,16 +1,46 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export interface BiodataPeserta { nama:string; tempatTanggalLahir:string; alamat:string; email:string; noTelepon:string }
-export interface SertifikasiKompetensi { namaSertifikasi:string; jadwalSertifikasi:string; batch:string; assessor:string }
+export interface BiodataPeserta { 
+  nama: string; 
+  full_name?: string;
+  email: string; 
+  phone?: string;
+  address?: string;
+  birth_place?: string;
+  birth_date?: string;
+  tempatTanggalLahir?: string; 
+  alamat?: string; 
+  noTelepon?: string;
+}
+
+export interface SertifikasiKompetensi { 
+  namaSertifikasi: string; 
+  jadwalSertifikasi?: string; 
+  batch?: string; 
+  assessor?: string;
+}
+
+export interface PKLInfo {
+  namaPosisi: string;
+  perusahaan?: string;
+  kategori?: string;
+  durasi?: string;
+  tanggal_mulai?: string;
+  tanggal_selesai?: string;
+}
+
 export interface PendaftarData { 
   user_id?: number;
   nama: string; 
+  full_name?: string;
+  jenis_pendaftaran: 'Sertifikasi Kompetensi' | 'Praktik Kerja Lapangan';
   status: 'Pengajuan'|'Disetujui'|'Ditolak'; 
   biodata: BiodataPeserta; 
-  sertifikasi: SertifikasiKompetensi;
+  sertifikasi?: SertifikasiKompetensi;
+  pkl_info?: PKLInfo;
   catatan_admin?: string;
 }
 interface Props { readonly isOpen:boolean; readonly pendaftarData:PendaftarData; readonly onClose:()=>void; readonly onApproval:(status:'Disetujui'|'Ditolak', alasan?:string)=>Promise<void> | void }
@@ -19,35 +49,66 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
   const [rejectionReason,setRejectionReason] = React.useState('');
   const [showReject,setShowReject] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   
   const approve = async () => { 
     setIsProcessing(true);
+    setError(null);
     try {
       await onApproval('Disetujui'); 
       onClose(); 
+    } catch (err) {
+      setError('Gagal menyetujui pendaftaran. Silakan coba lagi.');
+      console.error('Approve error:', err);
     } finally {
       setIsProcessing(false);
     }
   };
-  const rejectFlow = () => setShowReject(true);
+  
+  const rejectFlow = () => {
+    setShowReject(true);
+    setError(null);
+  };
+  
   const submitReject = async () => {
-    if(!rejectionReason.trim()) return;
+    if(!rejectionReason.trim()) {
+      setError('Alasan penolakan harus diisi.');
+      return;
+    }
+    
     setIsProcessing(true);
+    setError(null);
     try {
       await onApproval('Ditolak', rejectionReason);
       setRejectionReason('');
       setShowReject(false);
       onClose();
+    } catch (err) {
+      setError('Gagal menolak pendaftaran. Silakan coba lagi.');
+      console.error('Reject error:', err);
     } finally {
       setIsProcessing(false);
     }
   };
-  const handleOpenChange = (open:boolean) => { if(!open){ setShowReject(false); setRejectionReason(''); onClose(); } };
+  
+  const handleOpenChange = (open:boolean) => { 
+    if(!open){ 
+      setShowReject(false); 
+      setRejectionReason(''); 
+      setError(null);
+      onClose(); 
+    } 
+  };
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="w-auto h-auto !max-w-[95vw] max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Detail Pendaftaran - {pendaftarData.nama}</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            Detail Pendaftaran - {pendaftarData.full_name || pendaftarData.nama}
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            {pendaftarData.jenis_pendaftaran}
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <div className="flex-shrink-0">
@@ -55,44 +116,105 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
               <Card className="min-w-[420px]">
                 <CardHeader><CardTitle>Biodata Diri</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  {['nama','tempatTanggalLahir','alamat','email','noTelepon'].map(key => {
-                    let label = '';
-                    switch(key){
-                      case 'nama': label='Nama Peserta'; break;
-                      case 'tempatTanggalLahir': label='Tempat/Tanggal Lahir'; break;
-                      case 'alamat': label='Alamat'; break;
-                      case 'email': label='Email'; break;
-                      case 'noTelepon': label='No. Telepon'; break;
-                    }
-                    return (
-                      <div key={key}>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">{label}</div>
-                        <p className="text-sm font-medium">{(pendaftarData.biodata as any)[key]}</p>
-                      </div>
-                    );
-                  })}
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Nama Peserta</div>
+                    <p className="text-sm font-medium">{pendaftarData.biodata.full_name || pendaftarData.biodata.nama}</p>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Email</div>
+                    <p className="text-sm font-medium">{pendaftarData.biodata.email || '-'}</p>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">No. Telepon</div>
+                    <p className="text-sm font-medium">{pendaftarData.biodata.phone || pendaftarData.biodata.noTelepon || '-'}</p>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Tempat/Tanggal Lahir</div>
+                    <p className="text-sm font-medium">
+                      {pendaftarData.biodata.birth_place && pendaftarData.biodata.birth_date 
+                        ? `${pendaftarData.biodata.birth_place}, ${pendaftarData.biodata.birth_date}`
+                        : pendaftarData.biodata.tempatTanggalLahir || '-'
+                      }
+                    </p>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Alamat</div>
+                    <p className="text-sm font-medium">{pendaftarData.biodata.address || pendaftarData.biodata.alamat || '-'}</p>
+                  </div>
                 </CardContent>
               </Card>
-              <Card className="min-w-[420px]">
-                <CardHeader><CardTitle>Sertifikasi Kompetensi</CardTitle></CardHeader>
-                <CardContent className="space-y-4">
-                  {['namaSertifikasi','jadwalSertifikasi','batch','assessor'].map(key => {
-                    let label='';
-                    switch(key){
-                      case 'namaSertifikasi': label='Nama Sertifikasi'; break;
-                      case 'jadwalSertifikasi': label='Jadwal Sertifikasi'; break;
-                      case 'batch': label='Batch'; break;
-                      case 'assessor': label='Assessor'; break;
-                    }
-                    return (
-                      <div key={key}>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">{label}</div>
-                        <p className="text-sm font-medium">{(pendaftarData.sertifikasi as any)[key]}</p>
+              {/* Program-specific Information */}
+              {pendaftarData.jenis_pendaftaran === 'Sertifikasi Kompetensi' && pendaftarData.sertifikasi && (
+                <Card className="min-w-[420px]">
+                  <CardHeader><CardTitle>Sertifikasi Kompetensi</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Nama Sertifikasi</div>
+                      <p className="text-sm font-medium">{pendaftarData.sertifikasi.namaSertifikasi}</p>
+                    </div>
+                    
+                    {pendaftarData.sertifikasi.batch && (
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Batch</div>
+                        <p className="text-sm font-medium">{pendaftarData.sertifikasi.batch}</p>
                       </div>
-                    );
-                  })}
-                </CardContent>
-              </Card>
+                    )}
+
+                    {pendaftarData.sertifikasi.jadwalSertifikasi && (
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Jadwal Sertifikasi</div>
+                        <p className="text-sm font-medium">{pendaftarData.sertifikasi.jadwalSertifikasi}</p>
+                      </div>
+                    )}
+
+                    {pendaftarData.sertifikasi.assessor && (
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Assessor</div>
+                        <p className="text-sm font-medium">{pendaftarData.sertifikasi.assessor}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {pendaftarData.jenis_pendaftaran === 'Praktik Kerja Lapangan' && pendaftarData.pkl_info && (
+                <Card className="min-w-[420px]">
+                  <CardHeader><CardTitle>Praktik Kerja Lapangan</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground mb-1">Posisi PKL</div>
+                      <p className="text-sm font-medium">{pendaftarData.pkl_info.namaPosisi}</p>
+                    </div>
+                    
+                    {pendaftarData.pkl_info.perusahaan && (
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Perusahaan</div>
+                        <p className="text-sm font-medium">{pendaftarData.pkl_info.perusahaan}</p>
+                      </div>
+                    )}
+
+                    {pendaftarData.pkl_info.kategori && (
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Kategori</div>
+                        <p className="text-sm font-medium">{pendaftarData.pkl_info.kategori}</p>
+                      </div>
+                    )}
+
+                    {(pendaftarData.pkl_info.tanggal_mulai || pendaftarData.pkl_info.tanggal_selesai) && (
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Periode</div>
+                        <p className="text-sm font-medium">
+                          {pendaftarData.pkl_info.tanggal_mulai || '-'} s/d {pendaftarData.pkl_info.tanggal_selesai || '-'}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
           <div className="flex-shrink-0 space-y-4">
@@ -100,6 +222,11 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
               <Card className="min-w-[300px] max-w-[350px]">
                 <CardHeader><CardTitle className="text-base">Approval</CardTitle></CardHeader>
                 <CardContent>
+                  {error && (
+                    <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md border border-red-200 mb-3">
+                      {error}
+                    </div>
+                  )}
                   <div className="flex gap-3">
                     <Button onClick={approve} className="w-full bg-green-600 hover:bg-green-700" disabled={isProcessing}>
                       {isProcessing ? 'Memproses...' : 'Setujui'}
@@ -116,6 +243,11 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
                 <CardHeader><CardTitle className="text-base">Alasan Penolakan</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-4">
+                    {error && (
+                      <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md border border-red-200">
+                        {error}
+                      </div>
+                    )}
                     <textarea 
                       value={rejectionReason} 
                       onChange={e=>setRejectionReason(e.target.value)} 
@@ -126,7 +258,7 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
                       <Button onClick={submitReject} variant="destructive" className="flex-1" disabled={!rejectionReason.trim() || isProcessing}>
                         {isProcessing ? 'Memproses...' : 'Kirim'}
                       </Button>
-                      <Button onClick={()=>setShowReject(false)} variant="outline" className="flex-1" disabled={isProcessing}>
+                      <Button onClick={()=>{setShowReject(false); setError(null);}} variant="outline" className="flex-1" disabled={isProcessing}>
                         Batal
                       </Button>
                     </div>

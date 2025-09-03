@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('institusi_asal')->nullable()->after('tanggal_selesai');
             $table->string('program_studi')->nullable()->after('institusi_asal');
             $table->integer('semester')->nullable()->after('program_studi');
-            $table->decimal('ipk', 3, 2)->nullable()->after('semester');
         });
     }
 

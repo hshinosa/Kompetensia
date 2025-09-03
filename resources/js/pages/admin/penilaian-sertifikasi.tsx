@@ -81,10 +81,58 @@ const PenilaianSertifikasiPage: React.FC = () => {
                 </div>
         {/* Stats */}
         <div className="grid auto-rows-min gap-4 md:grid-cols-4">
-          <Card className="p-6"><CardContent className="p-0"><div className="flex items-center gap-3"><div className="p-2 bg-blue-100 rounded-lg"><Award className="h-5 w-5 text-blue-600" /></div><div><div className="text-2xl font-bold">{totalSertifikasi}</div><p className="text-sm text-muted-foreground">Total Sertifikasi</p></div></div></CardContent></Card>
-          <Card className="p-6"><CardContent className="p-0"><div className="flex items-center gap-3"><div className="p-2 bg-green-100 rounded-lg"><FileCheck className="h-5 w-5 text-green-600" /></div><div><div className="text-2xl font-bold">{totalBatch}</div><p className="text-sm text-muted-foreground">Total Batch</p></div></div></CardContent></Card>
-          <Card className="p-6"><CardContent className="p-0"><div className="flex items-center gap-3"><div className="p-2 bg-yellow-100 rounded-lg"><Clock className="h-5 w-5 text-yellow-600" /></div><div><div className="text-2xl font-bold">{aktiveBatch}</div><p className="text-sm text-muted-foreground">Batch Aktif</p></div></div></CardContent></Card>
-          <Card className="p-6"><CardContent className="p-0"><div className="flex items-center gap-3"><div className="p-2 bg-purple-100 rounded-lg"><Users className="h-5 w-5 text-purple-600" /></div><div><div className="text-2xl font-bold">{totalPeserta}</div><p className="text-sm text-muted-foreground">Total Peserta</p></div></div></CardContent></Card>
+          <Card className="p-6">
+            <CardContent className="p-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Award className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Sertifikasi</p>
+                  <div className="text-2xl font-bold">{totalSertifikasi}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="p-6">
+            <CardContent className="p-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <FileCheck className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Batch</p>
+                  <div className="text-2xl font-bold">{totalBatch}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="p-6">
+            <CardContent className="p-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Clock className="h-5 w-5 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Batch Aktif</p>
+                  <div className="text-2xl font-bold">{aktiveBatch}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="p-6">
+            <CardContent className="p-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Users className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Peserta</p>
+                  <div className="text-2xl font-bold">{totalPeserta}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
@@ -193,7 +241,6 @@ const PenilaianSertifikasiPage: React.FC = () => {
             </CardHeader>
             <CardContent>
                 {selected ? (
-                <>
                   <Table>
                     <TableHeader><TableRow><TableHead>No</TableHead><TableHead>Nama Batch</TableHead><TableHead className="w-28">Peserta</TableHead><TableHead>Status</TableHead><TableHead>Aksi</TableHead></TableRow></TableHeader>
                     <TableBody>
@@ -212,14 +259,23 @@ const PenilaianSertifikasiPage: React.FC = () => {
                       ))}
                     </TableBody>
                   </Table>
-                  <div className="pt-4">
-                    <Pagination currentPage={batchPage} totalPages={Math.max(1, Math.ceil(selected.batches.filter(b => (batchSearch ? b.namaBatch.toLowerCase().includes(batchSearch.toLowerCase()) : true)).filter(b => (batchStatus ? b.status.toLowerCase() === batchStatus.toLowerCase() : true)).length / batchPerPage))} itemsPerPage={batchPerPage} totalItems={selected.batches.length} onPageChange={setBatchPage} onItemsPerPageChange={setBatchPerPage} />
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center justify-center py-20 text-muted-foreground">Pilih sertifikasi</div>
-              )}
+                ) : (
+                  <div className="flex items-center justify-center py-20 text-muted-foreground">Pilih sertifikasi</div>
+                )}
             </CardContent>
+            <div className="m-4 p-2">
+              {/* Batch Pagination */}
+              {selected && (
+                <Pagination 
+                  currentPage={batchPage} 
+                  totalPages={Math.max(1, Math.ceil(selected.batches.filter(b => (batchSearch ? b.namaBatch.toLowerCase().includes(batchSearch.toLowerCase()) : true)).filter(b => (batchStatus ? b.status.toLowerCase() === batchStatus.toLowerCase() : true)).length / batchPerPage))} 
+                  itemsPerPage={batchPerPage} 
+                  totalItems={selected.batches.length} 
+                  onPageChange={setBatchPage} 
+                  onItemsPerPageChange={setBatchPerPage} 
+                />
+              )}
+            </div>
           </Card>
         </div>
   {/* Inline peserta & penilaian dihapus; gunakan halaman detail-penilaian-sertifikasi */}

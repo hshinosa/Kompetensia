@@ -14,64 +14,45 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Create admin user
+        $this->createAdminUser();
+        
+        // Create student users using factory
+        $this->createStudentUsers();
+        
+        echo "Users seeded successfully with complete data!\n";
+    }
+
+    /**
+     * Create admin user
+     */
+    private function createAdminUser(): void
+    {
         User::create([
             'name' => 'Administrator',
             'email' => 'admin@kompetensia.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'user_type' => 'admin',
+            'full_name' => 'Administrator Kompetensia',
             'phone' => '081234567890',
-            'email_verified_at' => now(),
-        ]);
-
-        // Create sample student users
-        User::create([
-            'name' => 'Ahmad Rizki',
-            'email' => 'ahmad.rizki@student.com',
-            'password' => Hash::make('password'),
-            'role' => 'user',
-            'phone' => '08123456789',
-            'address' => 'Jl. Merdeka No. 123, Jakarta',
-            'birth_date' => '2001-05-15',
+            'address' => 'Jl. Admin No. 1, Jakarta Pusat',
+            'birth_date' => '1990-01-01',
             'birth_place' => 'Jakarta',
-            'institution' => 'Universitas Indonesia',
-            'major' => 'Teknik Informatika',
-            'semester' => 6,
-            'gpa' => 3.45,
+            'institution' => 'Kompetensia',
+            'major' => 'Information Technology',
+            'semester' => null,
+            'is_active' => true,
+            'account_status' => 'active',
             'email_verified_at' => now(),
         ]);
+    }
 
-        User::create([
-            'name' => 'Sari Wulandari',
-            'email' => 'sari.wulandari@student.com',
-            'password' => Hash::make('password'),
-            'role' => 'user',
-            'phone' => '08198765432',
-            'address' => 'Jl. Sudirman No. 456, Bandung',
-            'birth_date' => '2000-08-20',
-            'birth_place' => 'Bandung',
-            'institution' => 'Institut Teknologi Bandung',
-            'major' => 'Sistem Informasi',
-            'semester' => 7,
-            'gpa' => 3.67,
-            'email_verified_at' => now(),
-        ]);
-
-        User::create([
-            'name' => 'Budi Santoso',
-            'email' => 'budi.santoso@student.com',
-            'password' => Hash::make('password'),
-            'role' => 'user',
-            'phone' => '08567891234',
-            'address' => 'Jl. Gatot Subroto No. 789, Surabaya',
-            'birth_date' => '1999-12-10',
-            'birth_place' => 'Surabaya',
-            'institution' => 'Universitas Airlangga',
-            'major' => 'Teknik Komputer',
-            'semester' => 8,
-            'gpa' => 3.12,
-            'email_verified_at' => now(),
-        ]);
-
-        echo "Users seeded successfully!\n";
+    /**
+     * Create student users using factory
+     */
+    private function createStudentUsers(): void
+    {
+        // Create 30 student users using factory
+        User::factory(30)->student()->create();
     }
 }

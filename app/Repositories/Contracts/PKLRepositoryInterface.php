@@ -2,14 +2,14 @@
 
 namespace App\Repositories\Contracts;
 
-use App\Models\PKL;
+use App\Models\PosisiPKL;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface PKLRepositoryInterface
 {
     public function paginate(array $filters = [], int $perPage = 10): LengthAwarePaginator;
-    public function find(int $id): PKL;
-    public function create(array $data): PKL;
-    public function update(PKL $pkl, array $data): PKL;
-    public function delete(PKL $pkl): void;
+    public function find(int $id): PosisiPKL;
+    public function create(array $data): PosisiPKL;
+    public function update(PosisiPKL $posisiPkl, array $data): PosisiPKL;
+    public function delete(PosisiPKL $posisiPkl): void;
 }

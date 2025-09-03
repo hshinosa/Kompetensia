@@ -16,10 +16,11 @@ import PosisiPKLForm, { PosisiPKLData } from '@/components/PosisiPKLForm';
 interface ServerPosisiRecord {
   id:number;
   nama_posisi:string;
-  perusahaan:string;
+  perusahaan?:string;
   kategori?:string;
   deskripsi:string;
-  persyaratan:string; // newline separated
+  persyaratan:string | string[]; // can be string or array now
+  benefits?:string | string[]; // can be string or array
   lokasi:string; // mapping to wfh/wfo/hybrid display
   tipe:string; // WFH/WFO/Hybrid/Full-time/Part-time etc.
   durasi_bulan:number;
@@ -47,6 +48,10 @@ const PraktikKerjaLapanganPage: React.FC = () => {
   const [search, setSearch] = useState(props.filters?.search || '');
   const [statusFilter, setStatusFilter] = useState<string>(props.filters?.status || '');
   const [kategoriFilter, setKategoriFilter] = useState<string>(props.filters?.kategori || '');
+  // Client-side pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+
   const data = useMemo<PosisiPKLData[]>(() => raw.map(mapServer), [raw]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -59,6 +64,12 @@ const PraktikKerjaLapanganPage: React.FC = () => {
       (kategoriFilter ? item.kategoriPosisi === kategoriFilter : true)
     );
   }), [data, search, statusFilter, kategoriFilter]);
+  // Compute pagination values
+  const totalItems = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const paginatedData = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handleItemsPerPageChange = (n: number) => { setItemsPerPage(n); setCurrentPage(1); };
 
   const openCreate = () => { setEditing(null); setShowForm(true); };
   const openEdit = (row:PosisiPKLData) => { setEditing(row); setShowForm(true); };
@@ -75,12 +86,12 @@ const PraktikKerjaLapanganPage: React.FC = () => {
     return {
       id: r.id,
       namaPosisi: r.nama_posisi,
-  kategoriPosisi: r.kategori || r.perusahaan,
+      kategoriPosisi: r.kategori || r.perusahaan || 'Umum',
       durasi: r.durasi_bulan + ' Bulan',
       wfhWfoHybrid: workType,
       deskripsi: r.deskripsi,
-      requirements: r.persyaratan.split(/\n+/).filter(Boolean),
-      benefits: [],
+  requirements: Array.isArray(r.persyaratan) ? r.persyaratan : (r.persyaratan?.split(/\n+/).filter(Boolean) || []),
+  benefits: Array.isArray(r.benefits) ? r.benefits : (r.benefits?.split(/\n+/).filter(Boolean) || []),
       pesertaTerdaftar: r.jumlah_pendaftar,
       status,
       tanggalDibuat: r.created_at?.slice(0,10) || '',
@@ -183,9 +194,9 @@ const PraktikKerjaLapanganPage: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.length ? filtered.map((row, idx)=>(
+                  {paginatedData.length ? paginatedData.map((row, idx)=>(
                     <TableRow key={row.id} className="hover:bg-muted/50">
-                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell>{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
                       <TableCell className="font-medium max-w-[220px] truncate" title={row.namaPosisi}>{row.namaPosisi}</TableCell>
                       <TableCell className="hidden md:table-cell">{row.kategoriPosisi}</TableCell>
                       <TableCell className="hidden md:table-cell">{row.wfhWfoHybrid}</TableCell>
@@ -219,22 +230,18 @@ const PraktikKerjaLapanganPage: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
+            
           </CardContent>
         </Card>
-  {props.posisi?.meta && (
-          <Pagination
-            currentPage={props.posisi.meta.current_page}
-            totalPages={props.posisi.meta.last_page}
-            itemsPerPage={props.posisi.meta.per_page}
-            totalItems={props.posisi.meta.total}
-            onPageChange={(p)=>{
-              const url = new URL(window.location.href);
-              url.searchParams.set('page', String(p));
-              router.get(url.pathname + '?' + url.searchParams.toString(), {}, { preserveState:true, preserveScroll:true });
-            }}
-            onItemsPerPageChange={undefined}
-          />
-        )}
+        {/* Pagination controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          itemsPerPage={itemsPerPage}
+          totalItems={totalItems}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
       </div>
       <PosisiPKLForm isOpen={showForm} onClose={()=>{ setShowForm(false); setEditing(null); }} onSave={onSave} editData={editing} />
     </AppLayout>

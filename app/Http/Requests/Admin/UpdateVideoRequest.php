@@ -17,11 +17,10 @@ class UpdateVideoRequest extends FormRequest
             'nama_video' => 'required|string|max:255',
             'deskripsi' => 'required|string',
             'thumbnail' => 'nullable|image|max:2048',
-            'video_url' => 'required|url',
+                'video_url' => 'required|url',
             'durasi' => 'required|integer|min:1',
             // konsistensi
             'status' => 'required|in:Draft,Publish',
-            'uploader' => 'required|string|max:255',
             'featured' => 'boolean'
         ];
     }

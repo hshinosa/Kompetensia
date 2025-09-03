@@ -33,16 +33,15 @@ import Pagination from '@/components/Pagination';
 interface User {
     id: number;
     name: string;
+    full_name?: string;
     email: string;
     phone?: string;
     institution?: string;
     major?: string;
     semester?: number;
-}
-
-interface PKL {
-    id: number;
-    nama_program: string;
+    school_university?: string;
+    major_concentration?: string;
+    class_semester?: number;
 }
 
 interface Penilaian {
@@ -50,10 +49,25 @@ interface Penilaian {
     status_kelulusan: string;
 }
 
+interface PosisiPKL {
+    id: number;
+    nama_posisi: string;
+    kategori?: string;
+    deskripsi?: string;
+    persyaratan?: string[];
+    benefits?: string[];
+    lokasi?: string;
+    tipe?: string;
+    durasi_bulan?: number;
+    jumlah_pendaftar?: number;
+    status?: string;
+    created_by?: number;
+}
+
 interface PendaftaranPKL {
     id: number;
     user_id: number;
-    pkl_id: number;
+    posisi_pkl_id: number;
     status: string;
     tanggal_pendaftaran: string;
     tanggal_mulai: string;
@@ -63,7 +77,7 @@ interface PendaftaranPKL {
     semester: number;
     ipk: number;
     user: User;
-    pkl: PKL;
+    posisi_p_k_l?: PosisiPKL;  // Changed from pkl to posisiPKL to match model
     penilaian?: Penilaian;
 }
 
@@ -98,10 +112,10 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
     // Convert to display format and filter
     const filteredData = useMemo(() => {
         return pesertaData.filter(item =>
-            item.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.pkl.nama_program.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.program_studi.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.institusi_asal.toLowerCase().includes(searchQuery.toLowerCase())
+            (item.user.full_name || item.user.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.posisi_p_k_l?.nama_posisi || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.user.major_concentration || item.program_studi || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.user.school_university || item.institusi_asal || '').toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [searchQuery, pesertaData]);
 
@@ -174,8 +188,8 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                     <Users className="h-5 w-5 text-blue-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold">{totalPeserta}</div>
                                     <p className="text-sm text-muted-foreground">Total Peserta</p>
+                                    <div className="text-2xl font-bold">{totalPeserta}</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -187,8 +201,8 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                     <Clock className="h-5 w-5 text-yellow-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold">{sedangBerjalan}</div>
                                     <p className="text-sm text-muted-foreground">Sedang Berjalan</p>
+                                    <div className="text-2xl font-bold">{sedangBerjalan}</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -200,8 +214,8 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                     <CheckCircle className="h-5 w-5 text-green-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold">{lulus}</div>
                                     <p className="text-sm text-muted-foreground">Lulus</p>
+                                    <div className="text-2xl font-bold">{lulus}</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -213,8 +227,8 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                     <AlertCircle className="h-5 w-5 text-gray-600" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold">{belumDinilai}</div>
                                     <p className="text-sm text-muted-foreground">Belum Dinilai</p>
+                                    <div className="text-2xl font-bold">{belumDinilai}</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -254,18 +268,49 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                         <TableRow key={item.id}>
                                             <TableCell>
                                                 <div>
-                                                    <div className="font-medium">{item.user.name}</div>
+                                                    <div className="font-medium">{item.user.full_name || item.user.name}</div>
                                                     <div className="text-sm text-muted-foreground">{item.user.email}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="font-medium">{item.institusi_asal}</div>
-                                                    <div className="text-sm text-muted-foreground">{item.program_studi}</div>
+                                                    <div className="font-medium">{item.user.school_university || item.institusi_asal || 'Institusi tidak tersedia'}</div>
+                                                    <div className="text-sm text-muted-foreground">{item.user.major_concentration || item.program_studi || 'Program studi tidak tersedia'}</div>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>{item.pkl.nama_program}</TableCell>
-                                            <TableCell>Semester {item.semester}</TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <div className="font-medium">{item.posisi_p_k_l?.nama_posisi || 'Posisi tidak tersedia'}</div>
+                                                    {item.posisi_p_k_l?.kategori && (
+                                                        <div className="text-sm text-muted-foreground">{item.posisi_p_k_l.kategori}</div>
+                                                    )}
+                                                    {item.posisi_p_k_l?.lokasi && (
+                                                        <div className="text-sm text-muted-foreground">{item.posisi_p_k_l.lokasi}</div>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {(() => {
+                                                    const semester = item.user.class_semester || item.semester;
+                                                    if (!semester) return 'N/A';
+                                                    
+                                                    const semesterStr = semester.toString();
+                                                    
+                                                    // Jika mengandung "XII", "XI", atau "X" (SMK)
+                                                    if (semesterStr.includes('XII')) return 'XII';
+                                                    if (semesterStr.includes('XI')) return 'XI';
+                                                    if (semesterStr.includes('X')) return 'X';
+                                                    
+                                                    // Jika berupa angka 1-8 (kuliah)
+                                                    const semesterNum = parseInt(semesterStr);
+                                                    if (semesterNum >= 1 && semesterNum <= 8) {
+                                                        return `Semester ${semesterNum}`;
+                                                    }
+                                                    
+                                                    // Default fallback
+                                                    return semesterStr;
+                                                })()}
+                                            </TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusBadgeVariant(item)}>
                                                     {getStatusText(item)}
@@ -301,20 +346,22 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                             </TableBody>
                         </Table>
                     </CardContent>
-
-                    {/* Pagination */}
-                    {totalItems > 0 && (
-                        <div className="border-t">
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                itemsPerPage={itemsPerPage}
-                                totalItems={totalItems}
-                                onPageChange={handlePageChange}
-                                onItemsPerPageChange={handleItemsPerPageChange}
-                            />
-                        </div>
-                    )}
+                    <div className="p-4">
+                        {/* Pagination */}
+                        {totalItems > 0 && (
+                            <div className="border-t">
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    itemsPerPage={itemsPerPage}
+                                    totalItems={totalItems}
+                                    onPageChange={handlePageChange}
+                                    onItemsPerPageChange={handleItemsPerPageChange}
+                                />
+                            </div>
+                        )}
+                    </div>
+                    
                 </Card>
             </div>
         </AppLayout>

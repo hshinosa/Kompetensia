@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\SertifikasiController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\VideoController;
 use App\Http\Controllers\Admin\PKLController;
+use App\Http\Controllers\Admin\AsesorController;
 use App\Http\Controllers\Admin\PenilaianSertifikasiController;
 use App\Http\Controllers\Admin\UserManagementController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,10 @@ Route::middleware(['auth', 'verified','role:admin'])->group(function () {
     Route::get($formSertifikasi, [SertifikasiController::class, 'create'])->name('form-sertifikasi');
     Route::get($formSertifikasi.'/{id}', [SertifikasiController::class, 'edit'])->name('form-sertifikasi.edit');
     Route::get('/detail-sertifikasi/{id}', [SertifikasiController::class, 'show'])->name('detail-sertifikasi');
+
+    // Asesor routes
+    Route::resource('asesor', AsesorController::class);
+    Route::get('/asesor-search', [AsesorController::class, 'search'])->name('asesor.search');
 
     // Blog routes
     // Alias route so redirects using name 'admin.manajemen-blog' work and sidebar path /admin/manajemen-blog is valid

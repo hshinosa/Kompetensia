@@ -16,8 +16,7 @@ class PosisiPKLSeeder extends Seeder
             return;
         }
         $adminId = User::where('role','admin')->value('id') ?? 1;
-        $today = now();
-    DB::table('posisi_pkl')->insert($this->records($today, $adminId));
+    DB::table('posisi_pkl')->insert($this->records($adminId));
     }
 
     protected function shouldSeed(): bool
@@ -25,7 +24,7 @@ class PosisiPKLSeeder extends Seeder
         return Schema::hasTable('posisi_pkl') && DB::table('posisi_pkl')->count() === 0;
     }
 
-    protected function records($today, int $adminId): array
+    protected function records(int $adminId): array
     {
         return [
             $this->row(
@@ -45,7 +44,7 @@ class PosisiPKLSeeder extends Seeder
                     'Mentor berpengalaman',
                     'Flexible working hours'
                 ],
-                'Hybrid', 'Hybrid', 3, 3, 'Aktif', $today->copy()->addDays(7), $today->copy()->addDays(97), $adminId
+                'Hybrid', 3, 0, 'Aktif', $adminId
             ),
             $this->row(
                 'Frontend Developer',
@@ -64,7 +63,7 @@ class PosisiPKLSeeder extends Seeder
                     'Mentor berpengalaman',
                     'Flexible working hours'
                 ],
-                'Hybrid', 'Hybrid', 3, 3, 'Aktif', $today->copy()->addDays(7), $today->copy()->addDays(97), $adminId
+                'Hybrid', 3, 0, 'Aktif', $adminId
             ),
             $this->row(
                 'Backend Developer',
@@ -83,7 +82,7 @@ class PosisiPKLSeeder extends Seeder
                     'Mentor berpengalaman',
                     'Flexible working hours'
                 ],
-                'Hybrid', 'Hybrid', 3, 3, 'Aktif', $today->copy()->addDays(7), $today->copy()->addDays(97), $adminId
+                'Hybrid', 3, 0, 'Aktif', $adminId
             ),
             $this->row(
                 'Data Scientist',
@@ -102,7 +101,7 @@ class PosisiPKLSeeder extends Seeder
                     'Mentor berpengalaman',
                     'Flexible working hours'
                 ],
-                'Hybrid', 'Hybrid', 3, 3, 'Aktif', $today->copy()->addDays(7), $today->copy()->addDays(97), $adminId
+                'Hybrid', 3, 0, 'Aktif', $adminId
             ),
             $this->row(
                 'Machine Learning Engineer',
@@ -121,7 +120,7 @@ class PosisiPKLSeeder extends Seeder
                     'Mentor berpengalaman',
                     'Flexible working hours'
                 ],
-                'Hybrid', 'Hybrid', 3, 3, 'Aktif', $today->copy()->addDays(7), $today->copy()->addDays(97), $adminId
+                'Hybrid', 3, 0, 'Aktif', $adminId
             ),
             $this->row(
                 'AI Engineer',
@@ -140,7 +139,7 @@ class PosisiPKLSeeder extends Seeder
                     'Mentor berpengalaman',
                     'Flexible working hours'
                 ],
-                'Hybrid', 'Hybrid', 3, 3, 'Aktif', $today->copy()->addDays(7), $today->copy()->addDays(97), $adminId
+                'Hybrid', 3, 0, 'Aktif', $adminId
             )
             ];
     }
@@ -151,13 +150,10 @@ class PosisiPKLSeeder extends Seeder
         string $deskripsi,
         array $persyaratan,
         array $benefits,
-        string $lokasi,
         string $tipe,
         int $durasi,
         int $jumlah,
         string $status,
-        $mulai,
-        $selesai,
         int $createdBy
     ): array {
         return [
@@ -166,13 +162,10 @@ class PosisiPKLSeeder extends Seeder
             'deskripsi' => $deskripsi,
             'persyaratan' => json_encode($persyaratan),
             'benefits' => json_encode($benefits),
-            'lokasi' => $lokasi,
             'tipe' => $tipe,
             'durasi_bulan' => $durasi,
             'jumlah_pendaftar' => $jumlah,
             'status' => $status,
-            'tanggal_mulai' => $mulai,
-            'tanggal_selesai' => $selesai,
             'created_by' => $createdBy,
             'created_at' => now(),
             'updated_at' => now(),

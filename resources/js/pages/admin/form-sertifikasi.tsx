@@ -14,10 +14,11 @@ import { ArrowLeft, Plus, Edit, Trash2, Calendar, User, Save, GripVertical } fro
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import AsesorAutocomplete, { AsesorOption } from '@/components/AsesorAutocomplete';
 
 interface RawModul { judul:string; deskripsi:string; order?:number }
 interface RawBatch { nama_batch:string; tanggal_mulai:string; tanggal_selesai:string; status?:BatchItem['status'] }
-interface RawSertifikasi { id:number; nama_sertifikasi:string; jenis_sertifikasi:string; deskripsi:string; modul?:RawModul[]; batch?:RawBatch[]; nama_asesor?:string; jabatan_asesor?:string; instansi_asesor?:string; pengalaman_asesor?:string; tipe_sertifikat?:string[]; thumbnail_url?:string|null; foto_asesor_url?:string|null }
+interface RawSertifikasi { id:number; nama_sertifikasi:string; jenis_sertifikasi:string; deskripsi:string; modul?:RawModul[]; batch?:RawBatch[]; asesor_id?:number; tipe_sertifikat?:string[]; thumbnail_url?:string|null; asesor?: { id: number; nama_asesor: string; jabatan_asesor: string; instansi_asesor: string; foto_asesor_url: string | null }; }
 interface PageProps extends Record<string, unknown> { sertifikasi?: RawSertifikasi; isEdit?: boolean; }
 
 interface FormDataShape {
@@ -25,10 +26,11 @@ interface FormDataShape {
   jenis_sertifikasi: string;
   deskripsi: string;
   thumbnail: File | null;
+  asesor_id: number | null;
+  // Fields untuk asesor baru (manual input)
   nama_asesor: string;
   jabatan_asesor: string;
   instansi_asesor: string;
-  pengalaman_asesor: string;
   foto_asesor: File | null;
   tipe_sertifikat: string[];
 }
@@ -72,17 +74,29 @@ export default function FormSertifikasi() {
 
   const errors: Record<string,string> = (props as any).errors || {};
   const [saving,setSaving] = useState(false);
+  const [isCreatingNewAsesor, setIsCreatingNewAsesor] = useState(false);
+  const [selectedAsesor, setSelectedAsesor] = useState<AsesorOption | null>(
+    s?.asesor ? {
+      id: s.asesor.id,
+      name: s.asesor.nama_asesor,
+      label: s.asesor.nama_asesor,
+      jabatan: s.asesor.jabatan_asesor,
+      instansi: s.asesor.instansi_asesor,
+      foto_asesor_url: s.asesor.foto_asesor_url
+    } : null
+  );
   const [form,setForm] = useState<FormDataShape>({
     nama_sertifikasi: s?.nama_sertifikasi || '',
     jenis_sertifikasi: s?.jenis_sertifikasi || '',
     deskripsi: s?.deskripsi || '',
     thumbnail: null,
-    nama_asesor: s?.nama_asesor || '',
-    jabatan_asesor: s?.jabatan_asesor || '',
-    instansi_asesor: s?.instansi_asesor || '',
-    pengalaman_asesor: s?.pengalaman_asesor || '',
+    asesor_id: s?.asesor_id || null,
+    // Fields untuk asesor manual
+    nama_asesor: '',
+    jabatan_asesor: '',
+    instansi_asesor: '',
     foto_asesor: null,
-  tipe_sertifikat: Array.isArray(s?.tipe_sertifikat) ? (s?.tipe_sertifikat as string[]) : [],
+    tipe_sertifikat: Array.isArray(s?.tipe_sertifikat) ? s.tipe_sertifikat : [],
   });
 
   const [modul, setModul] = useState<ModulItem[]>(() => (s?.modul || []).map((m,i)=>({ id: Date.now()+i, judul:m.judul, deskripsi:m.deskripsi, order:m.order ?? i })));
@@ -130,30 +144,142 @@ export default function FormSertifikasi() {
 
   const handleSubmit = (e:React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    const fd = new FormData();
-    Object.entries(form).forEach(([k,val]) => {
-      if (Array.isArray(val)) {
-        val.forEach(v=> fd.append(`${k}[]`, v));
-      } else if (val instanceof File && val) {
-        fd.append(k, val);
-      } else if (['string','number','boolean'].includes(typeof val) && val !== undefined && val !== null) {
-        fd.append(k, String(val));
+    
+    // Client-side validation
+    let hasError = false;
+    
+    // Check basic fields
+    if (!form.nama_sertifikasi.trim()) {
+      alert('Nama sertifikasi harus diisi');
+      return;
+    }
+    
+    if (!form.jenis_sertifikasi) {
+      alert('Jenis sertifikasi harus dipilih');
+      return;
+    }
+    
+    if (!form.deskripsi.trim()) {
+      alert('Deskripsi harus diisi');
+      return;
+    }
+    
+    // Check asesor
+    if (isCreatingNewAsesor) {
+      if (!form.nama_asesor.trim()) {
+        alert('Nama asesor harus diisi');
+        return;
       }
+      if (!form.jabatan_asesor.trim()) {
+        alert('Jabatan asesor harus diisi');
+        return;
+      }
+      if (!form.instansi_asesor.trim()) {
+        alert('Instansi asesor harus diisi');
+        return;
+      }
+    } else if (!selectedAsesor || selectedAsesor.id <= 0) {
+      alert('Pilih asesor yang ada atau buat asesor baru');
+      return;
+    }
+    
+    // Check tipe sertifikat
+    if (form.tipe_sertifikat.length === 0) {
+      alert('Minimal pilih satu tipe sertifikat');
+      return;
+    }
+    
+    // Check modul
+    if (modul.length === 0) {
+      alert('Minimal tambahkan satu modul');
+      return;
+    }
+    
+    // Check batch
+    if (batch.length === 0) {
+      alert('Minimal atur satu batch');
+      return;
+    }
+    
+    setSaving(true);
+    
+    const fd = new FormData();
+    
+    // Basic sertifikasi data
+    fd.append('nama_sertifikasi', form.nama_sertifikasi);
+    fd.append('jenis_sertifikasi', form.jenis_sertifikasi);
+    fd.append('deskripsi', form.deskripsi);
+    
+    // Thumbnail
+    if (form.thumbnail) {
+      fd.append('thumbnail', form.thumbnail);
+    }
+    
+    // Asesor handling - conditional based on mode
+    if (isCreatingNewAsesor) {
+      // Mode buat asesor baru - kirim data asesor baru
+      fd.append('nama_asesor', form.nama_asesor);
+      fd.append('jabatan_asesor', form.jabatan_asesor);
+      fd.append('instansi_asesor', form.instansi_asesor);
+      if (form.foto_asesor) {
+        fd.append('foto_asesor', form.foto_asesor);
+      }
+      // Tidak perlu kirim asesor_id karena akan dibuat baru
+    } else if (selectedAsesor && selectedAsesor.id > 0) {
+      // Mode pilih asesor existing
+      fd.append('asesor_id', selectedAsesor.id.toString());
+      // Jika ada foto baru untuk asesor existing
+      if (form.foto_asesor) {
+        fd.append('foto_asesor', form.foto_asesor);
+      }
+    }
+    
+    // Tipe sertifikat
+    form.tipe_sertifikat.forEach(tipe => {
+      fd.append('tipe_sertifikat[]', tipe);
     });
-  [...modul].sort((a,b)=>a.order-b.order).forEach((m:ModulItem,i:number)=>{
+    
+    // Modul data
+    const sortedModul = [...modul].sort((a,b)=>a.order-b.order);
+    sortedModul.forEach((m:ModulItem,i:number)=>{
       fd.append(`modul[${i}][judul]`, m.judul);
       fd.append(`modul[${i}][deskripsi]`, m.deskripsi);
       fd.append(`modul[${i}][order]`, String(i));
     });
-  batch.forEach((b:BatchItem,i:number)=>{
+    
+    // Batch data
+    batch.forEach((b:BatchItem,i:number)=>{
       fd.append(`batch[${i}][nama_batch]`, b.nama_batch);
       fd.append(`batch[${i}][tanggal_mulai]`, b.tanggal_mulai);
       fd.append(`batch[${i}][tanggal_selesai]`, b.tanggal_selesai);
       fd.append(`batch[${i}][status]`, b.status);
     });
+    
+    // Debug: Log what we're sending
+    console.log('Form submission data:');
+    console.log('isCreatingNewAsesor:', isCreatingNewAsesor);
+    console.log('selectedAsesor:', selectedAsesor);
+    console.log('Form data entries:');
+    for (let pair of fd.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+    
     const url = isEdit && s?.id ? `/admin/sertifikasi/${s.id}?_method=PUT` : '/admin/sertifikasi';
-    router.post(url, fd, { forceFormData:true, onFinish:()=>setSaving(false), onSuccess:()=>{ if(isEdit){ window.scrollTo({ top:0, behavior:'smooth' }); } } });
+    
+    router.post(url, fd, { 
+      forceFormData: true, 
+      onFinish: () => setSaving(false), 
+      onSuccess: () => { 
+        if(isEdit){ 
+          window.scrollTo({ top:0, behavior:'smooth' }); 
+        } 
+      },
+      onError: (errors) => {
+        console.error('Form submission errors:', errors);
+        // Scroll to top to show validation errors
+        window.scrollTo({ top:0, behavior:'smooth' });
+      }
+    });
   };
 
   const toggleTipeSertifikat = (opt:string) => {
@@ -173,9 +299,64 @@ export default function FormSertifikasi() {
   };
 
   const renderFotoAsesor = () => {
-    if (form.foto_asesor) return <img src={URL.createObjectURL(form.foto_asesor)} alt="Foto Asesor" className="w-full h-full object-cover" />;
-    if (s?.foto_asesor_url) return <img src={s.foto_asesor_url} alt="Foto Asesor" className="w-full h-full object-cover" />;
-    return <div className="text-center text-gray-400"><div className="text-2xl mb-1">👤</div><div className="text-xs">Upload Foto</div></div>;
+    // Prioritaskan foto yang baru dipilih
+    if (form.foto_asesor) {
+      return <img src={URL.createObjectURL(form.foto_asesor)} alt="Foto Asesor" className="w-full h-full object-cover" />;
+    }
+    // Jika tidak ada foto baru dan sedang tidak membuat asesor baru, tampilkan foto yang sudah ada
+    if (!isCreatingNewAsesor && selectedAsesor?.foto_asesor_url) {
+      return <img src={selectedAsesor.foto_asesor_url} alt={selectedAsesor.name} className="w-full h-full object-cover" />;
+    }
+    // Placeholder
+    return (
+      <div className="text-center text-gray-400">
+        <div className="text-2xl mb-1">👤</div>
+        <div className="text-xs">
+          {isCreatingNewAsesor ? 'Upload Foto' : selectedAsesor ? 'Ganti Foto' : 'Foto Asesor'}
+        </div>
+      </div>
+    );
+  };
+
+  const handleAsesorChange = (asesorOption: AsesorOption | null) => {
+    if (asesorOption && asesorOption.id > 0) {
+      // Pilih asesor yang sudah ada
+      setSelectedAsesor(asesorOption);
+      setIsCreatingNewAsesor(false);
+      setForm(f => ({ 
+        ...f, 
+        asesor_id: asesorOption.id,
+        nama_asesor: '',
+        jabatan_asesor: '',
+        instansi_asesor: '',
+        foto_asesor: null // Reset foto saat ganti asesor
+      }));
+    } else {
+      // Mode buat asesor baru
+      setSelectedAsesor(null);
+      setIsCreatingNewAsesor(true);
+      setForm(f => ({ 
+        ...f, 
+        asesor_id: null,
+        nama_asesor: asesorOption?.name || '',
+        jabatan_asesor: '',
+        instansi_asesor: '',
+        foto_asesor: null
+      }));
+    }
+  };
+
+  const handleCreateNewAsesorClick = () => {
+    setSelectedAsesor(null);
+    setIsCreatingNewAsesor(true);
+    setForm(f => ({ 
+      ...f, 
+      asesor_id: null,
+      nama_asesor: '',
+      jabatan_asesor: '',
+      instansi_asesor: '',
+      foto_asesor: null // Reset foto saat buat asesor baru
+    }));
   };
 
   return (
@@ -283,21 +464,131 @@ export default function FormSertifikasi() {
             <CardContent className="space-y-4">
               <div className="flex gap-4 items-start">
                 <div className="space-y-2">
-                  <Label htmlFor="foto_asesor">Foto Asesor</Label>
-                  <button
-                    type="button"
-                    className="w-32 h-32 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center relative overflow-hidden hover:bg-gray-50 transition-colors"
-                    onClick={()=>document.getElementById('foto_asesor')?.click()}
-                  >
-                    {renderFotoAsesor()}
-                    <Input id="foto_asesor" type="file" accept="image/*" onChange={e=>setForm(f=>({...f, foto_asesor:e.target.files?.[0]||null}))} className="absolute inset-0 opacity-0 cursor-pointer" />
-                  </button>
+                  <Label>Foto Asesor</Label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="w-32 h-32 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden hover:bg-gray-50 transition-colors"
+                      onClick={() => {
+                        document.getElementById('foto_asesor')?.click();
+                      }}
+                    >
+                      {renderFotoAsesor()}
+                    </button>
+                    <Input 
+                      id="foto_asesor" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={e => setForm(f => ({...f, foto_asesor: e.target.files?.[0] || null}))} 
+                      className="hidden" 
+                    />
+                  </div>
                 </div>
                 <div className="flex-1 space-y-4">
-                  <div className="space-y-2"><Label htmlFor="nama_asesor">Nama Asesor</Label><Input id="nama_asesor" value={form.nama_asesor} onChange={e=>setForm(f=>({...f, nama_asesor:e.target.value}))} placeholder="Nama lengkap asesor" /></div>
-                  <div className="space-y-2"><Label htmlFor="jabatan_asesor">Jabatan</Label><Input id="jabatan_asesor" value={form.jabatan_asesor} onChange={e=>setForm(f=>({...f, jabatan_asesor:e.target.value}))} placeholder="Jabatan asesor" /></div>
-                  <div className="space-y-2"><Label htmlFor="instansi_asesor">Instansi</Label><Input id="instansi_asesor" value={form.instansi_asesor} onChange={e=>setForm(f=>({...f, instansi_asesor:e.target.value}))} placeholder="Instansi asesor" /></div>
-                  <div className="space-y-2"><Label htmlFor="pengalaman_asesor">Pengalaman (opsional)</Label><Textarea id="pengalaman_asesor" rows={3} value={form.pengalaman_asesor} onChange={e=>setForm(f=>({...f, pengalaman_asesor:e.target.value}))} placeholder="Ringkas pengalaman asesor" /></div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="nama_asesor">Nama Asesor <span className="text-red-500">*</span></Label>
+                      {!isCreatingNewAsesor && (
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleCreateNewAsesorClick}
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          + Buat Baru
+                        </Button>
+                      )}
+                    </div>
+                    {isCreatingNewAsesor ? (
+                      <Input 
+                        id="nama_asesor" 
+                        value={form.nama_asesor} 
+                        onChange={e => setForm(f => ({...f, nama_asesor: e.target.value}))} 
+                        placeholder="Masukkan nama asesor" 
+                        required
+                      />
+                    ) : (
+                      <>
+                        <AsesorAutocomplete
+                          value={selectedAsesor}
+                          onChange={handleAsesorChange}
+                          placeholder="Cari dan pilih asesor atau ketik nama baru..."
+                          error={errors.asesor_id || errors.nama_asesor}
+                          allowCreate={true}
+                        />
+                        {selectedAsesor && (
+                          <div className="text-sm text-green-600 bg-green-50 p-2 rounded border">
+                            ✓ Dipilih: {selectedAsesor.name}
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {(errors.asesor_id || errors.nama_asesor) && (
+                      <p className="text-xs text-red-600">{errors.asesor_id || errors.nama_asesor}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="jabatan_asesor">Jabatan {isCreatingNewAsesor && <span className="text-red-500">*</span>}</Label>
+                    <Input 
+                      id="jabatan_asesor" 
+                      value={isCreatingNewAsesor ? form.jabatan_asesor : (selectedAsesor?.jabatan || '')} 
+                      onChange={isCreatingNewAsesor ? (e => setForm(f => ({...f, jabatan_asesor: e.target.value}))) : undefined}
+                      readOnly={!isCreatingNewAsesor}
+                      placeholder={isCreatingNewAsesor ? "Masukkan jabatan asesor" : "Jabatan akan terisi otomatis"} 
+                      className={!isCreatingNewAsesor ? "bg-gray-50" : ""}
+                      required={isCreatingNewAsesor}
+                    />
+                    {errors.jabatan_asesor && (
+                      <p className="text-xs text-red-600">{errors.jabatan_asesor}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="instansi_asesor">Instansi {isCreatingNewAsesor && <span className="text-red-500">*</span>}</Label>
+                    <Input 
+                      id="instansi_asesor" 
+                      value={isCreatingNewAsesor ? form.instansi_asesor : (selectedAsesor?.instansi || '')} 
+                      onChange={isCreatingNewAsesor ? (e => setForm(f => ({...f, instansi_asesor: e.target.value}))) : undefined}
+                      readOnly={!isCreatingNewAsesor}
+                      placeholder={isCreatingNewAsesor ? "Masukkan instansi asesor" : "Instansi akan terisi otomatis"} 
+                      className={!isCreatingNewAsesor ? "bg-gray-50" : ""}
+                      required={isCreatingNewAsesor}
+                    />
+                    {errors.instansi_asesor && (
+                      <p className="text-xs text-red-600">{errors.instansi_asesor}</p>
+                    )}
+                  </div>
+                  {!isCreatingNewAsesor && selectedAsesor && (
+                    <div className="pt-2">
+                      <div className="text-sm text-muted-foreground">
+                        Pilih asesor yang sudah ada atau klik tombol "Buat Baru" untuk menambahkan asesor baru.
+                      </div>
+                    </div>
+                  )}
+                  {isCreatingNewAsesor && (
+                    <div className="pt-2">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setIsCreatingNewAsesor(false);
+                          setSelectedAsesor(null);
+                          setForm(f => ({ 
+                            ...f, 
+                            asesor_id: null,
+                            nama_asesor: '',
+                            jabatan_asesor: '',
+                            instansi_asesor: '',
+                            foto_asesor: null
+                          }));
+                        }}
+                        className="text-gray-600 border-gray-200 hover:bg-gray-50"
+                      >
+                        Pilih dari Database
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

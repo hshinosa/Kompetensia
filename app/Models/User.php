@@ -13,69 +13,66 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens;
 
     protected $fillable = [
-        // Original fields
+        // Basic user fields
         'name',
         'email',
         'password',
-        'phone',
+        'full_name',
+        
+        // Contact & personal info (sesuai migrasi)
+        'phone', // dari migrasi 2025_08_09 dan 2025_08_14
         'address',
+        'gender',
+        'place_of_birth',
+        'date_of_birth',
+        
+        // Legacy fields (masih ada di migrasi lama)
         'birth_date',
         'birth_place',
         'institution',
         'major',
         'semester',
-        'gpa',
         'role',
         'avatar',
         
-        // Enhanced personal data
-        'full_name',
-        'phone_number',
-        'gender',
-        'place_of_birth',
-        'date_of_birth',
-        
-        // PKL specific - Social Media
-        'instagram_handle',
-        'tiktok_handle',
-        
-        // PKL specific - Equipment & Transportation
-        'has_laptop',
-        'has_dslr',
-        'transportation',
-        
-        // PKL specific - Documents
-        'cv_path',
-        'portfolio_path',
-        
-        // PKL specific - Education
+        // Education (dari PKL migration)
         'school_university',
         'major_concentration',
         'class_semester',
         
-        // PKL specific - Internship Period
-        'internship_start_period',
-        'internship_end_period',
+        // Social Media
+        'instagram_handle',
+        'tiktok_handle',
         
-        // PKL specific - Skills & Goals
+        // Equipment & Skills
+        'has_laptop',
+        'has_dslr',
+        'has_video_review_experience',
+        'interested_in_content_creation',
+        'transportation',
+        
+        // Skills & Experience
         'skills_to_improve',
         'skills_to_contribute',
         
-        // PKL specific - Experience & Interest
-        'has_video_review_experience',
-        'interested_in_content_creation',
+        // Preferences & Goals
         'preferred_field',
         'preferred_field_type',
-        
-        // PKL specific - Company & Motivation
-        'has_viewed_company_profile',
         'motivation_level',
         'self_rating',
         
-        // PKL specific - Compliance
+        // Compliance & Agreement
         'is_smoker',
         'agrees_to_school_return_if_violation',
         'agrees_to_return_if_absent_twice',
+        
+        // Internship Period
+        'internship_start_period',
+        'internship_end_period',
+        
+        // Documents
+        'cv_path',
+        'portfolio_path',
         
         // System fields
         'is_active',
@@ -83,7 +80,8 @@ class User extends Authenticatable
         'last_login_ip',
         'account_status',
         'user_type',
-        'profile_completion_percentage'
+        'profile_completion_percentage',
+        'has_viewed_company_profile'
     ];
 
     protected $hidden = [
@@ -245,7 +243,7 @@ class User extends Authenticatable
     public function calculateProfileCompletion()
     {
         $requiredFields = [
-            'full_name', 'email', 'phone_number', 'gender', 'address',
+            'full_name', 'email', 'phone', 'gender', 'address',
             'place_of_birth', 'date_of_birth', 'school_university',
             'major_concentration', 'class_semester'
         ];

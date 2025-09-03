@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\PKL;
+use App\Models\PosisiPKL;
 use App\Repositories\Contracts\PKLRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -10,8 +10,13 @@ class PKLRepository implements PKLRepositoryInterface
 {
     public function paginate(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
-        $query = PKL::query();
-        if (!empty($filters['search'])) { $query->where('nama_program', 'like', '%'.$filters['search'].'%'); }
+        $query = PosisiPKL::query();
+        if (!empty($filters['search'])) {
+            $query->where(function($q) use ($filters) {
+                $q->where('nama_posisi', 'like', '%'.$filters['search'].'%')
+                  ->orWhere('kategori', 'like', '%'.$filters['search'].'%');
+            });
+        }
         if (!empty($filters['status'])) { $query->where('status', $filters['status']); }
         $sortBy = $filters['sort_by'] ?? 'created_at';
         $sortDirection = $filters['sort_direction'] ?? 'desc';
@@ -19,25 +24,25 @@ class PKLRepository implements PKLRepositoryInterface
         return $query->paginate($perPage);
     }
 
-    public function find(int $id): PKL
+    public function find(int $id): PosisiPKL
     {
-        return PKL::findOrFail($id);
+        return PosisiPKL::findOrFail($id);
     }
 
-    public function create(array $data): PKL
+    public function create(array $data): PosisiPKL
     {
-        $data['peserta_terdaftar'] = $data['peserta_terdaftar'] ?? 0;
-        return PKL::create($data);
+        $data['jumlah_pendaftar'] = $data['jumlah_pendaftar'] ?? 10;
+        return PosisiPKL::create($data);
     }
 
-    public function update(PKL $pkl, array $data): PKL
+    public function update(PosisiPKL $posisiPkl, array $data): PosisiPKL
     {
-        $pkl->update($data);
-        return $pkl;
+        $posisiPkl->update($data);
+        return $posisiPkl;
     }
 
-    public function delete(PKL $pkl): void
+    public function delete(PosisiPKL $posisiPkl): void
     {
-        $pkl->delete();
+        $posisiPkl->delete();
     }
 }

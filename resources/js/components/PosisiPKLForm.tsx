@@ -76,26 +76,54 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
   }, [isOpen, editData]);
 
   const handleSave = async () => {
-    if (!formData.namaPosisi || !formData.kategoriPosisi || !formData.deskripsi) {
-      alert('Mohon lengkapi field yang wajib diisi');
+    // Validate required fields: benefit, persyaratan, deskripsi, nama_posisi
+    if (!formData.namaPosisi || !formData.kategoriPosisi || !formData.deskripsi || 
+        !formData.requirements.trim() || !formData.benefits.trim()) {
+      // Remove 'dan Lokasi' from the alert message
+      alert('Mohon lengkapi semua field yang wajib diisi: Nama Posisi, Kategori, Deskripsi, Persyaratan, dan Benefit');
       return;
     }
 
     setIsLoading(true);
-    
+
+    // Prepare values to avoid nested ternaries
+    let tipeKerja: 'Remote' | 'Full-time' | 'Hybrid';
+    if (formData.wfhWfoHybrid === 'WFH') {
+      tipeKerja = 'Remote';
+    } else if (formData.wfhWfoHybrid === 'WFO') {
+      tipeKerja = 'Full-time';
+    } else {
+      tipeKerja = 'Hybrid';
+    }
+
+    let durasiBulan: number;
+    if (formData.durasi === 'Project-Based') {
+      durasiBulan = 1;
+    } else if (formData.durasi === '1 Tahun') {
+      durasiBulan = 12;
+    } else {
+      durasiBulan = parseInt(formData.durasi.replace(' Bulan', ''), 10) || 3;
+    }
+
+    let statusDb: 'Aktif' | 'Non-Aktif' | 'Penuh';
+    if (formData.status === 'Draf') {
+      statusDb = 'Non-Aktif';
+    } else if (formData.status === 'Ditutup') {
+      statusDb = 'Penuh';
+    } else {
+      statusDb = 'Aktif';
+    }
+
     // Convert UI form data to database format
     const dbData = {
       nama_posisi: formData.namaPosisi,
-      perusahaan: formData.kategoriPosisi,
       kategori: formData.kategoriPosisi,
       deskripsi: formData.deskripsi,
       persyaratan: formData.requirements,
-      lokasi: formData.wfhWfoHybrid === 'WFH' ? 'Remote' : formData.wfhWfoHybrid === 'WFO' ? 'Office' : 'Hybrid',
-      tipe: formData.wfhWfoHybrid === 'WFH' ? 'Remote' : formData.wfhWfoHybrid === 'WFO' ? 'Full-time' : 'Hybrid',
-      durasi_bulan: formData.durasi === 'Project-Based' ? 1 : parseInt(formData.durasi.replace(' Bulan', '').replace(' Tahun', '')) || 3,
-      status: formData.status === 'Draf' ? 'Non-Aktif' : formData.status === 'Ditutup' ? 'Penuh' : 'Aktif',
-      tanggal_mulai: new Date().toISOString().split('T')[0],
-      tanggal_selesai: new Date(Date.now() + (90 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0] // 3 months later
+      benefits: formData.benefits,
+      tipe: tipeKerja,
+      durasi_bulan: durasiBulan,
+      status: statusDb
     };
 
     try {
@@ -140,7 +168,7 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
         <div className="grid gap-6 py-6">
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="namaPosisi">Nama Posisi</Label>
+              <Label htmlFor="namaPosisi">Nama Posisi *</Label>
               <Input 
                 id="namaPosisi" 
                 value={formData.namaPosisi} 
@@ -149,7 +177,7 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="kategoriPosisi">Kategori Posisi</Label>
+              <Label htmlFor="kategoriPosisi">Kategori Posisi *</Label>
               <Select value={formData.kategoriPosisi} onValueChange={value=>setFormData({...formData, kategoriPosisi:value})}>
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih kategori posisi" />
@@ -167,7 +195,7 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
           
           <div className="grid grid-cols-3 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="durasi">Durasi</Label>
+              <Label htmlFor="durasi">Durasi *</Label>
               <Select value={formData.durasi} onValueChange={value=>setFormData({...formData, durasi:value})}>
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih durasi" />
@@ -181,7 +209,7 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wfhWfoHybrid">Tipe Kerja</Label>
+              <Label htmlFor="wfhWfoHybrid">Tipe Kerja *</Label>
               <Select value={formData.wfhWfoHybrid} onValueChange={(value: WorkType)=>setFormData({...formData, wfhWfoHybrid:value})}>
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih tipe kerja" />
@@ -208,8 +236,9 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
             </div>
           </div>
           
+          
           <div className="space-y-2">
-            <Label htmlFor="deskripsi">Deskripsi Posisi</Label>
+            <Label htmlFor="deskripsi">Deskripsi Posisi *</Label>
             <Textarea 
               id="deskripsi" 
               value={formData.deskripsi} 
@@ -221,7 +250,7 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
           
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="requirements">Requirements (pisahkan dengan enter)</Label>
+              <Label htmlFor="requirements">Persyaratan * (pisahkan dengan enter)</Label>
               <Textarea 
                 id="requirements" 
                 value={formData.requirements} 
@@ -231,7 +260,7 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="benefits">Benefits (pisahkan dengan enter)</Label>
+              <Label htmlFor="benefits">Benefits * (pisahkan dengan enter)</Label>
               <Textarea 
                 id="benefits" 
                 value={formData.benefits} 

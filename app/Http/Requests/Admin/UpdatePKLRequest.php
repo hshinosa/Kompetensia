@@ -10,16 +10,14 @@ class UpdatePKLRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama_program' => 'required|string|max:255',
+            'nama_posisi' => 'required|string|max:255',
             'kategori' => 'required|in:Developer,Kreatif,Marketing,Data Analyst,Quality Assurance,Lainnya',
-            'posisi' => 'nullable|string|max:255',
-            'tipe_kerja' => 'required|in:Full-time,Part-time,Remote,Hybrid',
-            'deskripsi' => 'nullable|string',
-            'durasi' => 'required|in:1 Bulan,2 Bulan,3 Bulan,4 Bulan,5 Bulan,6 Bulan',
+            'deskripsi' => 'required|string',
+            'persyaratan' => 'required|array',
+            'benefits' => 'required|array',
+            'tipe' => 'required|in:Full-time,Part-time,Remote,Hybrid',
+            'durasi_bulan' => 'required|in:1 Bulan,2 Bulan,3 Bulan,4 Bulan,5 Bulan,6 Bulan',
             'status' => 'required|in:Draft,Aktif,Selesai,Ditutup',
-            'lokasi' => 'nullable|string|max:255',
-            'persyaratan' => 'nullable|array',
-            'benefit' => 'nullable|array',
         ];
     }
 }

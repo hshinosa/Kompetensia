@@ -8,7 +8,7 @@ import { StatusNotificationModal } from '@/components/dashboard/StatusNotificati
 import Pagination from '@/components/Pagination';
 // Replaced legacy DashboardFilterBar with unified FilterDropdown
 import { type ActiveFilters } from '@/components/dashboard/FilterDropdown';
-import { Users, UserCheck, BookOpen, FileText, UserCog } from 'lucide-react';
+import { Users, UserCheck, BookOpen, FileText, UserCog, Video as VideoIcon } from 'lucide-react';
 import { type BreadcrumbItem } from '@/types';
 
 interface PendaftaranItem {
@@ -16,6 +16,7 @@ interface PendaftaranItem {
   original_id: number;
   user_id: number;
   nama: string;
+  full_name: string;
   jenis_pendaftaran: string;
   program: string;
   batch?: string | null;
@@ -40,7 +41,8 @@ export default function Dashboard() {
     id: p.id, 
     original_id: p.original_id,
     user_id: p.user_id,
-    nama: p.nama, 
+    nama: p.nama,
+    full_name: p.full_name, 
     jenis: p.jenis_pendaftaran, 
     program: p.program, 
     batch: p.batch, 
@@ -93,33 +95,18 @@ export default function Dashboard() {
       const data = await response.json();
       console.log('Received data:', data);
       
-      // Transform the backend data to match PendaftarData interface
-      const getStatus = () => {
-        if (data.status === 'pending' || data.status === 'Pending' || data.status === 'Pengajuan') return 'Pengajuan';
-        if (data.status === 'approved' || data.status === 'Disetujui') return 'Disetujui';
-        return 'Ditolak';
-      };
-      
+      // The backend now returns flattened data structure matching PendaftarData interface
+      // Just pass the data directly as it already matches our interface
       const transformedData: PendaftarData = {
-        user_id: data.user.id,
-        nama: data.user.name,
-        status: getStatus(),
-        biodata: {
-          nama: data.user.name,
-          tempatTanggalLahir: data.user.tempat_lahir && data.user.tanggal_lahir ? 
-            `${data.user.tempat_lahir}, ${data.user.tanggal_lahir}` : '-',
-          alamat: data.user.alamat || '-',
-          email: data.user.email,
-          noTelepon: data.user.phone || '-'
-        },
-        sertifikasi: {
-          namaSertifikasi: type === 'sertifikasi' ? data.sertifikasi?.nama_sertifikasi || '-' : data.pkl?.nama_program || '-',
-          jadwalSertifikasi: type === 'sertifikasi' && data.batch ? 
-            `${data.batch.tanggal_mulai_formatted || data.batch.tanggal_mulai} - ${data.batch.tanggal_selesai_formatted || data.batch.tanggal_selesai}` : '-',
-          batch: type === 'sertifikasi' ? data.batch?.nama_batch || '-' : '-',
-          assessor: type === 'sertifikasi' ? data.sertifikasi?.assessor || '-' : '-'
-        },
-        catatan_admin: data.catatan_admin || undefined
+        user_id: data.user_id,
+        nama: data.nama,
+        full_name: data.full_name,
+        jenis_pendaftaran: data.jenis_pendaftaran,
+        status: data.status,
+        biodata: data.biodata,
+        sertifikasi: data.sertifikasi,
+        pkl_info: data.pkl_info,
+        catatan_admin: data.catatan_admin
       };
       
       setSelectedRegistration(transformedData);
@@ -139,16 +126,33 @@ export default function Dashboard() {
     try {
       // Find the original registration to get type and id
       const originalRow = rows.find(r => r.nama === selectedRegistration.nama);
-      if (!originalRow) return;
+      if (!originalRow) {
+        throw new Error('Pendaftaran tidak ditemukan');
+      }
       
       const type = originalRow.jenis.toLowerCase().includes('sertifikasi') ? 'sertifikasi' : 'pkl';
       
+      console.log('Sending approval request:', {
+        type,
+        id: originalRow.original_id,
+        status,
+        alasan
+      });
+      
+      // Get CSRF token
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      if (!csrfToken) {
+        throw new Error('CSRF token tidak ditemukan');
+      }
+      
+      // Use fetch API for JSON response (not Inertia response)
       const response = await fetch(`/admin/pendaftaran/${type}/${originalRow.original_id}/approve`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json',
         },
         credentials: 'same-origin',
         body: JSON.stringify({
@@ -157,10 +161,28 @@ export default function Dashboard() {
         })
       });
       
-      const result = await response.json();
+      // Log response details
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        const text = await response.text();
+        console.error('Response text:', text);
+        throw new Error('Server mengembalikan response yang tidak valid');
+      }
+      
+      console.log('Response data:', result);
       
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to update registration status');
+        throw new Error(result.error || result.message || `Server error: ${response.status}`);
+      }
+      
+      if (!result.success) {
+        throw new Error(result.error || result.message || 'Failed to update registration status');
       }
       
       // Show success modal
@@ -168,7 +190,7 @@ export default function Dashboard() {
         isOpen: true,
         status: 'success',
         title: 'Berhasil!',
-        message: `Pendaftaran berhasil ${status.toLowerCase()}`
+        message: result.message || `Pendaftaran berhasil ${status.toLowerCase()}`
       });
       
     } catch (error) {
@@ -236,23 +258,39 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight font-heading">Dashboard</h1>
           <p className="text-muted-foreground">Ringkasan aktifitas terbaru</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-5">
-          <StatsCard label="Peserta Sertifikasi" value={stats?.peserta_sertifikasi ?? 0} icon={<Users className="h-5 w-5" />} iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10" />
-          <StatsCard label="Siswa PKL" value={stats?.siswa_pkl ?? 0} icon={<UserCheck className="h-5 w-5" />} iconColor="text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-400/10" />
-          <StatsCard label="Jumlah Sertifikasi Aktif" value={stats?.jumlah_sertifikasi ?? 0} icon={<BookOpen className="h-5 w-5" />} iconColor="text-indigo-600 bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-400/10" />
-          <StatsCard label="Konten Terbit" value={(stats?.total_blog ?? 0)+(stats?.total_video ?? 0)} icon={<FileText className="h-5 w-5" />} iconColor="text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-400/10" />
-          <button 
-            className="transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-lg"
+        <div className="grid gap-4 md:grid-cols-4">
+          <StatsCard 
+            label="Peserta Sertifikasi" 
+            value={stats?.peserta_sertifikasi ?? 0} 
+            icon={<Users className="h-5 w-5" />} 
+            iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10"
+            onClick={() => router.visit('/admin/sertifikasi-kompetensi')}
+            isClickable
+          />
+          <StatsCard 
+            label="Siswa PKL" 
+            value={stats?.siswa_pkl ?? 0} 
+            icon={<UserCheck className="h-5 w-5" />} 
+            iconColor="text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-400/10"
+            onClick={() => router.visit('/admin/praktik-kerja-lapangan')}
+            isClickable
+          />
+          <StatsCard 
+            label="Jumlah Sertifikasi Aktif" 
+            value={stats?.jumlah_sertifikasi ?? 0} 
+            icon={<BookOpen className="h-5 w-5" />} 
+            iconColor="text-indigo-600 bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-400/10"
+            onClick={() => router.visit('/admin/sertifikasi-kompetensi')}
+            isClickable
+          />
+          <StatsCard 
+            label="Total Users" 
+            value={stats?.total_users ?? 0} 
+            icon={<UserCog className="h-5 w-5" />} 
+            iconColor="text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-400/10"
             onClick={() => router.visit('/admin/user-management')}
-            title="Lihat semua user"
-          >
-            <StatsCard 
-              label="Total Users" 
-              value={stats?.total_users ?? 0} 
-              icon={<UserCog className="h-5 w-5" />} 
-              iconColor="text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-400/10" 
-            />
-          </button>
+            isClickable
+          />
         </div>
         <RecentRegistrationsTable 
           rows={paginated} 

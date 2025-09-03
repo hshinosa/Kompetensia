@@ -13,30 +13,22 @@ class PosisiPKL extends Model
 
     protected $fillable = [
         'nama_posisi',
-        'perusahaan',
-    'kategori',
+        'kategori',
         'deskripsi',
         'persyaratan',
-        'lokasi',
+        'benefits',
         'tipe',
         'durasi_bulan',
-    'gaji',
         'jumlah_pendaftar',
         'status',
-        'tanggal_mulai',
-        'tanggal_selesai',
-        'contact_person',
-        'contact_email',
-        'contact_phone',
         'created_by'
     ];
 
     protected $casts = [
-        'gaji' => 'decimal:2',
-    'durasi_bulan' => 'integer',
+        'persyaratan' => 'array',
+        'benefits' => 'array',
+        'durasi_bulan' => 'integer',
         'jumlah_pendaftar' => 'integer',
-        'tanggal_mulai' => 'date',
-        'tanggal_selesai' => 'date',
     ];
 
     public function creator()
@@ -46,7 +38,7 @@ class PosisiPKL extends Model
 
     public function pendaftaran()
     {
-        return $this->hasMany(PendaftaranPKL::class);
+        return $this->hasMany(PendaftaranPKL::class, 'posisi_pkl_id');
     }
 
     public function scopeActive($query)
@@ -57,10 +49,5 @@ class PosisiPKL extends Model
     public function scopeByTipe($query, $tipe)
     {
         return $query->where('tipe', $tipe);
-    }
-
-    public function scopeByPerusahaan($query, $perusahaan)
-    {
-        return $query->where('perusahaan', 'like', '%' . $perusahaan . '%');
     }
 }

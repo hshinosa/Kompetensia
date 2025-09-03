@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             // Add user_type column if not exists
             if (!Schema::hasColumn('users', 'user_type')) {
-                $table->enum('user_type', ['student', 'instructor', 'assessor', 'admin'])->default('student')->after('is_active');
+                $table->enum('user_type', ['student', 'assessor', 'admin'])->default('student')->after('is_active');
             }
             
             // Add account_status column if not exists

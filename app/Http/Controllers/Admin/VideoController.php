@@ -15,8 +15,11 @@ class VideoController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['search','status','featured','sort_by','sort_direction']);
-        $videos = $this->service->list($filters, 10);
+    // Collect filters and pagination parameters
+    $filters = $request->only(['search','status','featured','sort_by','sort_direction']);
+    $perPage = (int)($request->get('per_page') ?? 10);
+    $filters['per_page'] = $perPage;
+    $videos = $this->service->list($filters, $perPage);
         return Inertia::render('admin/manajemen-video', ['videos' => $videos, 'filters' => $filters]);
     }
 
@@ -27,7 +30,9 @@ class VideoController extends Controller
 
     public function store(StoreVideoRequest $request)
     {
-        $data = $request->validated();
+    $data = $request->validated();
+    // Automatically set uploader to authenticated user's name
+    $data['uploader'] = auth()->user()->name;
         if ($request->hasFile('thumbnail')) { $data['thumbnail'] = $request->file('thumbnail'); }
         $data['views'] = 0;
         $this->service->create($data);
@@ -48,7 +53,9 @@ class VideoController extends Controller
     public function update(UpdateVideoRequest $request, $id)
     {
         $video = $this->service->detail($id);
-        $data = $request->validated();
+    $data = $request->validated();
+    // Automatically update uploader to authenticated user's name
+    $data['uploader'] = auth()->user()->name;
         if ($request->hasFile('thumbnail')) { $data['thumbnail'] = $request->file('thumbnail'); }
         $this->service->update($video, $data);
         return redirect()->route('admin.manajemen-video')->with('success', 'Video berhasil diperbarui');

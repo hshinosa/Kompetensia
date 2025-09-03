@@ -21,7 +21,6 @@ class StoreVideoRequest extends FormRequest
             'durasi' => 'required|integer|min:1',
             // konsistensi dengan enum migrasi video (Draft)
             'status' => 'required|in:Draft,Publish',
-            'uploader' => 'required|string|max:255',
             'featured' => 'boolean'
         ];
     }

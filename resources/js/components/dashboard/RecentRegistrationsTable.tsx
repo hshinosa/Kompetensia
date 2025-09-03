@@ -12,6 +12,7 @@ export interface RegistrationRow {
   original_id: number;
   user_id: number;
   nama: string; 
+  full_name: string;
   jenis: string; 
   program: string; 
   batch?: string | null; 
@@ -102,15 +103,7 @@ export function RecentRegistrationsTable({
                   <TableCell>{idx + 1}</TableCell>
                   <TableCell className="font-medium max-w-[180px]">
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto font-medium text-left justify-start"
-                        onClick={() => router.visit(`/admin/users/${r.user_id}`)}
-                        title="Lihat profil user"
-                      >
-                        <User className="h-3 w-3 mr-1" />
-                        {r.nama}
-                      </Button>
+                      {r.full_name || r.nama}
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">{r.jenis}</TableCell>

@@ -19,17 +19,25 @@ import {
 
 interface User {
     id: number;
-    name: string;
+    full_name: string;
     email: string;
     phone?: string;
     institution?: string;
     major?: string;
     semester?: number;
+    school_university?: string;
+    major_concentration?: string;
+    class_semester?: string;
 }
 
-interface PKL {
+interface PosisiPKL {
     id: number;
-    nama_program: string;
+    nama_posisi: string;
+    kategori?: string;
+    deskripsi?: string;
+    lokasi?: string;
+    tipe?: string;
+    durasi_bulan?: number;
 }
 
 interface Penilaian {
@@ -42,17 +50,18 @@ interface Penilaian {
 interface PendaftaranPKL {
     id: number;
     user_id: number;
-    pkl_id: number;
+    posisi_pkl_id: number;
     status: string;
     tanggal_pendaftaran: string;
-    tanggal_mulai: string;
-    tanggal_selesai: string;
-    institusi_asal: string;
-    program_studi: string;
-    semester: number;
-    ipk: number;
-    user: User;
-    pkl: PKL;
+    tanggal_mulai?: string;
+    tanggal_selesai?: string;
+    institusi_asal?: string;
+    program_studi?: string;
+    semester?: number;
+    ipk?: number;
+    user?: User;
+    posisiPKL?: PosisiPKL;
+    posisi_p_k_l?: PosisiPKL; // Laravel serializes camelCase to snake_case
     penilaian?: Penilaian;
 }
 
@@ -233,12 +242,12 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/admin/dashboard' },
         { title: 'Penilaian PKL', href: '/admin/penilaian-pkl' },
-        { title: pendaftaran.user.name, href: '#' }
+        { title: pendaftaran.user?.full_name || 'Detail Peserta', href: '#' }
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Penilaian PKL - ${pendaftaran.user.name}`} />
+            <Head title={`Penilaian PKL - ${pendaftaran.user?.full_name || 'Detail Peserta'}`} />
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6 overflow-x-auto">
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
@@ -249,7 +258,7 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                             </Link>
                         </Button>
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">{pendaftaran.user.name}</h1>
+                            <h1 className="text-3xl font-bold tracking-tight">{pendaftaran.user?.full_name || 'Detail Peserta'}</h1>
                             <p className="text-muted-foreground font-serif">
                                 Detail penilaian dan progress PKL
                             </p>
@@ -266,23 +275,46 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                 <div className="space-y-4">
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Nama</Label>
-                                        <p className="text-sm">{pendaftaran.user.name}</p>
+                                        <p className="text-sm">{pendaftaran.user?.full_name || 'Nama tidak tersedia'}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Institusi</Label>
-                                        <p className="text-sm">{pendaftaran.institusi_asal}</p>
+                                        <p className="text-sm">{pendaftaran.institusi_asal || pendaftaran.user?.institution || pendaftaran.user?.school_university || 'Institusi tidak tersedia'}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Program Studi</Label>
-                                        <p className="text-sm">{pendaftaran.program_studi}</p>
+                                        <p className="text-sm">{pendaftaran.program_studi || pendaftaran.user?.major_concentration || pendaftaran.user?.major || 'Program studi tidak tersedia'}</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Periode PKL</Label>
-                                        <p className="text-sm">{pendaftaran.tanggal_mulai} - {pendaftaran.tanggal_selesai}</p>
+                                        <p className="text-sm">
+                                            {(() => {
+                                                if (pendaftaran.tanggal_mulai && pendaftaran.tanggal_selesai) {
+                                                    const posisiPKL = pendaftaran.posisiPKL || pendaftaran.posisi_p_k_l;
+                                                    const durasi = posisiPKL?.durasi_bulan;
+                                                    const isProjectBased = durasi === 1;
+                                                    
+                                                    // Format tanggal untuk menghilangkan timestamp
+                                                    const formatDate = (dateStr: string) => {
+                                                        return dateStr.split('T')[0]; // Ambil bagian sebelum T
+                                                    };
+                                                    
+                                                    const periode = `${formatDate(pendaftaran.tanggal_mulai)} - ${formatDate(pendaftaran.tanggal_selesai)}`;
+                                                    return isProjectBased ? `${periode} (Project Based)` : periode;
+                                                }
+                                                return pendaftaran.status === 'Disetujui' 
+                                                    ? 'Periode akan ditentukan setelah persetujuan'
+                                                    : 'Periode belum ditentukan';
+                                            })()}
+                                        </p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Program PKL</Label>
-                                        <p className="text-sm">{pendaftaran.pkl.nama_program}</p>
+                                        <p className="text-sm">{(pendaftaran.posisiPKL || pendaftaran.posisi_p_k_l)?.nama_posisi || 'Program tidak tersedia'}</p>
+                                    </div>
+                                    <div>
+                                        <Label className="text-sm font-medium text-muted-foreground">Kelas/Semester</Label>
+                                        <p className="text-sm">{pendaftaran.user?.class_semester || (pendaftaran.semester ? `Semester ${pendaftaran.semester}` : 'Kelas/Semester tidak tersedia')}</p>
                                     </div>
                                 </div>
                             </CardContent>

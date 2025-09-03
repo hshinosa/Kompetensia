@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\UpdatePKLRequest;
 use App\Http\Requests\Admin\StorePenilaianPKLRequest;
 use App\Services\PKLService;
 use App\Services\PenilaianPKLService;
-use App\Models\PKL;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\PendaftaranPKL;
@@ -25,26 +24,35 @@ class PKLController extends Controller
         // Existing program PKL list (if still used elsewhere on the page or future use)
         $pkl = $this->service->list($filters, 10);
 
-        // Posisi PKL list for the table on the page
-        $posisiQuery = PosisiPKL::query();
+        // Posisi PKL list for the table on the page - dengan count hanya pendaftar yang disetujui
+        $posisiQuery = PosisiPKL::query()->withCount([
+            'pendaftaran as jumlah_pendaftar_disetujui' => function($query) {
+                $query->where('status', 'Disetujui');
+            }
+        ]);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $posisiQuery->where(function($q) use ($search) {
                 $q->where('nama_posisi','like',"%{$search}%")
-                  ->orWhere('perusahaan','like',"%{$search}%");
+                  ->orWhere('kategori','like',"%{$search}%");
             });
         }
         if (!empty($filters['status'])) {
             $posisiQuery->where('status', $filters['status']);
         }
 
-        // For now kategori filter not implemented because we treat 'perusahaan' as kategori in UI temporarily.
-
-    $perPage = 8;
+        $perPage = 8;
         $posisiPaginator = $posisiQuery->latest()->paginate($perPage)->appends($request->query());
+        
+        // Map data dan override jumlah_pendaftar dengan count hanya yang disetujui
+        $posisiData = $posisiPaginator->getCollection()->map(function ($posisi) {
+            $posisi->jumlah_pendaftar = $posisi->jumlah_pendaftar_disetujui;
+            return $posisi;
+        });
+        
         $posisi = [
-            'data' => $posisiPaginator->items(),
+            'data' => $posisiData,
             'meta' => [
                 'current_page' => $posisiPaginator->currentPage(),
                 'last_page' => $posisiPaginator->lastPage(),
@@ -68,7 +76,8 @@ class PKLController extends Controller
     public function store(StorePKLRequest $request)
     {
         $data = $request->validated();
-        $data['peserta_terdaftar'] = 0;
+        $data['jumlah_pendaftar'] = 0;
+        $data['created_by'] = auth()->id();
         $this->service->create($data);
         return redirect()->route('admin.praktik-kerja-lapangan')->with('success', 'Program PKL berhasil dibuat');
     }
@@ -101,10 +110,10 @@ class PKLController extends Controller
 
     public function penilaianIndex()
     {
-        $pendaftaran = PendaftaranPKL::with(['user', 'pkl', 'posisiPKL', 'penilaian'])
+        $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])
             ->approved()
             ->latest()
-            ->paginate(10);
+            ->paginate(5);
         return Inertia::render('admin/penilaian-pkl', ['pendaftaran' => $pendaftaran]);
     }
 
@@ -125,11 +134,11 @@ class PKLController extends Controller
             $search = $request->search;
             $posisiQuery->where(function($q) use ($search) {
                 $q->where('nama_posisi', 'like', '%' . $search . '%')
-                  ->orWhere('perusahaan', 'like', '%' . $search . '%');
+                  ->orWhere('kategori', 'like', '%' . $search . '%');
             });
         }
 
-        $posisi = $posisiQuery->latest()->paginate(10);
+        $posisi = $posisiQuery->latest()->paginate(5);
         
         return Inertia::render('admin/penilaian-pkl-overview', [
             'posisi' => $posisi,
@@ -139,7 +148,7 @@ class PKLController extends Controller
 
     public function penilaianShow($id)
     {
-        $pendaftaran = PendaftaranPKL::with(['user', 'pkl', 'posisiPKL', 'penilaian'])->findOrFail($id);
+        $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])->findOrFail($id);
         return Inertia::render('admin/detail-penilaian-pkl', ['pendaftaran' => $pendaftaran]);
     }
 
@@ -151,23 +160,24 @@ class PKLController extends Controller
 
     public function apiIndex(Request $request)
     {
-        $query = PKL::withCount('pendaftaran');
+        $query = PosisiPKL::withCount('pendaftaran');
         if ($request->has('search')) { $query->where('nama_program', 'like', '%' . $request->search . '%'); }
         if ($request->has('status')) { $query->where('status', $request->status); }
-        return response()->json($query->paginate($request->get('per_page', 10)));
+        return response()->json($query->paginate($request->get('per_page', 5)));
     }
 
     public function apiStore(StorePKLRequest $request)
     {
         $validated = $request->validated();
-        $validated['peserta_terdaftar'] = 0;
-        $pkl = PKL::create($validated);
+        $validated['jumlah_pendaftar'] = 0;
+        $validated['created_by'] = auth()->id();
+        $pkl = PosisiPKL::create($validated);
         return response()->json(['message' => 'Program PKL berhasil dibuat', 'data' => $pkl], 201);
     }
 
     public function apiUpdate(UpdatePKLRequest $request, $id)
     {
-        $pkl = PKL::findOrFail($id);
+        $pkl = PosisiPKL::findOrFail($id);
         $validated = $request->validated();
         $pkl->update($validated);
         return response()->json(['message' => 'Program PKL berhasil diperbarui', 'data' => $pkl]);
@@ -205,32 +215,37 @@ class PKLController extends Controller
     public function showPosisi($id)
     {
         $posisi = PosisiPKL::with(['pendaftaran.user', 'creator'])->findOrFail($id);
+        
+        // Ensure persyaratan and benefit are arrays for consistent frontend handling
+        if (is_string($posisi->persyaratan)) {
+            $posisi->persyaratan = json_decode($posisi->persyaratan, true) ?: array_filter(explode("\n", $posisi->persyaratan));
+        }
+        
+            if (is_string($posisi->benefits)) {
+                $posisi->benefits = json_decode($posisi->benefits, true) ?: array_filter(explode("\n", $posisi->benefits));
+        }
+        
         return response()->json($posisi);
     }
 
     private function validatePosisiData(Request $request): array
     {
-        $validated = $request->validate([
+        // Validate basic fields; benefits and persyaratan as newline-separated strings
+        $data = $request->validate([
             'nama_posisi' => 'required|string|max:255',
-            'perusahaan' => 'required|string|max:255',
             'kategori' => 'nullable|string|max:255',
             'deskripsi' => 'required|string',
             'persyaratan' => 'required|string',
-            'lokasi' => 'required|string|max:255',
+            'benefits' => 'required|string',
             'tipe' => 'required|string|max:255',
             'durasi_bulan' => 'required|integer|min:1|max:12',
             'status' => 'required|in:Aktif,Non-Aktif,Penuh',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after:tanggal_mulai'
         ]);
 
-        // Set default values for removed fields
-        $validated['gaji'] = 0;
-        $validated['jumlah_pendaftar'] = 10; // Default quota
-        $validated['contact_person'] = null;
-        $validated['contact_email'] = null;
-        $validated['contact_phone'] = null;
-
-        return $validated;
+    // Split persyaratan and benefits into arrays for Eloquent cast
+    $data['persyaratan'] = array_filter(explode("\n", $data['persyaratan']));
+    $data['benefits'] = array_filter(explode("\n", $data['benefits']));
+        
+    return $data;
     }
 }

@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, useMemo, ChangeEvent } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit, Trash2, MoreVertical, Video as VideoIcon, Eye, User, Play } from 'lucide-react';
+import Pagination from '@/components/Pagination';
+import { VideoFilterDropdown } from '@/components/VideoFilterDropdown';
 
 interface VideoItem {
   id: number;
@@ -24,6 +26,7 @@ interface VideoItem {
   link_video?: string | null;
   status: string;
   penulis: string;
+  durasi: number;
   featured: boolean;
   views: number;
   created_at: string;
@@ -46,10 +49,30 @@ export default function ManajemenVideo() {
   const { props } = usePage();
   const videos = (props as PageProps).videos;
   const filters = (props as PageProps).filters || {};
-  const data: VideoItem[] = videos && Array.isArray(videos.data) ? videos.data : [];
+  // Prepare raw video records and map to UI model
+  const rawVideos = videos?.data ?? [];
+  const data: VideoItem[] = useMemo(() => rawVideos.map(v => ({
+    id: v.id,
+    judul: (v as any).nama_video,
+    deskripsi: v.deskripsi,
+    thumbnail: v.thumbnail ?? null,
+    link_video: (v as any).video_url ?? null,
+    durasi: (v as any).durasi ?? 1,
+    status: v.status,
+    penulis: (v as any).uploader,
+    featured: v.featured,
+    views: v.views,
+    created_at: v.created_at,
+    updated_at: v.updated_at,
+  })), [rawVideos]);
 
   const [search, setSearch] = useState((filters as any).search || '');
+  const [activeFilters, setActiveFilters] = useState({
+    status: filters.status || '',
+    featured: filters.featured ? String(filters.featured) : ''
+  });
   const [showForm, setShowForm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editing, setEditing] = useState<VideoItem | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState<VideoItem | null>(null);
@@ -58,17 +81,30 @@ export default function ManajemenVideo() {
     deskripsi: '',
     thumbnail: null as File | null,
     link_video: '',
+    durasi: 1,
     status: 'Draft',
-    penulis: 'Admin',
     featured: false
   });
   const [showVideoPreview, setShowVideoPreview] = useState(false);
 
-  useEffect(()=>{ const t = setTimeout(()=>{ router.get('/admin/manajemen-video', { search }, { preserveState:true, replace:true }); },400); return ()=>clearTimeout(t); },[search]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      // Apply search with current filters and reset to first page
+      router.get('/admin/manajemen-video', { ...filters, search, page: 1 }, { preserveState: true, replace: true });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const total = videos?.meta?.total ?? 0;
   const publishCount = data.filter(v=>v.status==='Publish').length;
   const draftCount = data.filter(v=>v.status==='Draft').length;
+
+  // Client-side pagination like dashboard
+  const [page, setPage] = React.useState(1);
+  const [perPage, setPerPage] = React.useState(10);
+  const totalPages = Math.max(1, Math.ceil(data.length / perPage));
+  React.useEffect(() => { if (page > totalPages) setPage(1); }, [totalPages, page]);
+  const paginatedData = data.slice((page - 1) * perPage, page * perPage);
 
   const extractYouTubeVideoId = (url: string): string | null => {
     if(!url) return null;
@@ -81,18 +117,29 @@ export default function ManajemenVideo() {
 
   useEffect(()=>{ setShowVideoPreview(isValidYouTubeUrl(form.link_video)); },[form.link_video]);
 
-  const openCreate = ()=> { setEditing(null); setForm({ judul:'', deskripsi:'', thumbnail:null, link_video:'', status:'Draft', penulis:'Admin', featured:false }); setShowForm(true); };
-  const openEdit = (v:VideoItem)=> { setEditing(v); setForm({ judul:v.judul, deskripsi:v.deskripsi, thumbnail:null, link_video:v.link_video||'', status:v.status, penulis:v.penulis, featured:v.featured }); setShowForm(true); };
+  const openCreate = ()=> { setEditing(null); setForm({ judul:'', deskripsi:'', thumbnail:null, link_video:'', durasi:1, status:'Draft', featured:false }); setShowForm(true); };
+  const openEdit = (v:VideoItem)=> { setEditing(v); setForm({ judul:v.judul, deskripsi:v.deskripsi, thumbnail:null, link_video:v.link_video||'', durasi:v.durasi, status:v.status, featured:v.featured }); setShowForm(true); };
   const openDelete = (v:VideoItem)=> { setDeleting(v); setShowDelete(true); };
 
   const submitForm = () => {
-    const data: any = { ...form };
-    if(form.thumbnail) data.thumbnail = form.thumbnail;
-    if (editing) {
-      router.post(`/admin/video/${editing.id}`, { ...data, _method:'PUT' }, { onSuccess: ()=> setShowForm(false) });
-    } else {
-      router.post('/admin/video', data, { onSuccess: ()=> setShowForm(false) });
-    }
+    setIsSaving(true);
+    // Map form fields to request payload
+    const payload: any = {
+      nama_video: form.judul,
+      deskripsi: form.deskripsi,
+      video_url: form.link_video,
+      durasi: form.durasi,
+      status: form.status,
+      featured: form.featured,
+    };
+    if (form.thumbnail) payload.thumbnail = form.thumbnail;
+    const url = editing ? `/admin/video/${editing.id}` : '/admin/video';
+    const options: any = {
+      onSuccess: () => setShowForm(false),
+      onFinish: () => setIsSaving(false),
+      preserveState: true,
+    };
+    router.post(url, editing ? { ...payload, _method: 'PUT' } : payload, options);
   };
 
   const confirmDelete = () => {
@@ -124,10 +171,20 @@ export default function ManajemenVideo() {
 
         <Card>
           <CardHeader>
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <CardTitle className="font-heading">Daftar Video</CardTitle>
-              <div className="flex items-center gap-2">
-                <SearchBar value={search} onChange={setSearch} placeholder="Cari video..." className="w-64" />
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <CardTitle className="text-base font-semibold">Daftar Video</CardTitle>
+              <div className="flex gap-2 items-center flex-wrap">
+                <SearchBar value={search} onChange={setSearch} placeholder="Cari video..." />
+                <VideoFilterDropdown
+                  activeFilters={activeFilters}
+                  onFiltersChange={(newFilters) => {
+                    setActiveFilters(newFilters);
+                    const params: Record<string, any> = { ...filters, search, page: 1 };
+                    if (newFilters.status) params.status = newFilters.status;
+                    if (newFilters.featured && newFilters.featured !== '') params.featured = newFilters.featured === 'true';
+                    router.get('/admin/manajemen-video', params, { preserveState: true, replace: true });
+                  }}
+                />
               </div>
             </div>
           </CardHeader>
@@ -143,14 +200,14 @@ export default function ManajemenVideo() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.length ? data.map(v => (
+                {paginatedData.length ? paginatedData.map(v => (
                   <TableRow key={v.id}>
                     <TableCell>
                       <div className="font-medium flex flex-col gap-1">
                         <div className="flex items-center gap-2"><VideoIcon className="h-4 w-4 text-purple-500" /> {v.judul}</div>
                         <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs">{v.deskripsi}</div>
                         {v.link_video && isValidYouTubeUrl(v.link_video) && (
-                          <div className="text-[10px] inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded">
+                          <div className="text-[10px] inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 rounded">
                             <Play className="h-3 w-3" /> YouTube
                           </div>
                         )}
@@ -178,14 +235,40 @@ export default function ManajemenVideo() {
           </CardContent>
         </Card>
 
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          itemsPerPage={perPage}
+          totalItems={data.length}
+          onPageChange={setPage}
+          onItemsPerPageChange={setPerPage}
+        />
+
         {/* Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogContent className="max-w-none sm:max-w-[90vw] lg:max-w-[960px] w-[92vw]">
-            <DialogHeader><DialogTitle>{editing ? 'Edit Video' : 'Video Baru'}</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>{editing ? 'Edit Video' : 'Video Baru'}</DialogTitle>
+            </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="judul">Judul</Label>
-                <Input id="judul" value={form.judul} onChange={e=>setForm(f=>({...f,judul:e.target.value}))} />
+              {/* Title and Status on one line */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="judul">Judul</Label>
+                  <Input id="judul" value={form.judul} onChange={e=>setForm(f=>({...f,judul:e.target.value}))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={form.status} onValueChange={v=>setForm(f=>({...f, status: v}))}>
+                    <SelectTrigger className="w-full h-8">
+                      <SelectValue placeholder="Pilih status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Draft">Draft</SelectItem>
+                      <SelectItem value="Publish">Publish</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="deskripsi">Deskripsi</Label>
@@ -195,23 +278,7 @@ export default function ManajemenVideo() {
                 <Label htmlFor="link_video">Link YouTube</Label>
                 <Input id="link_video" value={form.link_video} onChange={e=>setForm(f=>({...f,link_video:e.target.value}))} placeholder="https://youtube.com/watch?v=..." />
                 {form.link_video && !isValidYouTubeUrl(form.link_video) && <p className="text-xs text-red-500">Link YouTube tidak valid</p>}
-                {showVideoPreview && form.link_video && <div className="mt-2 aspect-video rounded overflow-hidden bg-muted"><iframe src={getYouTubeEmbedUrl(form.link_video)} className="w-full h-full" allowFullScreen title="Preview"/></div>}
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label>Status</Label>
-                  <Select value={form.status} onValueChange={v=>setForm(f=>({...f,status:v}))}>
-                    <SelectTrigger><SelectValue placeholder="Pilih status"/></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Draft">Draft</SelectItem>
-                      <SelectItem value="Publish">Publish</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label>Penulis</Label>
-                  <Input value={form.penulis} onChange={e=>setForm(f=>({...f,penulis:e.target.value}))} />
-                </div>
+                {showVideoPreview && form.link_video && <div className="mt-2 rounded overflow-hidden bg-muted"><iframe src={getYouTubeEmbedUrl(form.link_video)} className="w-full h-100" allowFullScreen title="Preview"/></div>}
               </div>
               <div className="flex items-center gap-2">
                 <input id="featured" type="checkbox" checked={form.featured} onChange={e=>setForm(f=>({...f,featured:e.target.checked}))} className="h-4 w-4" />

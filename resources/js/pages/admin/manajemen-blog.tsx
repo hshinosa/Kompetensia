@@ -17,6 +17,8 @@ import RichTextEditor from '@/components/RichTextEditor';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit, Trash2, MoreVertical, FileText, User, Star } from 'lucide-react';
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
+import Pagination from '@/components/Pagination';
+import { BlogFilterDropdown } from '@/components/BlogFilterDropdown';
 
 interface Blog {
   id: number;
@@ -53,6 +55,11 @@ export default function ManajemenBlog() {
   const filters = (props as any).filters || {};
   const initialData: Blog[] = blogs?.data || [];
   const [search, setSearch] = useState(filters.search || '');
+  const [activeFilters, setActiveFilters] = useState({
+    status: filters.status || '',
+    jenis_konten: filters.jenis_konten || '',
+    featured: filters.featured ? String(filters.featured) : ''
+  });
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Blog | null>(null);
   const [showDelete, setShowDelete] = useState(false);
@@ -75,7 +82,20 @@ export default function ManajemenBlog() {
   const publishCount = initialData.filter(b => b.status === 'Publish').length;
   const draftCount = initialData.filter(b => b.status === 'Draft').length;
 
-  useEffect(()=>{ const t = setTimeout(()=>{ router.get('/admin/manajemen-blog', { search }, { preserveState: true, replace: true }); }, 350); return ()=>clearTimeout(t); },[search]);
+  // Client-side pagination like dashboard
+  const [page, setPage] = React.useState(1);
+  const [perPage, setPerPage] = React.useState(10);
+  const totalPages = Math.max(1, Math.ceil(initialData.length / perPage));
+  React.useEffect(() => { if (page > totalPages) setPage(1); }, [totalPages, page]);
+  const paginatedData = initialData.slice((page - 1) * perPage, page * perPage);
+
+  useEffect(()=>{
+    const t = setTimeout(()=>{
+      // Apply search with current filters and reset to first page
+      router.get('/admin/manajemen-blog', { ...filters, search, page: 1 }, { preserveState: true, replace: true });
+    }, 350);
+    return ()=>clearTimeout(t);
+  },[search]);
 
   const openCreate = ()=> { setEditing(null); setForm({ nama_artikel:'', jenis_konten:'Blog', deskripsi:'', thumbnail:null, konten:'', status:'Draft', penulis:'Admin', featured:false, meta_title:'', meta_description:'' }); setShowForm(true); };
   const openEdit = (b:Blog)=> { setEditing(b); setForm({ nama_artikel:b.nama_artikel, jenis_konten:b.jenis_konten, deskripsi:b.deskripsi, thumbnail:null, konten:b.konten, status:b.status, penulis:b.penulis, featured:b.featured, meta_title:b.meta_title||'', meta_description:b.meta_description||'' }); setShowForm(true); };
@@ -120,10 +140,21 @@ export default function ManajemenBlog() {
 
         <Card>
           <CardHeader>
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <CardTitle className="font-heading">Daftar Artikel Blog</CardTitle>
-              <div className="flex items-center gap-2">
-                <SearchBar value={search} onChange={setSearch} placeholder="Cari artikel..." className="w-64" />
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <CardTitle className="text-base font-semibold">Daftar Artikel Blog</CardTitle>
+              <div className="flex gap-2 items-center flex-wrap">
+                <SearchBar value={search} onChange={setSearch} placeholder="Cari artikel..." />
+                <BlogFilterDropdown
+                  activeFilters={activeFilters}
+                  onFiltersChange={(newFilters) => {
+                    setActiveFilters(newFilters);
+                    const params = { ...filters, search, page: 1 };
+                    if (newFilters.status) params.status = newFilters.status;
+                    if (newFilters.jenis_konten) params.jenis_konten = newFilters.jenis_konten;
+                    if (newFilters.featured && newFilters.featured !== '') params.featured = newFilters.featured === 'true';
+                    router.get('/admin/manajemen-blog', params, { preserveState: true, replace: true });
+                  }}
+                />
               </div>
             </div>
           </CardHeader>
@@ -139,7 +170,7 @@ export default function ManajemenBlog() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {initialData.length ? initialData.map(b => (
+                {paginatedData.length ? paginatedData.map(b => (
                   <TableRow key={b.id}>
                     <TableCell>
                       <div className="font-medium flex items-center gap-2">
@@ -167,6 +198,15 @@ export default function ManajemenBlog() {
             </Table>
           </CardContent>
         </Card>
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          itemsPerPage={perPage}
+          totalItems={initialData.length}
+          onPageChange={setPage}
+          onItemsPerPageChange={setPerPage}
+        />
 
         {/* Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>

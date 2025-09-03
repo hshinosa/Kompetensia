@@ -18,8 +18,11 @@ class BlogController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['search','jenis_konten','status','featured','sort_by','sort_direction']);
-        $blogs = $this->service->list($filters, 10);
+    // Collect filters and pagination parameters
+    $filters = $request->only(['search','jenis_konten','status','featured','sort_by','sort_direction']);
+    $perPage = (int)($request->get('per_page') ?? 10);
+    $filters['per_page'] = $perPage;
+    $blogs = $this->service->list($filters, $perPage);
         return Inertia::render('admin/manajemen-blog', ['blogs' => $blogs, 'filters' => $filters]);
     }
 
