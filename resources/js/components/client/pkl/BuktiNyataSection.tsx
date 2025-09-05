@@ -11,34 +11,36 @@ export default function BuktiNyataSection() {
   ];
 
   return (
-    <section id="bukti" className="container mx-auto py-16 px-4">
-      <div className="text-center mb-12">
+    <section className="py-16">
+      <div className="text-left mb-12">
         <h2 className="text-3xl font-bold text-gray-900 mb-6">
           Bukti Nyata dan Pengalaman Mereka
         </h2>
-        <p className="text-gray-600 max-w-3xl mx-auto">
+        <p className="text-gray-600 max-w-3xl">
           Lihat hasil karya dan pencapaian peserta PKL kami yang berhasil menciptakan project berkualitas tinggi
         </p>
       </div>
 
-      {/* Portfolio Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-        {portfolioImages.map((item) => (
-          <div key={item.id} className="group relative overflow-hidden rounded-xl bg-gray-200 aspect-video hover:shadow-lg transition-all duration-300">
-            <img 
-              src={item.src} 
-              alt={item.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                e.currentTarget.src = 'https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=400&q=80';
-              }}
-            />
-            <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
-            <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="text-white text-sm font-medium">{item.title}</div>
+      {/* Portfolio Grid - Full width within section */}
+      <div className="w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {portfolioImages.map((item) => (
+            <div key={item.id} className="group relative overflow-hidden rounded-xl bg-gray-200 aspect-video hover:shadow-lg transition-all duration-300">
+              <img 
+                src={item.src} 
+                alt={item.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=400&q=80';
+                }}
+              />
+              <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+              <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="text-white text-sm font-medium">{item.title}</div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

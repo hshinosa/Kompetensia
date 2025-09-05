@@ -271,4 +271,9 @@ class ClientController extends Controller
             'posisiPKL' => $posisiPKL,
         ]);
     }
+
+    public function pendaftaranPklPage()
+    {
+        return Inertia::render('client/PendaftaranPKLPage');
+    }
 }

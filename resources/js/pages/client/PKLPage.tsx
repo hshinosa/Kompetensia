@@ -33,7 +33,7 @@ export default function PKLPage({ posisiPKL }: PKLPageProps) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [open, setOpen] = useState(false);
 
-  // Get unique categories
+  // Get unique categories from database data
   const categories = ['', ...Array.from(new Set(posisiPKL.map(p => p.kategori)))];
 
   // Filter positions based on search and category
@@ -45,15 +45,15 @@ export default function PKLPage({ posisiPKL }: PKLPageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <div className="">
         <HeroPKL onOpen={() => setOpen(true)} />
 
         <main className="container mx-auto py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <aside className="lg:col-span-3">
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
+            <aside className="lg:col-span-1">
               <LeftNavPKL 
                 selectedCategory={selectedCategory}
                 categories={categories}
@@ -62,31 +62,41 @@ export default function PKLPage({ posisiPKL }: PKLPageProps) {
               />
             </aside>
 
-            <section className="lg:col-span-9">
+            <section className="lg:col-span-5">
               <ProgramList 
                 posisiPKL={filteredPositions}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
               />
+              
+              {/* Why PKL Section */}
+              <div id="why-pkl" className="mt-16">
+                <WhyPKLSection />
+              </div>
+              
+              {/* Manfaat Nyata Section */}
+              <div id="manfaat" className="mt-16">
+                <ManfaatNyataSection />
+              </div>
+              
+              {/* Bukti Nyata Section */}
+              <div id="bukti" className="mt-16">
+                <BuktiNyataSection />
+              </div>
+              
+              {/* Testimonial Section */}
+              <div id="testimonial" className="mt-16">
+                <TestimonialSection />
+              </div>
+              
+              {/* FAQ Section */}
+              <div id="faq" className="mt-16">
+                <FAQSection />
+              </div>
             </section>
           </div>
         </main>
       </div>
-
-      {/* Why PKL Section */}
-      <WhyPKLSection />
-      
-      {/* Manfaat Nyata Section */}
-      <ManfaatNyataSection />
-      
-      {/* Bukti Nyata Section */}
-      <BuktiNyataSection />
-      
-      {/* Testimonial Section */}
-      <TestimonialSection />
-      
-      {/* FAQ Section */}
-      <FAQSection />
 
       <Footer />
 

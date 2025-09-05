@@ -12,6 +12,8 @@ Route::get('/sertifikasi', function () {
 
 Route::get('/pkl', [\App\Http\Controllers\ClientController::class, 'pklPage'])->name('pkl');
 
+Route::get('/pendaftaran-pkl', [\App\Http\Controllers\ClientController::class, 'pendaftaranPklPage'])->name('pendaftaran-pkl');
+
 Route::get('/detailsertifikasi/{slug}', [\App\Http\Controllers\ClientController::class, 'previewSertifikasi'])->name('detailsertifikasi');
 
 Route::middleware(['auth', 'verified'])->group(function () {
