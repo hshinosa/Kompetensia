@@ -1,9 +1,42 @@
 import React from 'react';
-import DaftarSertifikasi from '@/components/client/DaftarSertifikasi';
+import DaftarSertifikasi from '@/components/client/sertifikasi/DaftarSertifikasi';
 import Navbar from '@/components/client/Navbar';
 import Footer from '@/components/client/Footer';
 
-export default function SertifikasiPage() {
+interface SertifikasiData {
+  readonly id: number;
+  readonly nama_sertifikasi: string;
+  readonly jenis_sertifikasi: 'BNSP' | 'Industri';
+  readonly deskripsi?: string;
+  readonly thumbnail?: string;
+  readonly thumbnail_url?: string;
+  readonly status: 'Aktif' | 'Tidak Aktif';
+  readonly slug: string;
+  readonly asesor?: {
+    readonly nama_asesor: string;
+    readonly foto_asesor?: string;
+  };
+  readonly batch?: Array<{
+    readonly id: number;
+    readonly nama_batch: string;
+    readonly tanggal_mulai: string;
+    readonly tanggal_selesai: string;
+    readonly status: string;
+    readonly kapasitas_peserta?: number;
+    readonly peserta_terdaftar?: number;
+  }>;
+}
+
+interface Props {
+  readonly sertifikasiList: SertifikasiData[];
+  readonly searchParams?: {
+    readonly search?: string;
+    readonly jenis?: string;
+    readonly page?: number;
+  };
+}
+
+export default function SertifikasiPage({ sertifikasiList = [], searchParams = {} }: Props) {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
@@ -24,7 +57,10 @@ export default function SertifikasiPage() {
       </header>
 
       <main className="container mx-auto px-8 lg:px-12 py-14">
-          <DaftarSertifikasi />
+          <DaftarSertifikasi 
+            sertifikasiList={sertifikasiList}
+            searchParams={searchParams}
+          />
       </main>
 
       <Footer />

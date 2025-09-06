@@ -4,7 +4,6 @@ import Footer from '@/components/client/Footer';
 import HeroPKL from '@/components/client/pkl/HeroPKL';
 import LeftNavPKL from '@/components/client/pkl/LeftNavPKL';
 import ProgramList from '@/components/client/pkl/ProgramList';
-import PendaftaranPKLModal from '@/components/client/pkl/PendaftaranPKLModal';
 import WhyPKLSection from '@/components/client/pkl/WhyPKLSection';
 import ManfaatNyataSection from '@/components/client/pkl/ManfaatNyataSection';
 import BuktiNyataSection from '@/components/client/pkl/BuktiNyataSection';
@@ -31,7 +30,6 @@ interface PKLPageProps {
 export default function PKLPage({ posisiPKL }: PKLPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [open, setOpen] = useState(false);
 
   // Get unique categories from database data
   const categories = ['', ...Array.from(new Set(posisiPKL.map(p => p.kategori)))];
@@ -49,7 +47,7 @@ export default function PKLPage({ posisiPKL }: PKLPageProps) {
       <Navbar />
 
       <div className="">
-        <HeroPKL onOpen={() => setOpen(true)} />
+        <HeroPKL />
 
         <main className="container mx-auto py-10">
           <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
@@ -58,16 +56,17 @@ export default function PKLPage({ posisiPKL }: PKLPageProps) {
                 selectedCategory={selectedCategory}
                 categories={categories}
                 onCategoryChange={setSelectedCategory}
-                onOpen={() => setOpen(true)}
               />
             </aside>
 
             <section className="lg:col-span-5">
-              <ProgramList 
-                posisiPKL={filteredPositions}
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-              />
+              <div id="program-list">
+                <ProgramList 
+                  posisiPKL={filteredPositions}
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                />
+              </div>
               
               {/* Why PKL Section */}
               <div id="why-pkl" className="mt-16">
@@ -99,8 +98,6 @@ export default function PKLPage({ posisiPKL }: PKLPageProps) {
       </div>
 
       <Footer />
-
-      {open && <PendaftaranPKLModal onClose={() => setOpen(false)} />}
     </div>
   );
 }

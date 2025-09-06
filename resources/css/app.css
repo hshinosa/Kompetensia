@@ -138,6 +138,10 @@
         @apply border-border;
     }
 
+    html {
+        scroll-behavior: smooth;
+    }
+
     body {
         @apply bg-background text-foreground font-sans;
     }
@@ -157,4 +161,5 @@
 
 @layer utilities {
     .font-heading { font-family: var(--font-heading); }
+    .border-l-3 { border-left-width: 3px; }
 }

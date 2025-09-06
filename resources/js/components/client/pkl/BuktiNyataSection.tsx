@@ -11,7 +11,7 @@ export default function BuktiNyataSection() {
   ];
 
   return (
-    <section className="py-16">
+    <section id="bukti" className="py-16">
       <div className="text-left mb-12">
         <h2 className="text-3xl font-bold text-gray-900 mb-6">
           Bukti Nyata dan Pengalaman Mereka

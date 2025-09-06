@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function ManfaatNyataSection() {
   return (
-    <section className="py-16">
+    <section id="manfaat" className="py-16">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         {/* Left side - Title and Description */}
         <div>

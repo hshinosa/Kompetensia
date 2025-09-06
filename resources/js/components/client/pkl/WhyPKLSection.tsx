@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function WhyPKLSection() {
   return (
-    <section className="py-16">
+    <section id="why-pkl" className="py-16">
       {/* Title and Description */}
       <div className="mb-12">
         <h2 className="text-3xl font-bold text-gray-900 mb-4">

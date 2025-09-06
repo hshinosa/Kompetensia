@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface PosisiPKL {
   readonly id: number;
@@ -20,10 +20,13 @@ interface Props {
 }
 
 export default function ProgramDetailDialog({ program, isOpen, onClose }: Props) {
+  const [isClosing, setIsClosing] = useState(false);
+
   // Lock body scroll when dialog is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setIsClosing(false);
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -38,7 +41,7 @@ export default function ProgramDetailDialog({ program, isOpen, onClose }: Props)
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -49,26 +52,39 @@ export default function ProgramDetailDialog({ program, isOpen, onClose }: Props)
     return () => {
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
+
+  // Handle animated close
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 200); // Match animation duration
+  };
 
   if (!isOpen || !program) return null;
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      handleClose();
     }
   };
 
   return (
     <div 
-      className="fixed inset-0 flex items-center justify-center z-[9999] p-4"
+      className={`fixed inset-0 backdrop-blur-xs backdrop-brightness-90 flex items-center justify-center z-[9999] p-4 transition-all duration-200 ${
+        isClosing ? 'animate-out fade-out' : 'animate-in fade-in'
+      }`}
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+      <div className={`bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative transition-all duration-200 ${
+        isClosing ? 'animate-out zoom-out-95' : 'animate-in zoom-in-95'
+      }`}>
         {/* Header */}
         <div className="bg-purple-600 text-white p-6 rounded-t-2xl relative">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-4 right-4 w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center hover:bg-orange-500 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

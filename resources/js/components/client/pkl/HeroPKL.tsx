@@ -1,13 +1,20 @@
 import React from 'react';
 
-interface Props {
-  readonly onOpen?: () => void;
-}
-
-export default function HeroPKL({ onOpen }: Props) {
+export default function HeroPKL() {
   const title = 'Program Praktik Kerja Lapangan';
   const description = 'Magang yang Bikin Kamu Lebih Siap Hadapi Dunia Kerja. Mulai dari praktik langsung, pembelajaran skill baru, hingga membangun portofolio. Semua bisa kamu dapatkan dengan lingkungan profesional.';
   const backgroundImage = "url('/images/hero-pkl.png')";
+
+  const scrollToProgramList = () => {
+    const element = document.getElementById('program-list');
+    if (element) {
+      const offsetTop = element.offsetTop - 100;
+      window.scrollTo({
+        top: offsetTop,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
     <header className="relative w-full h-[380px] lg:h-[420px] bg-cover bg-center rounded-b-md" style={{ backgroundImage }}>
@@ -17,8 +24,18 @@ export default function HeroPKL({ onOpen }: Props) {
           <h1 className="text-3xl lg:text-4xl font-extrabold mb-3">{title}</h1>
           <p className="text-sm lg:text-base text-white/90">{description}</p>
           <div className="mt-6 flex gap-3">
-            <button onClick={() => onOpen?.()} className="px-4 py-2 rounded-md bg-purple-700 text-white font-semibold">Daftar PKL</button>
-            <button className="px-4 py-2 rounded-md border border-orange-400 text-black font-sm bg-white/100">Temukan Program</button>
+            <button 
+              onClick={scrollToProgramList}
+              className="px-4 py-2 rounded-md bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors"
+            >
+              Daftar PKL
+            </button>
+            <button 
+              onClick={scrollToProgramList}
+              className="px-4 py-2 rounded-md border border-orange-400 text-black font-sm bg-white/100 hover:bg-white/90 transition-colors"
+            >
+              Temukan Program
+            </button>
           </div>
         </div>
       </div>

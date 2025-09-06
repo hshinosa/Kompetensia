@@ -6,9 +6,7 @@ use App\Models\User;
 
 Route::get('/', [\App\Http\Controllers\ClientController::class, 'landingPage'])->name('home');
 
-Route::get('/sertifikasi', function () {
-    return Inertia::render('client/SertifikasiPage');
-})->name('sertifikasi');
+Route::get('/sertifikasi', [\App\Http\Controllers\ClientController::class, 'sertifikasiPage'])->name('sertifikasi');
 
 Route::get('/pkl', [\App\Http\Controllers\ClientController::class, 'pklPage'])->name('pkl');
 

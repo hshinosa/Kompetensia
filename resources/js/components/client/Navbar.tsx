@@ -4,10 +4,12 @@ import { Link } from '@inertiajs/react';
 export default function Navbar() {
   return (
     <nav className="flex items-center px-20 py-6">
-      <div className="text-2xl font-semibold mr-8">Kompetensia</div>
+      <div className="text-2xl font-semibold mr-8">
+        <Link href="/">Kompetensia</Link>
+      </div>
       <div className="flex flex-1 justify-end items-center gap-8 text-lg mr-6">
         <Link href="/sertifikasi" className="hover:underline">Sertifikasi</Link>
-        <Link href="#pkl" className="hover:underline">PKL</Link>
+        <Link href="pkl" className="hover:underline">PKL</Link>
         <Link href="#tentang" className="hover:underline">Tentang</Link>
         <Link href="#testimoni" className="hover:underline">Testimoni</Link>
       </div>

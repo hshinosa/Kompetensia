@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import LoginModal from '../../components/client/LoginModal';
 import Navbar from '@/components/client/Navbar';
-import HeroSection from '@/components/client/HeroSection';
-import SertifikasiPopuler from '@/components/client/SertifikasiPopuler';
-import ProgramPKL from '@/components/client/ProgramPKL';
-import MengapaSertifikasiPKL from '@/components/client/MengapaSertifikasiPKL';  
-import ArtikelPilihan from '@/components/client/ArtikelPilihan';
-import ApaKataAlumni from '@/components/client/ApaKataAlumni';
-import CTASection from '@/components/client/CTASection';
+import HeroSection from '@/components/client/landing-page/HeroSection';
+import SertifikasiPopuler from '@/components/client/landing-page/SertifikasiPopuler';
+import ProgramPKL from '@/components/client/landing-page/ProgramPKL';
+import MengapaSertifikasiPKL from '@/components/client/landing-page/MengapaSertifikasiPKL';  
+import ArtikelPilihan from '@/components/client/landing-page/ArtikelPilihan';
+import ApaKataAlumni from '@/components/client/landing-page/ApaKataAlumni';
+import CTASection from '@/components/client/landing-page/CTASection';
 import Footer from '@/components/client/Footer';
 
 interface Artikel {

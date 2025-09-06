@@ -272,6 +272,69 @@ class ClientController extends Controller
         ]);
     }
 
+    public function sertifikasiPage(Request $request)
+    {
+        $search = $request->get('search');
+        $jenis = $request->get('jenis');
+        $page = $request->get('page', 1);
+
+        $query = Sertifikasi::with(['asesor', 'batch' => function($query) {
+            $query->where('status', 'Aktif')->orderBy('tanggal_mulai', 'asc');
+        }])->where('status', 'Aktif');
+
+        // Apply search filter
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_sertifikasi', 'like', '%' . $search . '%')
+                  ->orWhereHas('asesor', function($asesorQuery) use ($search) {
+                      $asesorQuery->where('nama_asesor', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+
+        // Apply jenis filter (if not "Unggulan")
+        if ($jenis && $jenis !== 'Unggulan') {
+            $query->where('jenis_sertifikasi', $jenis);
+        }
+
+        $sertifikasiList = $query->latest()->get()->map(function ($sertifikasi) {
+            return [
+                'id' => $sertifikasi->id,
+                'nama_sertifikasi' => $sertifikasi->nama_sertifikasi,
+                'jenis_sertifikasi' => $sertifikasi->jenis_sertifikasi,
+                'deskripsi' => $sertifikasi->deskripsi,
+                'thumbnail' => $sertifikasi->thumbnail,
+                'thumbnail_url' => $sertifikasi->thumbnail_url,
+                'status' => $sertifikasi->status,
+                'slug' => $sertifikasi->slug,
+                'asesor' => $sertifikasi->asesor ? [
+                    'nama_asesor' => $sertifikasi->asesor->nama_asesor,
+                    'foto_asesor' => $sertifikasi->asesor->foto_asesor,
+                ] : null,
+                'batch' => $sertifikasi->batch->map(function($batch) {
+                    return [
+                        'id' => $batch->id,
+                        'nama_batch' => $batch->nama_batch,
+                        'tanggal_mulai' => $batch->tanggal_mulai,
+                        'tanggal_selesai' => $batch->tanggal_selesai,
+                        'status' => $batch->status,
+                        'kapasitas_peserta' => $batch->kapasitas_peserta ?? 0,
+                        'peserta_terdaftar' => $batch->jumlah_pendaftar ?? 0,
+                    ];
+                })->toArray(),
+            ];
+        });
+
+        return Inertia::render('client/SertifikasiPage', [
+            'sertifikasiList' => $sertifikasiList,
+            'searchParams' => [
+                'search' => $search,
+                'jenis' => $jenis,
+                'page' => (int) $page,
+            ],
+        ]);
+    }
+
     public function pendaftaranPklPage()
     {
         return Inertia::render('client/PendaftaranPKLPage');

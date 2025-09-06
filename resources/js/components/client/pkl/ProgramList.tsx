@@ -186,13 +186,6 @@ export default function ProgramList({ posisiPKL, searchTerm, onSearchChange }: P
         </div>
       )}
 
-      {/* Pagination Info */}
-      {posisiPKL.length > 0 && (
-        <div className="text-center text-sm text-gray-600 mt-4">
-          Menampilkan {startIndex + 1}-{endIndex} dari {posisiPKL.length} program
-        </div>
-      )}
-
       {/* No Results */}
       {posisiPKL.length === 0 && (
         <div className="text-center py-12">
