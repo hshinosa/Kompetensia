@@ -55,7 +55,7 @@ export default function ClientPKL() {
                     </div>
                     <a 
                         href="/pkl/tersedia" 
-                        className="px-6 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors font-semibold"
+                        className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold"
                     >
                         Lihat Program Tersedia
                     </a>
@@ -67,7 +67,7 @@ export default function ClientPKL() {
                         <a 
                             key={pkl.id} 
                             href={`/client/pkl/${pkl.id}`}
-                            className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-orange-300 transition-all cursor-pointer block"
+                            className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-purple-300 transition-all cursor-pointer block"
                         >
                             {/* Image Placeholder */}
                             <div className="w-full h-48 bg-gray-200 flex items-center justify-center">

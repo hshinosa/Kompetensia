@@ -82,7 +82,7 @@ export default function ClientSertifikasi() {
                         <p className="text-gray-600 mt-1">Kelola program sertifikasi Anda</p>
                     </div>
                     <a 
-                        href="/sertifikasi/tersedia" 
+                        href="/sertifikasi" 
                         className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold"
                     >
                         Lihat Program Tersedia
