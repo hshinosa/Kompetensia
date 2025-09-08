@@ -34,9 +34,37 @@ export interface SharedData {
 
 export interface User {
     id: number;
-    name: string;
+    // New Indonesian field names (primary)
+    nama?: string;
+    nama_lengkap?: string;
     email: string;
+    telepon?: string;
+    alamat?: string;
+    tanggal_lahir?: string;
+    tempat_lahir?: string;
+    institusi?: string;
+    jurusan?: string;
+    semester?: number;
+    role?: string;
+    aktif?: boolean;
+    status_akun?: string;
+    tipe_pengguna?: string;
+    foto_profil?: string;
+    
+    // Legacy field names (for backward compatibility)
+    name?: string;
+    full_name?: string;
+    phone?: string;
+    address?: string;
+    birth_date?: string;
+    birth_place?: string;
+    institution?: string;
+    major?: string;
+    is_active?: boolean;
+    account_status?: string;
+    user_type?: string;
     avatar?: string;
+    
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -47,17 +75,6 @@ export interface User {
 export interface BreadcrumbItem {
     title: string;
     href: string;
-}
-
-// Interface untuk data Pengguna (User)
-export interface User {
-    id: number;
-    name: string;
-    email: string;
-    institution?: string; // Universitas atau sekolah asal
-    major?: string;       // Jurusan
-    // Tambahkan properti lain yang mungkin dikirim dari backend
-    // contoh: phone, address, avatar, dll.
 }
 
 // Interface untuk data Posisi PKL

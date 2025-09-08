@@ -1,512 +1,380 @@
-import React from 'react';
-import { router, Head, usePage } from '@inertiajs/react';
+import { useState, useEffect, useMemo } from 'react';
+import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { StatsCard } from '@/components/dashboard/StatsCard';
+import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Pagination from '@/components/Pagination';
-import { Users, UserCheck, UserX, Shield, Clock, Filter, Plus, Eye, Edit, Trash2, ToggleLeft, ToggleRight, MoreHorizontal } from 'lucide-react';
-import SearchBar from '@/components/SearchBar';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import ConfirmationModal from '@/components/ConfirmationModal';
-import AddUserDialog from '@/components/AddUserDialog';
+import { useInitials } from '@/hooks/use-initials';
+import { Plus, MoreHorizontal, Eye, Edit, UserCheck, Users, Shield, GraduationCap, Building } from 'lucide-react';
+import type { BreadcrumbItem } from '@/types';
 
-interface UserActivity {
-  id: number;
-  activity_type: string;
-  description: string;
-  created_at: string;
+interface UserIndonesia {
+    id: number;
+    nama: string;
+    nama_lengkap?: string;
+    email: string;
+    role: string;
+    telepon?: string;
+    alamat?: string;
+    tanggal_lahir?: string;
+    tempat_lahir?: string;
+    foto_profil?: string;
+    aktif: boolean;
+    status_akun?: string;
+    created_at: string;
+    updated_at: string;
 }
 
-interface UserData {
-  id: number;
-  name: string;
-  email: string;
-  full_name?: string;
-  phone_number?: string;
-  gender?: string;
-  user_type: string;
-  role: string;
-  account_status: string;
-  is_active: boolean;
-  school_university?: string;
-  major_concentration?: string;
-  created_at: string;
-}
-
-interface PaginationMeta {
-  per_page: number;
-  current_page: number;
-  last_page: number;
-  total: number;
-}
-
-interface Filters {
-  search?: string;
-  user_type?: string;
-  account_status?: string;
-  per_page?: number;
-}
-
-interface Stats {
-  total_users: number;
-  active_users: number;
-  students: number;
-  admins: number;
-  pending_users: number;
-}
-
-interface PageProps {
-  users?: UserData[];
-  filters?: Filters;
-  stats?: Stats;
-  [key: string]: any;
-}
-
-const UserManagementPage: React.FC = () => {
-  const { props } = usePage<PageProps>();
-  const { users = [], filters, stats } = props;
-  
-  // Client-side pagination setup
-  const userData: UserData[] = users;
-  const [page, setPage] = React.useState(1);
-  const [perPage, setPerPage] = React.useState(filters?.per_page || 5);
-  const totalItems = userData.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
-  React.useEffect(() => { if (page > totalPages) setPage(1); }, [totalPages, page]);
-  const paginatedData = userData.slice((page - 1) * perPage, page * perPage);
-  
-  const [search, setSearch] = React.useState(filters?.search || '');
-  const [userType, setUserType] = React.useState<string>(filters?.user_type || '');
-  const [accountStatus, setAccountStatus] = React.useState<string>(filters?.account_status || '');
- 
-  // Modal states
-  const [addUserModal, setAddUserModal] = React.useState(false);
-  
-  const [toggleModal, setToggleModal] = React.useState<{
-    isOpen: boolean;
-    user: UserData | null;
-    isLoading: boolean;
-  }>({
-    isOpen: false,
-    user: null,
-    isLoading: false
-  });
-
-  const [deleteModal, setDeleteModal] = React.useState<{
-    isOpen: boolean;
-    user: UserData | null;
-    isLoading: boolean;
-  }>({
-    isOpen: false,
-    user: null,
-    isLoading: false
-  });
-
-  const firstLoad = React.useRef(true);
-
-  // Force clean URL on first load if per_page is invalid
-  React.useEffect(() => {
-    if (firstLoad.current) {
-      const filterPerPage = parseInt(filters?.per_page?.toString() || '5');
-      if (!filterPerPage) {
-        router.get(route('admin.user-management'), {
-          search: '',
-          user_type: '',
-          account_status: '',
-          per_page: 5,
-        }, {
-          replace: true
-        });
-      }
-      firstLoad.current = false;
-    }
-  }, []);
-
-  // Debounce search & filter changes
-  React.useEffect(() => {
-    if (firstLoad.current) {
-      firstLoad.current = false;
-      return;
-    }
-    const timer = setTimeout(() => {
-      router.get(route('admin.user-management'), {
-        search,
-        user_type: userType,
-        account_status: accountStatus,
-        per_page: perPage,
-        page: 1
-      }, {
-        preserveState: true,
-        replace: true
-      });
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [search, userType, accountStatus, perPage]);
-
-  const changePage = (page: number) => {
-    setPage(page);
-  };
-
-  const handleDeleteUser = (user: UserData) => {
-    setDeleteModal({
-      isOpen: true,
-      user,
-      isLoading: false
-    });
-  };
-
-  const confirmDeleteUser = () => {
-    if (!deleteModal.user) return;
-    
-    setDeleteModal(prev => ({ ...prev, isLoading: true }));
-    
-    router.delete(route('admin.users.destroy', deleteModal.user.id), {
-      onSuccess: () => {
-        setDeleteModal({
-          isOpen: false,
-          user: null,
-          isLoading: false
-        });
-      },
-      onError: () => {
-        setDeleteModal(prev => ({ ...prev, isLoading: false }));
-      }
-    });
-  };
-
-  const handleToggleStatus = (user: UserData) => {
-    setToggleModal({
-      isOpen: true,
-      user,
-      isLoading: false
-    });
-  };
-
-  const confirmToggleStatus = () => {
-    if (!toggleModal.user) return;
-    
-    setToggleModal(prev => ({ ...prev, isLoading: true }));
-    
-    router.patch(route('admin.users.toggle-status', toggleModal.user.id), {}, {
-      onSuccess: () => {
-        setToggleModal({
-          isOpen: false,
-          user: null,
-          isLoading: false
-        });
-      },
-      onError: () => {
-        setToggleModal(prev => ({ ...prev, isLoading: false }));
-      }
-    });
-  };
-
-  const getUserTypeBadge = (userType: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      admin: 'destructive',
-      instructor: 'default',
-      assessor: 'secondary',
-      student: 'outline'
+interface PenggunaIndexProps {
+    pengguna: {
+        data: UserIndonesia[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number;
+        to: number;
     };
-    return <Badge variant={variants[userType] || 'outline'}>{userType}</Badge>;
-  };
-
-  const getStatusBadge = (status: string, isActive: boolean) => {
-    if (!isActive) return <Badge variant="destructive">Nonaktif</Badge>;
-    
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      active: 'default',
-      pending: 'secondary',
-      suspended: 'destructive',
-      banned: 'destructive'
+    filters: {
+        role?: string;
+        status?: string;
+        search?: string;
     };
-    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
-  };
+    stats: {
+        total: number;
+        admin: number;
+        instruktur: number;
+        asesor: number;
+        mahasiswa: number;
+        aktif: number;
+        tidak_aktif: number;
+    };
+}
 
-  const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/admin/dashboard' },
-    { title: 'Manajemen User', href: '/admin/user-management' }
-  ];
+export default function UserManagement({ pengguna, filters, stats }: Readonly<PenggunaIndexProps>) {
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(10);
+    const [search, setSearch] = useState(filters.search || '');
+    const [roleFilter, setRoleFilter] = useState(filters.role || 'all');
+    const [statusFilter, setStatusFilter] = useState(filters.status || 'all');
+    
+    const getInitials = useInitials();
 
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Manajemen User" />
-      <div className="flex flex-col gap-6 p-6">
-        {/* Header Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Manajemen User</h1>
-            <p className="text-muted-foreground">Kelola akun pengguna sistem</p>
-          </div>
-          <Button onClick={() => setAddUserModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Admin
-          </Button>
-        </div>
+    // Filter and paginate users
+    const filteredUsers = useMemo(() => {
+        return pengguna.data.filter(user => {
+            const matchesSearch = search === '' || 
+                user.nama.toLowerCase().includes(search.toLowerCase()) ||
+                user.email.toLowerCase().includes(search.toLowerCase());
+            
+            const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+            const matchesStatus = statusFilter === 'all' || 
+                (statusFilter === 'aktif' && user.aktif) ||
+                (statusFilter === 'tidak_aktif' && !user.aktif);
+            
+            return matchesSearch && matchesRole && matchesStatus;
+        });
+    }, [pengguna.data, search, roleFilter, statusFilter]);
 
-        {/* Stats */}
-        <div className="grid auto-rows-min gap-4 md:grid-cols-4">
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total User</p>
-                  <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <UserCheck className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">User Aktif</p>
-                  <div className="text-2xl font-bold">{stats?.active_users || 0}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <UserX className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Student</p>
-                  <div className="text-2xl font-bold">{stats?.students || 0}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <Shield className="h-5 w-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Admin</p>
-                  <div className="text-2xl font-bold">{stats?.admins || 0}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    const totalPages = Math.ceil(filteredUsers.length / perPage);
+    const paginatedUsers = filteredUsers.slice((page - 1) * perPage, page * perPage);
 
-        {/* Main Table */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <CardTitle>Daftar User</CardTitle>
-              <div className="flex gap-2 items-center flex-wrap">
-                <SearchBar
-                  value={search}
-                  onChange={setSearch}
-                  placeholder="Cari nama, email, sekolah..."
-                />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="relative">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Filter
-                      {(userType || accountStatus) && (
-                        <Badge variant="destructive" className="ml-2 px-1.5 py-0 text-xs h-5 min-w-5">
-                          {[userType, accountStatus].filter(Boolean).length}
-                        </Badge>
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>Tipe User</DropdownMenuLabel>
-                    {['student', 'instructor', 'assessor', 'admin'].map(type => (
-                      <DropdownMenuItem
-                        key={type}
-                        onClick={() => setUserType(prev => prev === type ? '' : type)}
-                        className="flex items-center justify-between cursor-pointer"
-                      >
-                        <span className="capitalize">{type}</span>
-                        {userType === type && <div className="w-2 h-2 bg-primary rounded-full" />}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Status Akun</DropdownMenuLabel>
-                    {['active', 'pending', 'suspended', 'banned'].map(status => (
-                      <DropdownMenuItem
-                        key={status}
-                        onClick={() => setAccountStatus(prev => prev === status ? '' : status)}
-                        className="flex items-center justify-between cursor-pointer"
-                      >
-                        <span className="capitalize">{status}</span>
-                        {accountStatus === status && <div className="w-2 h-2 bg-primary rounded-full" />}
-                      </DropdownMenuItem>
-                    ))}
-                    {(userType || accountStatus) && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setUserType('');
-                            setAccountStatus('');
-                          }}
-                          className="text-destructive cursor-pointer"
-                        >
-                          Reset Filter
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>No</TableHead>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Tipe</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Terdaftar</TableHead>
-                  <TableHead>Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.length > 0 ? paginatedData.map((user, idx) => (
-                  <TableRow key={user.id} className="hover:bg-muted/50">
-                    <TableCell className="font-medium">
-                      {(page - 1) * perPage + idx + 1}
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{user.full_name || user.name}</div>
-                        {user.school_university && (
-                          <div className="text-sm text-muted-foreground">{user.school_university}</div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{getUserTypeBadge(user.role)}</TableCell>
-                    <TableCell>{getStatusBadge(user.account_status, user.is_active)}</TableCell><TableCell>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(user.created_at).toLocaleDateString('id-ID')}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => router.get(route('admin.users.show', user.id))}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.get(route('admin.users.edit', user.id))}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit User
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleToggleStatus(user)}>
-                            {user.is_active ? (
-                              <>
-                                <ToggleLeft className="mr-2 h-4 w-4" />
-                                Deactivate
-                              </>
-                            ) : (
-                              <>
-                                <ToggleRight className="mr-2 h-4 w-4" />
-                                Activate
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            onClick={() => handleDeleteUser(user)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      {(search || userType || accountStatus) ? 'Tidak ada data sesuai filter' : 'Tidak ada data user'}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-        
-        {/* Pagination - always show if there are any pages */}
-        <div className="mt-4">
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            itemsPerPage={perPage}
-            totalItems={totalItems}
-            onPageChange={setPage}
-            onItemsPerPageChange={(n) => { setPerPage(n); setPage(1); }}
-          />
-        </div>
-      </div>
+    // Handle search
+    const handleSearch = (term: string) => {
+        setSearch(term);
+        setPage(1); // Reset to first page
+    };
 
-      {/* Toggle Status Modal */}
-      <ConfirmationModal
-        isOpen={toggleModal.isOpen}
-        onClose={() => setToggleModal({ isOpen: false, user: null, isLoading: false })}
-        onConfirm={confirmToggleStatus}
-        title={toggleModal.user?.is_active ? 'Nonaktifkan User' : 'Aktifkan User'}
-        description={
-          toggleModal.user?.is_active 
-            ? `Apakah Anda yakin ingin menonaktifkan user "${toggleModal.user?.name}"? User tidak akan bisa mengakses sistem.`
-            : `Apakah Anda yakin ingin mengaktifkan user "${toggleModal.user?.name}"? User akan bisa mengakses sistem kembali.`
+    // Handle role filter
+    const handleRoleFilter = (role: string) => {
+        setRoleFilter(role);
+        setPage(1); // Reset to first page
+    };
+
+    // Handle status filter  
+    const handleStatusFilter = (status: string) => {
+        setStatusFilter(status);
+        setPage(1); // Reset to first page
+    };
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Dashboard', href: '/admin/dashboard' },
+        { title: 'Manajemen Pengguna', href: '/admin/pengguna' }
+    ];
+
+    const roleOptions = [
+        { value: 'all', label: 'Semua Role' },
+        { value: 'admin', label: 'Admin' },
+        { value: 'instruktur', label: 'Instruktur' },
+        { value: 'asesor', label: 'Asesor' },
+        { value: 'mahasiswa', label: 'Mahasiswa' }
+    ];
+
+    const statusOptions = [
+        { value: 'all', label: 'Semua Status' },
+        { value: 'aktif', label: 'Aktif' },
+        { value: 'tidak_aktif', label: 'Tidak Aktif' },
+        { value: 'suspended', label: 'Suspended' }
+    ];
+
+    const getRoleBadgeColor = (role: string) => {
+        switch (role) {
+            case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+            case 'instruktur': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+            case 'asesor': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+            case 'mahasiswa': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
         }
-        confirmText={toggleModal.user?.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-        variant={toggleModal.user?.is_active ? 'destructive' : 'default'}
-        isLoading={toggleModal.isLoading}
-      />
+    };
 
-      {/* Delete User Modal */}
-      <ConfirmationModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, user: null, isLoading: false })}
-        onConfirm={confirmDeleteUser}
-        title="Hapus User"
-        description={`Apakah Anda yakin ingin menghapus user "${deleteModal.user?.name}"? Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait user tersebut.`}
-        confirmText="Hapus"
-        variant="destructive"
-        isLoading={deleteModal.isLoading}
-      />
+    const getStatusBadgeColor = (status: string, aktif: boolean) => {
+        if (!aktif) return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+        switch (status) {
+            case 'aktif': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+            case 'suspended': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        }
+    };
 
-      {/* Add User Dialog */}
-      <AddUserDialog
-        isOpen={addUserModal}
-        onClose={() => setAddUserModal(false)}
-      />
-    </AppLayout>
-  );
-};
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
-export default UserManagementPage;
+    // Reset page when filters change
+    useEffect(() => {
+        if (page > totalPages) setPage(1);
+    }, [totalPages, page]);
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Manajemen Pengguna" />
+            
+            <div className="flex flex-col gap-6 p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight font-heading">Manajemen Pengguna</h1>
+                        <p className="text-muted-foreground">Kelola data pengguna sistem</p>
+                    </div>
+                    <Button asChild>
+                        <Link href="/admin/pengguna/create" className="flex items-center gap-2">
+                            <Plus className="h-4 w-4" />
+                            Tambah Pengguna
+                        </Link>
+                    </Button>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid gap-4 md:grid-cols-6">
+                    <StatsCard 
+                        label="Total Pengguna" 
+                        value={stats.total} 
+                        icon={<Users className="h-5 w-5" />} 
+                        iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10"
+                    />
+                    <StatsCard 
+                        label="Admin" 
+                        value={stats.admin} 
+                        icon={<Shield className="h-5 w-5" />} 
+                        iconColor="text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-400/10"
+                    />
+                    <StatsCard 
+                        label="Instruktur" 
+                        value={stats.instruktur} 
+                        icon={<Building className="h-5 w-5" />} 
+                        iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10"
+                    />
+                    <StatsCard 
+                        label="Asesor" 
+                        value={stats.asesor} 
+                        icon={<UserCheck className="h-5 w-5" />} 
+                        iconColor="text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-400/10"
+                    />
+                    <StatsCard 
+                        label="Mahasiswa" 
+                        value={stats.mahasiswa} 
+                        icon={<GraduationCap className="h-5 w-5" />} 
+                        iconColor="text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-400/10"
+                    />
+                    <StatsCard 
+                        label="Aktif" 
+                        value={stats.aktif} 
+                        icon={<UserCheck className="h-5 w-5" />} 
+                        iconColor="text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-400/10"
+                    />
+                </div>
+
+                {/* Table with integrated search and filters */}
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                            <CardTitle className="text-base font-semibold">Daftar Pengguna</CardTitle>
+                            <div className="flex gap-2 items-center flex-wrap">
+                                <SearchBar 
+                                    value={search} 
+                                    onChange={handleSearch} 
+                                    placeholder="Cari nama, email..." 
+                                    className="w-64"
+                                />
+                                <Select value={roleFilter} onValueChange={handleRoleFilter}>
+                                    <SelectTrigger className="w-[140px]">
+                                        <SelectValue placeholder="Role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {roleOptions.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Select value={statusFilter} onValueChange={handleStatusFilter}>
+                                    <SelectTrigger className="w-[120px]">
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {statusOptions.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {(search || roleFilter !== 'all' || statusFilter !== 'all') && (
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => {
+                                            setSearch('');
+                                            setRoleFilter('all');
+                                            setStatusFilter('all');
+                                            setPage(1);
+                                        }}
+                                    >
+                                        Reset
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto px-4 pb-4">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Pengguna</TableHead>
+                                        <TableHead>Role</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Terdaftar</TableHead>
+                                        <TableHead className="text-right">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {paginatedUsers.length > 0 ? (
+                                        paginatedUsers.map((user: UserIndonesia) => (
+                                            <TableRow key={user.id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-8 w-8">
+                                                            <AvatarImage src={user.foto_profil} alt={user.nama_lengkap || user.nama} />
+                                                            <AvatarFallback>
+                                                                {getInitials(user.nama_lengkap || user.nama)}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium">{user.nama_lengkap || user.nama}</p>
+                                                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                                                            {user.telepon && (
+                                                                <p className="text-xs text-muted-foreground">{user.telepon}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge className={getRoleBadgeColor(user.role)}>
+                                                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge className={getStatusBadgeColor(user.status_akun || '', user.aktif || false)}>
+                                                        {user.aktif ? (user.status_akun || 'Aktif') : 'Tidak Aktif'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>{formatDate(user.created_at)}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={`/admin/pengguna/${user.id}`} className="flex items-center gap-2">
+                                                                    <Eye className="h-4 w-4" />
+                                                                    Detail
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={`/admin/pengguna/${user.id}/edit`} className="flex items-center gap-2">
+                                                                    <Edit className="h-4 w-4" />
+                                                                    Edit
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={`/admin/pengguna/${user.id}/aktivitas`} className="flex items-center gap-2">
+                                                                    <UserCheck className="h-4 w-4" />
+                                                                    Aktivitas
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={`/admin/pengguna/${user.id}/dokumen`} className="flex items-center gap-2">
+                                                                    <Building className="h-4 w-4" />
+                                                                    Dokumen
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center py-8">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <Users className="h-8 w-8 text-muted-foreground" />
+                                                    <p className="text-muted-foreground">Tidak ada data pengguna</p>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Pagination */}
+                <Pagination 
+                    currentPage={page} 
+                    totalPages={totalPages} 
+                    itemsPerPage={perPage} 
+                    totalItems={filteredUsers.length} 
+                    onPageChange={setPage} 
+                    onItemsPerPageChange={setPerPage} 
+                />
+            </div>
+        </AppLayout>
+    );
+}

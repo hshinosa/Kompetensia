@@ -7,6 +7,7 @@ interface Props {
 }
 
 export default function PendaftaranPKLModal({ isOpen, onClose, selectedProgram }: Props) {
+  const [isClosing, setIsClosing] = useState(false);
   const [formData, setFormData] = useState({
     nama: '',
     email: '',
@@ -22,6 +23,7 @@ export default function PendaftaranPKLModal({ isOpen, onClose, selectedProgram }
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setIsClosing(false);
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -35,7 +37,7 @@ export default function PendaftaranPKLModal({ isOpen, onClose, selectedProgram }
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -46,7 +48,16 @@ export default function PendaftaranPKLModal({ isOpen, onClose, selectedProgram }
     return () => {
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
+
+  // Handle animated close
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 200); // Match animation duration
+  };
 
   // Update form data when selected program changes
   useEffect(() => {
@@ -59,7 +70,7 @@ export default function PendaftaranPKLModal({ isOpen, onClose, selectedProgram }
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      handleClose();
     }
   };
 
@@ -78,14 +89,18 @@ export default function PendaftaranPKLModal({ isOpen, onClose, selectedProgram }
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4 backdrop-blur-sm"
+      className={`fixed inset-0 backdrop-blur-xs backdrop-brightness-90 flex items-center justify-center z-[9999] p-4 transition-all duration-200 ${
+        isClosing ? 'animate-out fade-out' : 'animate-in fade-in'
+      }`}
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative transform transition-all duration-300 scale-100 opacity-100">
+      <div className={`bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative transition-all duration-200 ${
+        isClosing ? 'animate-out zoom-out-95' : 'animate-in zoom-in-95'
+      }`}>
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 rounded-t-2xl relative">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

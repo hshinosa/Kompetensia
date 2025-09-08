@@ -28,21 +28,22 @@ class UserSeeder extends Seeder
     private function createAdminUser(): void
     {
         User::create([
-            'name' => 'Administrator',
+            'nama' => 'Administrator',
+            'nama_lengkap' => 'Administrator Kompetensia',
             'email' => 'admin@kompetensia.com',
+            'telepon' => '081234567890',
             'password' => Hash::make('password'),
-            'role' => 'admin',
-            'user_type' => 'admin',
-            'full_name' => 'Administrator Kompetensia',
-            'phone' => '081234567890',
-            'address' => 'Jl. Admin No. 1, Jakarta Pusat',
-            'birth_date' => '1990-01-01',
-            'birth_place' => 'Jakarta',
-            'institution' => 'Kompetensia',
-            'major' => 'Information Technology',
+            'alamat' => 'Jl. Admin No. 1, Jakarta Pusat',
+            'tanggal_lahir' => '1990-01-01',
+            'tempat_lahir' => 'Jakarta',
+            'institusi' => 'Kompetensia',
+            'jurusan' => 'Information Technology',
             'semester' => null,
-            'is_active' => true,
-            'account_status' => 'active',
+            'role' => 'admin',
+            'aktif' => true,
+            'status_akun' => 'aktif',
+            'tipe_pengguna' => 'admin',
+            'foto_profil' => null,
             'email_verified_at' => now(),
         ]);
     }
@@ -53,6 +54,6 @@ class UserSeeder extends Seeder
     private function createStudentUsers(): void
     {
         // Create 30 student users using factory
-        User::factory(30)->student()->create();
+        User::factory(30)->mahasiswa()->create();
     }
 }

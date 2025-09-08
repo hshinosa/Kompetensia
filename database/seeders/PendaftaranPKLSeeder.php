@@ -14,7 +14,7 @@ class PendaftaranPKLSeeder extends Seeder
         // Clear existing data to prevent duplicates
         PendaftaranPKL::query()->delete();
         
-        $students = User::where('role', 'student')->get();
+        $students = User::where('role', 'mahasiswa')->get();
         $posisiPKL = PosisiPKL::all();
 
         if ($students->count() === 0 || $posisiPKL->count() === 0) {

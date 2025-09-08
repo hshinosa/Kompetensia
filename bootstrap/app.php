@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             Route::middleware('web')
                 ->group(base_path('routes/auth.php'));
-            Route::middleware(['web', 'auth'])
+            Route::middleware('web')
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('settings')
                 ->name('settings.')
                 ->group(base_path('routes/settings.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/client.php'));
         },
     )
     ->withProviders([
@@ -41,6 +43,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'client' => \App\Http\Middleware\EnsureUserIsClient::class,
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'admin.guest' => \App\Http\Middleware\AdminGuest::class,
+            'client.guest' => \App\Http\Middleware\ClientGuest::class,
         ]);
     })
     ->withExceptions(function () {

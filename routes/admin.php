@@ -7,10 +7,21 @@ use App\Http\Controllers\Admin\VideoController;
 use App\Http\Controllers\Admin\PKLController;
 use App\Http\Controllers\Admin\AsesorController;
 use App\Http\Controllers\Admin\PenilaianSertifikasiController;
-use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\PenggunaController;
+use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified','role:admin'])->group(function () {
+// Admin auth routes (guest only)
+Route::middleware('admin.guest')->group(function () {
+    Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
+    Route::post('/login', [AdminLoginController::class, 'store']);
+});
+
+// Admin logout route
+Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
+
+// Protected admin routes
+Route::middleware(['admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/pendaftaran/{type}/{id}', [DashboardController::class, 'pendaftaranDetail'])->name('pendaftaran.detail');
     Route::patch('/pendaftaran/{type}/{id}/approve', [DashboardController::class, 'approvePendaftaran'])->name('pendaftaran.approve');
@@ -89,18 +100,34 @@ Route::middleware(['auth', 'verified','role:admin'])->group(function () {
     Route::get('/penilaian-sertifikasi/{sertifikasiId}/batch/{batchId}', [PenilaianSertifikasiController::class, 'batchPenilaian'])->name('batch-penilaian-sertifikasi');
     Route::post('/penilaian-sertifikasi/{sertifikasiId}/batch/{batchId}', [PenilaianSertifikasiController::class, 'batchStore'])->name('batch-penilaian-sertifikasi.store');
 
-    // User Management routes
+    // User Management routes - Using PenggunaController
     Route::prefix('users')->name('users.')->group(function(){
-        Route::get('/', [UserManagementController::class, 'index'])->name('index');
-        Route::post('/', [UserManagementController::class, 'store'])->name('store');
-        Route::get('/{id}', [UserManagementController::class, 'show'])->name('show');
-        Route::get('/{id}/edit', [UserManagementController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [UserManagementController::class, 'update'])->name('update');
-        Route::delete('/{id}', [UserManagementController::class, 'destroy'])->name('destroy');
-        Route::patch('/{id}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('toggle-status');
-        Route::get('/{id}/sertifikasi', [UserManagementController::class, 'getUserSertifikasi'])->name('sertifikasi');
-        Route::get('/{id}/pkl', [UserManagementController::class, 'getUserPKL'])->name('pkl');
-        Route::get('/{id}/activities', [UserManagementController::class, 'getUserActivities'])->name('activities');
+        Route::get('/', [PenggunaController::class, 'index'])->name('index');
+        Route::post('/', [PenggunaController::class, 'store'])->name('store');
+        Route::get('/{pengguna}', [PenggunaController::class, 'show'])->name('show');
+        Route::get('/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('edit');
+        Route::put('/{pengguna}', [PenggunaController::class, 'updateStatus'])->name('update');
+        Route::delete('/{pengguna}', [PenggunaController::class, 'destroy'])->name('destroy');
+        Route::patch('/{pengguna}/toggle-status', [PenggunaController::class, 'toggleStatus'])->name('toggle-status');
+        Route::get('/{pengguna}/sertifikasi', [PenggunaController::class, 'getUserSertifikasi'])->name('sertifikasi');
+        Route::get('/{pengguna}/pkl', [PenggunaController::class, 'getUserPKL'])->name('pkl');
+        Route::get('/{pengguna}/activities', [PenggunaController::class, 'getUserActivities'])->name('activities');
     });
-    Route::get('/user-management', [UserManagementController::class, 'index'])->name('user-management');
+    Route::get('/user-management', [PenggunaController::class, 'index'])->name('user-management');
+
+    // Pengguna routes (primary URLs)
+    Route::prefix('pengguna')->name('pengguna.')->group(function(){
+        Route::get('/', [PenggunaController::class, 'index'])->name('index');
+        Route::post('/', [PenggunaController::class, 'store'])->name('store');
+        Route::get('/{pengguna}', [PenggunaController::class, 'show'])->name('show');
+        Route::get('/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('edit');
+        Route::put('/{pengguna}', [PenggunaController::class, 'updateStatus'])->name('update');
+        Route::delete('/{pengguna}', [PenggunaController::class, 'destroy'])->name('destroy');
+        Route::patch('/{pengguna}/toggle-status', [PenggunaController::class, 'toggleStatus'])->name('toggle-status');
+        Route::get('/{pengguna}/sertifikasi', [PenggunaController::class, 'getUserSertifikasi'])->name('sertifikasi');
+        Route::get('/{pengguna}/pkl', [PenggunaController::class, 'getUserPKL'])->name('pkl');
+        Route::get('/{pengguna}/activities', [PenggunaController::class, 'getUserActivities'])->name('activities');
+        Route::get('/{pengguna}/aktivitas', [PenggunaController::class, 'aktivitas'])->name('aktivitas');
+        Route::get('/{pengguna}/dokumen', [PenggunaController::class, 'dokumen'])->name('dokumen');
+    });
 });

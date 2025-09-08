@@ -12,10 +12,7 @@ return new class extends Migration {
             $table->string('nama_artikel');
             $table->enum('jenis_konten', ['Blog', 'Tutorial', 'News']);
             $table->text('deskripsi');
-            // kolom thumbnail ditambahkan lewat migrasi terpisah jika belum ada; dicantumkan di sini untuk instalasi fresh
-            if (!Schema::hasColumn('blog', 'thumbnail')) {
-                $table->string('thumbnail')->nullable();
-            }
+            $table->string('thumbnail')->nullable();
             $table->longText('konten');
             $table->enum('status', ['Draft', 'Publish', 'Archived'])->default('Draft');
             $table->string('penulis');
@@ -26,10 +23,24 @@ return new class extends Migration {
             $table->string('slug')->unique();
             $table->timestamps();
         });
+
+        Schema::create('video', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_video');
+            $table->text('deskripsi');
+            $table->string('video_url');
+            $table->integer('durasi');
+            $table->integer('views')->default(0);
+            $table->boolean('featured')->default(false);
+            $table->enum('status', ['Draft', 'Publish', 'Archived'])->default('Draft');
+            $table->string('uploader');
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('video');
         Schema::dropIfExists('blog');
     }
 };

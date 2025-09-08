@@ -21,7 +21,7 @@ class PendaftaranSertifikasiSeeder extends Seeder
         // Re-enable foreign key checks
         \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         
-        $students = User::where('role', 'student')->get();
+        $students = User::where('role', 'mahasiswa')->get();
         $sertifikasi = Sertifikasi::all();
         $batches = BatchSertifikasi::all();
 

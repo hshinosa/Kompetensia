@@ -16,41 +16,47 @@ class AsesorSeeder extends Seeder
         $asesors = [
             [
                 'nama_asesor' => 'Dr. Budi Santoso',
-                'jabatan_asesor' => 'Digital Marketing Consultant',
-                'instansi_asesor' => 'PT. Digital Solutions Indonesia',
-                'foto_asesor' => null,
+                'jabatan' => 'Digital Marketing Consultant',
+                'instansi' => 'PT. Digital Solutions Indonesia',
+                'bio' => 'Praktisi digital marketing dengan pengalaman 15+ tahun',
+                'foto' => null,
+                'email' => 'budi.santoso@digitalsolid.id',
+                'phone' => '081234567891',
+                'keahlian' => json_encode(['Digital Marketing', 'SEO', 'Social Media Marketing']),
+                'sertifikat' => json_encode(['Google Ads Certified', 'Facebook Blueprint Certified']),
                 'status' => 'Aktif',
-                'created_by' => 1,
-                'updated_by' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'nama_asesor' => 'Prof. Sari Wijaya',
-                'jabatan_asesor' => 'Senior Software Engineer',
-                'instansi_asesor' => 'Tech Corp Indonesia',
-                'foto_asesor' => null,
+                'jabatan' => 'Senior Software Engineer',
+                'instansi' => 'Tech Corp Indonesia',
+                'bio' => 'Senior engineer dengan spesialisasi dalam web development dan sistem terdistribusi',
+                'foto' => null,
+                'email' => 'sari.wijaya@techcorp.id',
+                'phone' => '081234567892',
+                'keahlian' => json_encode(['PHP', 'Laravel', 'Vue.js', 'System Architecture']),
+                'sertifikat' => json_encode(['AWS Certified Solutions Architect', 'Laravel Certified Developer']),
                 'status' => 'Aktif',
-                'created_by' => 1,
-                'updated_by' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'nama_asesor' => 'Ir. Andi Prasetyo',
-                'jabatan_asesor' => 'Senior Network Engineer',
-                'instansi_asesor' => 'Net Solutions Corp',
-                'foto_asesor' => null,
+                'jabatan' => 'Senior Network Engineer',
+                'instansi' => 'Net Solutions Corp',
+                'bio' => 'Network specialist dengan fokus pada keamanan jaringan dan infrastruktur IT',
+                'foto' => null,
+                'email' => 'andi.prasetyo@netsol.id',
+                'phone' => '081234567893',
+                'keahlian' => json_encode(['Network Security', 'Cisco', 'Linux Administration']),
+                'sertifikat' => json_encode(['CCNA', 'CCNP Security', 'CompTIA Security+']),
                 'status' => 'Aktif',
-                'created_by' => 1,
-                'updated_by' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]
         ];
 
         foreach ($asesors as $asesorData) {
-            Asesor::create($asesorData);
+            Asesor::firstOrCreate(
+                ['email' => $asesorData['email']],
+                $asesorData
+            );
         }
 
         echo "Asesor seeded successfully!\n";

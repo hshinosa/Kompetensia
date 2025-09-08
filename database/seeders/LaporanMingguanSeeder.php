@@ -15,8 +15,8 @@ class LaporanMingguanSeeder extends Seeder
         // Hapus data lama
         LaporanMingguan::query()->delete();
 
-        // Ambil semua user dengan role 'user'
-        $users = User::where('role', 'user')->get();
+        // Ambil semua user dengan role 'mahasiswa'
+        $users = User::where('role', 'mahasiswa')->get();
 
         foreach ($users as $user) {
             // Ambil pendaftaran PKL milik user

@@ -13,27 +13,42 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens;
 
     protected $fillable = [
-        // Basic user fields
-        'name',
+        // Basic user fields (sesuai migration baru)
+        'nama',
+        'nama_lengkap',
         'email',
+        'telepon',
         'password',
+        'alamat',
+        'tanggal_lahir',
+        'tempat_lahir',
+        'institusi',
+        'jurusan',
+        'semester',
+        'role',
+        'aktif',
+        'status_akun',
+        'tipe_pengguna',
+        'foto_profil',
+        
+        // Legacy fields untuk backward compatibility
+        'name',
         'full_name',
-        
-        // Contact & personal info (sesuai migrasi)
-        'phone', // dari migrasi 2025_08_09 dan 2025_08_14
+        'phone',
         'address',
-        'gender',
-        'place_of_birth',
-        'date_of_birth',
-        
-        // Legacy fields (masih ada di migrasi lama)
         'birth_date',
         'birth_place',
         'institution',
         'major',
-        'semester',
-        'role',
+        'is_active',
+        'account_status',
+        'user_type',
         'avatar',
+        
+        // Contact & personal info
+        'gender',
+        'place_of_birth',
+        'date_of_birth',
         
         // Education (dari PKL migration)
         'school_university',
@@ -75,11 +90,8 @@ class User extends Authenticatable
         'portfolio_path',
         
         // System fields
-        'is_active',
         'last_login_at',
         'last_login_ip',
-        'account_status',
-        'user_type',
         'profile_completion_percentage',
         'has_viewed_company_profile'
     ];
@@ -94,6 +106,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'tanggal_lahir' => 'date',
             'birth_date' => 'date',
             'date_of_birth' => 'date',
             'semester' => 'integer',
@@ -101,6 +114,8 @@ class User extends Authenticatable
             'internship_start_period' => 'date',
             'internship_end_period' => 'date',
             'last_login_at' => 'datetime',
+            'aktif' => 'boolean',
+            'is_active' => 'boolean',
             'has_laptop' => 'boolean',
             'has_dslr' => 'boolean',
             'has_video_review_experience' => 'boolean',
@@ -110,7 +125,6 @@ class User extends Authenticatable
             'is_smoker' => 'boolean',
             'agrees_to_school_return_if_violation' => 'boolean',
             'agrees_to_return_if_absent_twice' => 'boolean',
-            'is_active' => 'boolean',
             'profile_completion_percentage' => 'integer',
         ];
     }
@@ -147,7 +161,17 @@ class User extends Authenticatable
         return $this->hasMany(UserActivity::class);
     }
 
+    public function aktivitas()
+    {
+        return $this->hasMany(UserActivity::class);
+    }
+
     public function documents()
+    {
+        return $this->hasMany(UserDocument::class);
+    }
+
+    public function dokumen()
     {
         return $this->hasMany(UserDocument::class);
     }

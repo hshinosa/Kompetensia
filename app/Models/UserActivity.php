@@ -9,12 +9,14 @@ class UserActivity extends Model
 {
     use HasFactory;
 
+    protected $table = 'aktivitas_pengguna';
+
     protected $fillable = [
         'user_id',
-        'activity_type',
-        'description',
+        'jenis_aktivitas',
+        'deskripsi',
         'metadata',
-        'ip_address',
+        'alamat_ip',
         'user_agent'
     ];
 
@@ -33,7 +35,7 @@ class UserActivity extends Model
     // Scopes
     public function scopeByType($query, $type)
     {
-        return $query->where('activity_type', $type);
+        return $query->where('jenis_aktivitas', $type);
     }
 
     public function scopeByUser($query, $userId)
@@ -47,15 +49,21 @@ class UserActivity extends Model
     }
 
     // Methods
-    public static function log($userId, $type, $description, $metadata = null, $ipAddress = null, $userAgent = null)
+    public static function catat($userId, $type, $description, $metadata = null, $ipAddress = null, $userAgent = null)
     {
         return self::create([
             'user_id' => $userId,
-            'activity_type' => $type,
-            'description' => $description,
+            'jenis_aktivitas' => $type,
+            'deskripsi' => $description,
             'metadata' => $metadata,
-            'ip_address' => $ipAddress,
+            'alamat_ip' => $ipAddress,
             'user_agent' => $userAgent
         ]);
+    }
+
+    // Legacy method for backward compatibility
+    public static function log($userId, $type, $description, $metadata = null, $ipAddress = null, $userAgent = null)
+    {
+        return self::catat($userId, $type, $description, $metadata, $ipAddress, $userAgent);
     }
 }

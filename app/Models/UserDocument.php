@@ -10,26 +10,26 @@ class UserDocument extends Model
 {
     use HasFactory;
 
+    protected $table = 'dokumen_pengguna';
+
     protected $fillable = [
         'user_id',
-        'document_type',
-        'original_name',
-        'file_path',
-        'file_extension',
-        'file_size',
-        'mime_type',
-        'is_verified',
-        'verified_by',
+        'jenis_dokumen',
+        'nama_dokumen',
+        'path_file',
+        'ukuran_file',
+        'tipe_mime',
+        'terverifikasi',
+        'aktif',
+        'catatan',
         'verified_at',
-        'verification_notes',
-        'is_active'
+        'verified_by'
     ];
 
     protected $casts = [
-        'is_verified' => 'boolean',
-        'is_active' => 'boolean',
+        'terverifikasi' => 'boolean',
+        'aktif' => 'boolean',
         'verified_at' => 'datetime',
-        'file_size' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -48,17 +48,17 @@ class UserDocument extends Model
     // Scopes
     public function scopeByType($query, $type)
     {
-        return $query->where('document_type', $type);
+        return $query->where('jenis_dokumen', $type);
     }
 
     public function scopeVerified($query)
     {
-        return $query->where('is_verified', true);
+        return $query->where('terverifikasi', true);
     }
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('aktif', true);
     }
 
     public function scopeByUser($query, $userId)
@@ -69,47 +69,51 @@ class UserDocument extends Model
     // Accessors
     public function getFileUrlAttribute()
     {
-        return $this->file_path ? Storage::url($this->file_path) : null;
+        return $this->path_file ? Storage::url($this->path_file) : null;
     }
 
     public function getFileSizeHumanAttribute()
     {
-        $bytes = $this->file_size;
-        $units = ['B', 'KB', 'MB', 'GB'];
-        
-        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-            $bytes /= 1024;
+        $size = $this->ukuran_file;
+        if (!$size) {
+            return 'Unknown';
         }
         
-        return round($bytes, 2) . ' ' . $units[$i];
+        $units = ['B', 'KB', 'MB', 'GB'];
+        
+        for ($i = 0; $size > 1024 && $i < count($units) - 1; $i++) {
+            $size /= 1024;
+        }
+        
+        return round($size, 2) . ' ' . $units[$i];
     }
 
     // Methods
     public function verify($verifierId, $notes = null)
     {
         return $this->update([
-            'is_verified' => true,
+            'terverifikasi' => true,
             'verified_by' => $verifierId,
             'verified_at' => now(),
-            'verification_notes' => $notes
+            'catatan' => $notes
         ]);
     }
 
     public function reject($verifierId, $notes)
     {
         return $this->update([
-            'is_verified' => false,
+            'terverifikasi' => false,
             'verified_by' => $verifierId,
             'verified_at' => now(),
-            'verification_notes' => $notes
+            'catatan' => $notes
         ]);
     }
 
     public function delete()
     {
         // Delete physical file
-        if ($this->file_path && Storage::exists($this->file_path)) {
-            Storage::delete($this->file_path);
+        if ($this->path_file && Storage::exists($this->path_file)) {
+            Storage::delete($this->path_file);
         }
         
         return parent::delete();

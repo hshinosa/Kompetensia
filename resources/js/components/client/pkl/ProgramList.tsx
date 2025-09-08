@@ -27,7 +27,7 @@ export default function ProgramList({ posisiPKL, searchTerm, onSearchChange }: P
   const itemsPerPage = 6;
 
   // Calculate pagination
-  const { paginatedData, totalPages, startIndex, endIndex } = useMemo(() => {
+  const { paginatedData, totalPages } = useMemo(() => {
     const startIdx = (currentPage - 1) * itemsPerPage;
     const endIdx = startIdx + itemsPerPage;
     const paginated = posisiPKL.slice(startIdx, endIdx);
@@ -35,9 +35,7 @@ export default function ProgramList({ posisiPKL, searchTerm, onSearchChange }: P
     
     return {
       paginatedData: paginated,
-      totalPages: total,
-      startIndex: startIdx,
-      endIndex: Math.min(endIdx, posisiPKL.length)
+      totalPages: total
     };
   }, [posisiPKL, currentPage]);
 
