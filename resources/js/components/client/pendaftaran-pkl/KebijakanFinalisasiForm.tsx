@@ -7,16 +7,25 @@ interface Props {
   readonly programId?: number;
 }
 
-export default function KebijakanFinalisasiForm({ formData, onFormDataChange, onBack }: Props) {
+export default function KebijakanFinalisasiForm({ formData, onFormDataChange, onBack, programId }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle final submission
-    console.log('Form submitted:', formData);
+    // Handle final submission with programId
+    console.log('Form submitted:', { ...formData, programId });
   };
 
   return (
     <div className="bg-white rounded-2xl p-8 border-2 border-purple-200 max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Hidden field for program ID */}
+        {programId && (
+          <input
+            type="hidden"
+            name="program_id"
+            value={programId}
+          />
+        )}
+        
         {/* Sudah melihat profil PT Chlorine Digital Media */}
         <div>
           <p className="text-sm font-medium text-gray-700 mb-4">

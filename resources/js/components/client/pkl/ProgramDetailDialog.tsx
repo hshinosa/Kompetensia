@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
 
 interface PosisiPKL {
   readonly id: number;
@@ -78,7 +79,7 @@ export default function ProgramDetailDialog({ program, isOpen, onClose }: Props)
       }`}
       onClick={handleBackdropClick}
     >
-      <div className={`bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative transition-all duration-200 ${
+      <div className={`bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative transition-all duration-200 ${
         isClosing ? 'animate-out zoom-out-95' : 'animate-in zoom-in-95'
       }`}>
         {/* Header */}
@@ -151,12 +152,15 @@ export default function ProgramDetailDialog({ program, isOpen, onClose }: Props)
 
         {/* Footer */}
         <div className="p-6 border-t border-gray-200">
-          <a
-            href={`/pendaftaran-pkl?program=${program.id}`}
+          <button
+            onClick={() => router.visit('/pendaftaran-pkl', {
+              method: 'get',
+              data: { programId: program.id }
+            })}
             className="block w-full py-3 bg-purple-600 text-white font-semibold rounded-2xl hover:bg-purple-700 transition-colors text-center"
           >
             Daftar Program Ini
-          </a>
+          </button>
         </div>
       </div>
     </div>

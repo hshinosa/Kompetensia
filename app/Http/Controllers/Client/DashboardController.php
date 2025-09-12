@@ -151,7 +151,7 @@ class DashboardController extends Controller
     {
         $requiredFields = [
             'nama_lengkap', 'email', 'telepon', 'alamat',
-            'tanggal_lahir', 'tempat_lahir', 'institusi',
+            'tanggal_lahir', 'tempat_lahir', 'jenis_kelamin', 'institusi',
             'jurusan', 'semester'
         ];
         

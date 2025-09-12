@@ -132,19 +132,6 @@ export default function ClientSertifikasi() {
                                         <span className="ml-1">{sertifikasi.peserta}</span>
                                     </div>
                                 </div>
-                                
-                                {/* Progress Bar */}
-                                <div className="flex justify-between items-center">
-                                    <div className="flex-1 mr-4">
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div 
-                                                className="bg-purple-600 h-2 rounded-full transition-all" 
-                                                style={{ width: `${sertifikasi.progress}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <span className="text-sm text-gray-600 font-medium">{sertifikasi.progress}%</span>
-                                </div>
                             </div>
                         </a>
                     ))}

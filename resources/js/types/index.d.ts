@@ -42,6 +42,7 @@ export interface User {
     alamat?: string;
     tanggal_lahir?: string;
     tempat_lahir?: string;
+    jenis_kelamin?: string;
     institusi?: string;
     jurusan?: string;
     semester?: number;
@@ -58,6 +59,7 @@ export interface User {
     address?: string;
     birth_date?: string;
     birth_place?: string;
+    gender?: string;
     institution?: string;
     major?: string;
     is_active?: boolean;

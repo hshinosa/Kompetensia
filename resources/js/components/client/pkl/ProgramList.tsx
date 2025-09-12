@@ -97,13 +97,8 @@ export default function ProgramList({ posisiPKL, searchTerm, onSearchChange }: P
           <div key={position.id} className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
             {/* Card Content */}
             <div className="p-4">
-              <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-3xl p-6 text-white relative overflow-hidden min-h-[280px] flex flex-col">
+              <div className="bg-gradient-to-tl from-purple-400 to-purple-600 rounded-3xl p-6 text-white relative overflow-hidden min-h-[280px] flex flex-col">
                 {/* Background Pattern */}
-                <div className="absolute top-0 right-0 w-20 h-20 opacity-10">
-                  <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle cx="50" cy="50" r="25" fill="currentColor" />
-                  </svg>
-                </div>
                 
                 <div className="relative z-10 flex flex-col h-full">
                   {/* Header */}

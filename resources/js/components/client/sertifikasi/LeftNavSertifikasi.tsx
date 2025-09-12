@@ -1,40 +1,92 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-// Developer note:
-// - To change the left-nav width, adjust the `w-56` / `max-w-[220px]` classes below.
-// - The sticky offset is controlled by `top-28`; modify it if your header height changes.
-// - This component is placed in a grid where the sidebar column controls overall layout.
 interface Props {
   readonly onOpen?: () => void;
 }
 
 export default function LeftNavSertifikasi({ onOpen }: Props) {
+  const [activeSection, setActiveSection] = useState<string>('');
+
+  const sections = [
+    { id: 'detail', label: 'Detail Sertifikasi' },
+    { id: 'materi', label: 'Materi Sertifikasi' },
+    { id: 'batch', label: 'Pilihan Batch' },
+    { id: 'assessor', label: 'Detail Assessor' },
+    { id: 'review', label: 'Review Sertifikasi' },
+    { id: 'recommend', label: 'Rekomendasi Sertifikasi' }
+  ];
+
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -20% 0px', // Trigger when section is 20% visible from top/bottom
+      threshold: 0.3
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Observe all sections
+    sections.forEach(section => {
+      const element = document.getElementById(section.id);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const handleSmoothScroll = (elementId: string) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      // Add offset to account for sticky navbar
+      const offsetTop = element.offsetTop - 100;
+      window.scrollTo({
+        top: offsetTop,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
-    // `w-65` keeps the nav compact; `max-w-[250px]` ensures it doesn't grow too large on small screens
-    <nav className="sticky top-28 self-start w-65 max-w-[250px]">
-      <div className="border border-gray-200 rounded-lg p-4 shadow-sm">
-        <ul className="space-y-3">
-          <li>
-            <a href="#detail" className="block px-3 py-2 rounded-md bg-white text-sm font-medium">Detail Sertifikasi</a>
-          </li>
-          <li>
-            <a href="#materi" className="block px-3 py-2 rounded-md text-sm">Materi Sertifikasi</a>
-          </li>
-          <li>
-            <a href="#batch" className="block px-3 py-2 rounded-md text-sm">Pilihan Batch</a>
-          </li>
-          <li>
-            <a href="#assessor" className="block px-3 py-2 rounded-md text-sm">Detail Assessor</a>
-          </li>
-          <li>
-            <a href="#review" className="block px-3 py-2 rounded-md text-sm">Review Sertifikasi</a>
-          </li>
-          <li>
-            <a href="#recommend" className="block px-3 py-2 rounded-md text-sm">Rekomendasi Sertifikasi</a>
-          </li>
+    <nav className="sticky top-28 self-start w-full max-w-[240px] h-fit">
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-200">
+        <h3 className="font-medium text-base mb-6 text-gray-900">Program Sertifikasi</h3>
+        
+        <ul className="space-y-3 text-sm mb-6">
+          {sections.map((section) => (
+            <li key={section.id}>
+              <button 
+                onClick={() => handleSmoothScroll(section.id)}
+                className={`block w-full text-left py-2 px-3 rounded-lg transition-all duration-200 ${
+                  activeSection === section.id
+                    ? 'text-purple-700 font-semibold'
+                    : 'text-gray-600 hover:text-purple-600 hover:font-medium'
+                }`}
+              >
+                {section.label}
+              </button>
+            </li>
+          ))}
         </ul>
-        <div className="mt-4">
-          <button onClick={() => onOpen?.()} className="w-full px-4 py-2 rounded-md bg-purple-700 text-white font-semibold">Daftar</button>
+        
+        <div>
+          <button 
+            onClick={() => onOpen?.()}
+            className="w-full px-4 py-3 rounded-2xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors"
+          >
+            Daftar Sekarang
+          </button>
         </div>
       </div>
     </nav>

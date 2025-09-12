@@ -55,9 +55,9 @@ export default function ClientPKL() {
                     </div>
                     <a 
                         href="/pkl/tersedia" 
-                        className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold"
+                        className="px-8 py-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold text-lg"
                     >
-                        Lihat Program Tersedia
+                        Temukan Program
                     </a>
                 </div>
 

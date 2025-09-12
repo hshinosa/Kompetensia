@@ -74,12 +74,12 @@ export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi
         <HeroSertifikasi sertifikasi={sertifikasi} onOpen={() => setOpen(true)} />
 
         <main className="container mx-auto py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <aside className="lg:col-span-3">
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
+            <aside className="lg:col-span-1">
               <LeftNavSertifikasi onOpen={() => setOpen(true)} />
             </aside>
 
-            <section className="lg:col-span-9">
+            <section className="lg:col-span-5">
               <DetailSertifikasi sertifikasi={sertifikasi} />
             </section>
           </div>
@@ -87,7 +87,7 @@ export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi
       </div>
 
       {/* Recommendations are full-width edge-to-edge */}
-      <div className="w-full bg-white">
+      <div id="recommend" className="w-full bg-white">
         <div className="container mx-auto px-10 py-10">
           <RekomendasiSertifikasi rekomendasiSertifikasi={rekomendasiSertifikasi} />
         </div>

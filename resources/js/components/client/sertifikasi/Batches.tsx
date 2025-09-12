@@ -23,7 +23,7 @@ const sampleBatches = [
 
 export default function Batches({ batch }: Props) {
   return (
-    <div id="batch" className="mt-6">
+    <div id="batch">
       <h4 className="text-lg font-semibold mb-4">Jadwal Batch</h4>
       
       {batch ? (
@@ -44,23 +44,23 @@ export default function Batches({ batch }: Props) {
             })}
           </div>
           <div className="text-sm text-gray-600 mt-2">👥 {batch.jumlah_pendaftar} Peserta</div>
-          <div className="text-sm text-purple-600 mt-1">👨‍🏫 {batch.instruktur}</div>
           <div className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 w-fit mt-2">
             {batch.status}
           </div>
-          {batch.catatan && (
-            <div className="text-sm text-gray-500 mt-2 italic">
-              {batch.catatan}
-            </div>
-          )}
+          <button className="w-full mt-4 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
+            Daftar Batch
+          </button>
         </div>
       ) : (
         <div className="flex gap-4 flex-wrap">
           {sampleBatches.map((b) => (
-            <div key={b.id} className="border-2 border-purple-300 rounded-lg p-4 min-w-[160px]">
+            <div key={b.id} className="border-2 border-purple-300 rounded-lg p-4 min-w-[160px] flex flex-col">
               <div className="font-semibold">{b.name}</div>
               <div className="text-sm text-gray-600">{b.date}</div>
-              <div className="text-sm text-gray-600 mt-2">👥 {b.peserta} Peserta</div>
+              <div className="text-sm text-gray-600 mt-2 mb-4">👥 {b.peserta} Peserta</div>
+              <button className="mt-auto px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
+                Daftar Batch
+              </button>
             </div>
           ))}
         </div>

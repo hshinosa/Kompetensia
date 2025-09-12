@@ -8,7 +8,7 @@ const reviews = [
 
 export default function ReviewList() {
   return (
-    <div id="review" className="mt-8">
+    <div id="review">
       <h4 className="text-lg font-semibold mb-4">Review Sertifikasi</h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {reviews.map((r) => (

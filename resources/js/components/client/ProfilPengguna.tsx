@@ -7,6 +7,10 @@ interface ProfileData {
     nama: string;
     nama_lengkap: string;
     email: string;
+    telepon?: string;
+    alamat?: string;
+    tanggal_lahir?: string;
+    jenis_kelamin?: string;
     institusi?: string;
     jurusan?: string;
     semester?: number;
@@ -94,6 +98,48 @@ export default function ProfilPengguna({ user }: Readonly<ProfilPenggunaProps>) 
                             </div>
                         </div>
                     </div>
+
+                    {/* Personal Info */}
+                    {(user.telepon || user.alamat || user.tanggal_lahir || user.jenis_kelamin) && (
+                        <div className="border-t pt-4">
+                            <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                                <User className="h-4 w-4 text-blue-600" />
+                                Informasi Personal
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                                {user.telepon && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Telepon:</span>
+                                        <span className="font-medium">{user.telepon}</span>
+                                    </div>
+                                )}
+                                {user.jenis_kelamin && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Jenis Kelamin:</span>
+                                        <span className="font-medium">{user.jenis_kelamin}</span>
+                                    </div>
+                                )}
+                                {user.tanggal_lahir && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Tanggal Lahir:</span>
+                                        <span className="font-medium">
+                                            {new Date(user.tanggal_lahir).toLocaleDateString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'long', 
+                                                year: 'numeric'
+                                            })}
+                                        </span>
+                                    </div>
+                                )}
+                                {user.alamat && (
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-gray-600">Alamat:</span>
+                                        <span className="font-medium text-sm">{user.alamat}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Academic Info */}
                     {(user.institusi || user.jurusan || user.semester) && (

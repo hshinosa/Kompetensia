@@ -23,16 +23,10 @@ export default function HeroPKL() {
         <div className="max-w-2xl text-white">
           <h1 className="text-3xl lg:text-4xl font-extrabold mb-3">{title}</h1>
           <p className="text-sm lg:text-base text-white/90">{description}</p>
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6">
             <button 
               onClick={scrollToProgramList}
-              className="px-4 py-2 rounded-md bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors"
-            >
-              Daftar PKL
-            </button>
-            <button 
-              onClick={scrollToProgramList}
-              className="px-4 py-2 rounded-md border border-orange-400 text-black font-sm bg-white/100 hover:bg-white/90 transition-colors"
+              className="px-6 py-3 rounded-lg bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors text-lg"
             >
               Temukan Program
             </button>

@@ -24,7 +24,7 @@ export default function AssessorDetail({ asesor }: Props) {
   const displayAsesor = asesor || sampleAsesor;
   
   return (
-    <div id="assessor" className="mt-6">
+    <div id="assessor">
       <h4 className="text-lg font-semibold mb-3">Detail Assessor</h4>
       <div className="flex items-start gap-4">
         <img 

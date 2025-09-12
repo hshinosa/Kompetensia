@@ -85,9 +85,9 @@ export default function LeftNavPKL({ selectedCategory, categories, onCategoryCha
         <div>
           <button 
             onClick={() => handleSmoothScroll('program-list')}
-            className="w-full px-4 py-3 rounded-full bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors"
+            className="w-full px-4 py-3 rounded-2xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors"
           >
-            Daftar Sekarang
+            Temukan Program
           </button>
         </div>
       </div>

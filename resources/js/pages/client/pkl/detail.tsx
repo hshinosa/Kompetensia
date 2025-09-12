@@ -223,6 +223,7 @@ function DocumentDetailModal({ isOpen, onClose, documentData }: DocumentDetailMo
 export default function PKLDetail({ pkl }: PKLDetailProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [jenisDocument, setJenisDocument] = useState<string>('');
+    const [linkUrl, setLinkUrl] = useState<string>('');
     const [selectedDocument, setSelectedDocument] = useState<RiwayatItem | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     
@@ -268,17 +269,19 @@ export default function PKLDetail({ pkl }: PKLDetailProps) {
     };
 
     const handleSubmit = () => {
-        if (selectedFile && jenisDocument) {
+        if (selectedFile && jenisDocument && linkUrl.trim()) {
             const formData = new FormData();
             formData.append('file', selectedFile);
             formData.append('jenis_dokumen', jenisDocument);
+            formData.append('link_url', linkUrl);
             
             // For now, just log the data - in a real app you'd submit to the server
-            console.log('Uploading file:', selectedFile.name, 'Type:', jenisDocument);
+            console.log('Uploading file:', selectedFile.name, 'Type:', jenisDocument, 'URL:', linkUrl);
             
             // Reset after upload
             setSelectedFile(null);
             setJenisDocument('');
+            setLinkUrl('');
             
             // In a real app, you would use Inertia's router.post() here
             // router.post(`/client/pkl/${pkl?.id}/upload`, formData);
@@ -345,6 +348,22 @@ export default function PKLDetail({ pkl }: PKLDetailProps) {
                                     </select>
                                 </div>
 
+                                {/* Link URL */}
+                                <div>
+                                    <label htmlFor="link-url" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Link URL *
+                                    </label>
+                                    <input
+                                        type="url"
+                                        id="link-url"
+                                        value={linkUrl}
+                                        onChange={(e) => setLinkUrl(e.target.value)}
+                                        placeholder="https://github.com/username/repository"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        required
+                                    />
+                                </div>
+
                                 {/* File Upload */}
                                 <div>
                                     <label htmlFor="file-upload" className="block text-sm font-medium text-gray-700 mb-2">
@@ -382,7 +401,7 @@ export default function PKLDetail({ pkl }: PKLDetailProps) {
                                 <div className="flex justify-end">
                                     <button
                                         type="submit"
-                                        disabled={!selectedFile || !jenisDocument}
+                                        disabled={!selectedFile || !jenisDocument || !linkUrl.trim()}
                                         className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                                     >
                                         Unggah Dokumen

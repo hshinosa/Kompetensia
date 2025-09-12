@@ -111,7 +111,7 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
     }
 
     const queryString = params.toString();
-    const url = `/sertifikasi${queryString ? `?${queryString}` : ''}`;
+    const url = queryString ? `/sertifikasi?${queryString}` : '/sertifikasi';
     
     router.visit(url, {
       preserveScroll: true,
@@ -150,41 +150,45 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
   };
 
   return (
-    <section>
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h2 className="text-2xl font-semibold">Daftar Sertifikasi</h2>
-          <p className="text-sm text-gray-600">Pilih skema sertifikasi yang sesuai dengan bidang dan kebutuhanmu.</p>
-        </div>
-
-        <div className="w-72">
-          <label className="relative block">
-            <input 
-              placeholder="temukan sertifikasi" 
+    <article>
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold mb-2">Daftar Sertifikasi</h2>
+        <p className="text-gray-600 mb-6">Pilih skema sertifikasi yang sesuai dengan bidang dan kebutuhanmu.</p>
+        
+        {/* Search Bar */}
+        <div className="relative mb-6 max-w-md">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Temukan sertifikasi kesukaanmu"
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full border border-orange-300 rounded-md py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+              className="w-full pl-4 pr-12 py-3 border border-gray-300 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm placeholder-gray-500 transition-all"
             />
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-500">🔍</span>
-          </label>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Category Filters */}
-      <div className="flex gap-3 mb-6">
-        {['Unggulan', 'BNSP', 'Industri'].map((category) => (
-          <button 
-            key={category}
-            onClick={() => handleCategoryChange(category)}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-              selectedCategory === category
-                ? 'bg-purple-700 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            {category}
-          </button>
-        ))}
+        {/* Category Filters */}
+        <div className="flex gap-3 mb-6">
+          {['Unggulan', 'BNSP', 'Industri'].map((category) => (
+            <button 
+              key={category}
+              onClick={() => handleCategoryChange(category)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === category
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-fr">
@@ -255,6 +259,6 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
           </button>
         </div>
       )}
-    </section>
+    </article>
   );
 }

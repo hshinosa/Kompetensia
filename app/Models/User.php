@@ -22,6 +22,7 @@ class User extends Authenticatable
         'alamat',
         'tanggal_lahir',
         'tempat_lahir',
+        'jenis_kelamin',
         'institusi',
         'jurusan',
         'semester',
@@ -267,9 +268,9 @@ class User extends Authenticatable
     public function calculateProfileCompletion()
     {
         $requiredFields = [
-            'full_name', 'email', 'phone', 'gender', 'address',
-            'place_of_birth', 'date_of_birth', 'school_university',
-            'major_concentration', 'class_semester'
+            'nama_lengkap', 'email', 'telepon', 'jenis_kelamin', 'alamat',
+            'tanggal_lahir', 'tempat_lahir', 'institusi',
+            'jurusan', 'semester'
         ];
         
         $filledFields = 0;

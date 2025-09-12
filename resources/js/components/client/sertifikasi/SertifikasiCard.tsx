@@ -54,7 +54,7 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
   };
 
   return (
-    <article className="border-2 border-purple-300 rounded-xl overflow-hidden bg-white flex flex-col hover:shadow-lg transition-shadow duration-300 min-h-[450px]">
+    <article className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 min-h-[450px] flex flex-col">
       <div className="relative">
         <img 
           src={imageUrl} 
@@ -64,7 +64,7 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
             e.currentTarget.src = getPlaceholderImage('default');
           }}
         />
-        <span className="absolute left-3 top-3 text-xs px-2 py-1 rounded bg-orange-50 text-orange-700 font-semibold">
+        <span className="absolute left-3 top-3 text-xs px-3 py-1 rounded-full bg-orange-50 text-orange-700 font-semibold">
           {sertifikasi.kategori}
         </span>
       </div>
@@ -95,13 +95,13 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
         <div className="flex gap-3">
           <button 
             onClick={handleAmbilKelas}
-            className="flex-1 px-3 py-2 rounded-md bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors"
+            className="flex-1 px-3 py-2 rounded-lg bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors"
           >
             Ambil Kelas
           </button>
           <button 
             onClick={handlePelajariKelas}
-            className="px-3 py-2 rounded-md border border-orange-400 text-orange-700 font-semibold hover:bg-orange-50 transition-colors"
+            className="px-3 py-2 rounded-lg border border-orange-400 text-orange-700 font-semibold hover:bg-orange-50 transition-colors"
           >
             Pelajari Kelas
           </button>

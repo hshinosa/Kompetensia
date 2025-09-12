@@ -47,27 +47,31 @@ export default function MateriCollapsible({ moduls }: Props) {
       <h3 className="text-lg font-semibold mb-4">Materi sertifikasi yang kamu pelajari</h3>
       <div className="space-y-3">
         {displayModuls.map((modul) => (
-          <div key={modul.id} className="border border-purple-200 rounded-md">
+          <div key={modul.id} className="border border-purple-200 rounded-lg overflow-hidden">
             <button
-              className="w-full text-left px-4 py-3 flex items-center justify-between"
+              className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-purple-50 transition-colors duration-200"
               onClick={() => setOpen((cur) => (cur === modul.id ? null : modul.id))}
             >
               <span className="font-medium">{modul.judul}</span>
-              <span className="text-purple-700">{open === modul.id ? '-' : '+'}</span>
+              <span className={`text-purple-700 transition-transform duration-200 ${open === modul.id ? 'rotate-45' : ''}`}>
+                +
+              </span>
             </button>
 
-            {open === modul.id && (
-              <div className="px-4 pb-4 pt-2 bg-white">
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              open === modul.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="px-4 pb-4 pt-2 bg-gray-50">
                 {modul.deskripsi && (
                   <p className="text-sm text-gray-600 mb-2">{modul.deskripsi}</p>
                 )}
                 <ul className="list-decimal list-inside text-sm text-gray-700 space-y-1">
                   {modul.poin_pembelajaran.map((point, i) => (
-                    <li key={i}>{point}</li>
+                    <li key={`${modul.id}-point-${i}`}>{point}</li>
                   ))}
                 </ul>
               </div>
-            )}
+            </div>
           </div>
         ))}
       </div>

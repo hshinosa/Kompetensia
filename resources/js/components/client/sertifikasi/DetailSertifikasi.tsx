@@ -44,7 +44,7 @@ export default function DetailSertifikasi({ sertifikasi }: Props) {
   
   return (
     <article>
-      <div id="detail" className="mb-6">
+      <div id="detail" className="mb-8">
         <h2 className="text-2xl font-semibold">Detail Sertifikasi</h2>
         <p className="text-sm text-gray-700 mt-3">{sertifikasi?.deskripsi || defaultDescription}</p>
         {sertifikasi?.jenis_sertifikasi && (
@@ -56,13 +56,21 @@ export default function DetailSertifikasi({ sertifikasi }: Props) {
         )}
       </div>
 
-      <MateriCollapsible moduls={sertifikasi?.moduls} />
+      <div className="mt-16">
+        <MateriCollapsible moduls={sertifikasi?.moduls} />
+      </div>
 
-      <Batches batch={sertifikasi?.batch} />
+      <div className="mt-16">
+        <Batches batch={sertifikasi?.batch} />
+      </div>
 
-      <AssessorDetail asesor={sertifikasi?.asesor} />
+      <div className="mt-16">
+        <AssessorDetail asesor={sertifikasi?.asesor} />
+      </div>
 
-      <ReviewList />
+      <div className="mt-16">
+        <ReviewList />
+      </div>
     </article>
   );
 }

@@ -51,16 +51,16 @@ export default function SertifikasiPage({ sertifikasiList = [], searchParams = {
           <div className="max-w-2xl text-white">
             <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight mb-4">Tingkatkan Skill Dengan Sertifikasi Terpercaya</h1>
             <p className="text-lg lg:text-xl text-white/90 mb-6">Kumpulan sertifikasi kredibel untuk karier yang lebih pasti dalam satu platform</p>
-            <a href="#list" className="inline-block px-5 py-3 rounded-full bg-purple-700 hover:bg-purple-800 text-white font-semibold">Temukan Skillmu</a>
+            <a href="#list" className="inline-block px-6 py-3 rounded-lg bg-purple-700 hover:bg-purple-800 text-white font-semibold transition-colors text-lg">Temukan Skillmu</a>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-8 lg:px-12 py-14">
-          <DaftarSertifikasi 
-            sertifikasiList={sertifikasiList}
-            searchParams={searchParams}
-          />
+      <main className="container mx-auto py-10">
+        <DaftarSertifikasi 
+          sertifikasiList={sertifikasiList}
+          searchParams={searchParams}
+        />
       </main>
 
       <Footer />

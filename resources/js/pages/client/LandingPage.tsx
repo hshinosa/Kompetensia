@@ -46,16 +46,18 @@ export default function LandingPage({ featuredBlogs = [], popularSertifikasi = [
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
-      <div className="px-10">
+      <div className="">
         <HeroSection />
-        <div id="sertifikasi">
-          <SertifikasiPopuler sertifikasiList={popularSertifikasi} />
-        </div>
-        <ProgramPKL />
-        <MengapaSertifikasiPKL />
-        <ArtikelPilihan articles={featuredBlogs} />
-        <ApaKataAlumni />
-        <CTASection />
+        <main className="container mx-auto py-10">
+          <div id="sertifikasi">
+            <SertifikasiPopuler sertifikasiList={popularSertifikasi} />
+          </div>
+          <ProgramPKL />
+          <MengapaSertifikasiPKL />
+          <ArtikelPilihan articles={featuredBlogs} />
+          <ApaKataAlumni />
+          <CTASection />
+        </main>
       </div>
       <Footer />
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
