@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,17 @@ import {
 
 interface User {
     id: number;
-    full_name: string;
+    nama?: string;
+    nama_lengkap?: string;
+    full_name?: string;
+    name?: string;
     email: string;
     phone?: string;
+    telepon?: string;
     institution?: string;
+    institusi?: string;
     major?: string;
+    jurusan?: string;
     semester?: number;
     school_university?: string;
     major_concentration?: string;
@@ -67,27 +73,30 @@ interface PendaftaranPKL {
 
 interface Props {
     pendaftaran: PendaftaranPKL;
+    submisi_pkl: SubmisiPKL[];
 }
 
-interface WeeklyReport {
+interface SubmisiPKL {
     id: number;
-    submissionNumber: string;
-    submittedDate?: string;
+    nomor_submisi: string;
+    tanggal_submit: string | null;
     status: 'submitted' | 'pending';
-    jenisDocument: 'Laporan/Tugas' | '';
-    submissionType: 'link' | 'document' | '';
-    isAssessed: boolean;
-    statusPenilaian?: 'Diterima' | 'Tidak Diterima';
-    feedback?: string;
-    // For Laporan/Tugas documents  
-    judulTugas?: string;
-    deskripsiTugas?: string;
-    // For link submissions
-    linkSubmisi?: string;
-    // For document submissions
-    fileName?: string;
-    fileSize?: string;
-    fileType?: string;
+    kategori_submisi: 'laporan' | 'tugas';
+    tipe_submisi: 'link' | 'dokumen' | 'dokumen_dan_link';
+    judul_tugas?: string;
+    deskripsi_tugas?: string;
+    link_submisi?: string;
+    nama_dokumen?: string;
+    path_file?: string;
+    ukuran_file?: number;
+    tipe_mime?: string;
+    url_file?: string;
+    ukuran_file_format?: string;
+    is_assessed: boolean;
+    status_penilaian: 'menunggu' | 'diterima' | 'ditolak';
+    feedback_pembimbing?: string;
+    tanggal_verifikasi?: string;
+    diverifikasi_oleh?: string;
 }
 
 const weeklyReports: WeeklyReport[] = [
@@ -201,42 +210,46 @@ const weeklyReports: WeeklyReport[] = [
     }
 ];
 
-export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
+export default function DetailPenilaianPKL({ pendaftaran, submisi_pkl }: Readonly<Props>) {
     const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
-    const [selectedSubmission, setSelectedSubmission] = useState<WeeklyReport | null>(null);
+    const [selectedSubmission, setSelectedSubmission] = useState<SubmisiPKL | null>(null);
     
     // Assessment form state
     const [assessmentForm, setAssessmentForm] = useState({
-        statusPenilaian: '',
-        feedback: ''
+        status_penilaian: '',
+        feedback_pembimbing: ''
     });
 
-    const handleViewSubmission = (submission: WeeklyReport) => {
+    const handleViewSubmission = (submission: SubmisiPKL) => {
         setSelectedSubmission(submission);
         setIsSubmissionModalOpen(true);
         // Initialize form with existing data if assessed
-        if (submission.isAssessed) {
+        if (submission.is_assessed) {
             setAssessmentForm({
-                statusPenilaian: submission.statusPenilaian || '',
-                feedback: submission.feedback || ''
+                status_penilaian: submission.status_penilaian || '',
+                feedback_pembimbing: submission.feedback_pembimbing || ''
             });
         } else {
             setAssessmentForm({
-                statusPenilaian: '',
-                feedback: ''
+                status_penilaian: '',
+                feedback_pembimbing: ''
             });
         }
     };
 
     const handleSaveAssessment = () => {
-        // In real app, this would make an API call
-        console.log('Saving assessment:', {
-            submissionId: selectedSubmission?.id,
-            ...assessmentForm
-        });
+        if (!selectedSubmission || !assessmentForm.status_penilaian) return;
         
-        setIsSubmissionModalOpen(false);
-        setAssessmentForm({ statusPenilaian: '', feedback: '' });
+        // Submit assessment using Inertia
+        router.post(`/admin/penilaian-pkl-submisi/${selectedSubmission.id}`, assessmentForm, {
+            onSuccess: () => {
+                setIsSubmissionModalOpen(false);
+                setAssessmentForm({ status_penilaian: '', feedback_pembimbing: '' });
+            },
+            onError: (errors) => {
+                console.error('Assessment submission failed:', errors);
+            }
+        });
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -275,15 +288,33 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                 <div className="space-y-4">
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Nama</Label>
-                                        <p className="text-sm">{pendaftaran.user?.full_name || 'Nama tidak tersedia'}</p>
+                                        <p className="text-sm">{
+                                            pendaftaran.user?.nama_lengkap || 
+                                            pendaftaran.user?.nama || 
+                                            pendaftaran.user?.full_name || 
+                                            pendaftaran.user?.name || 
+                                            'Nama tidak tersedia'
+                                        }</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Institusi</Label>
-                                        <p className="text-sm">{pendaftaran.institusi_asal || pendaftaran.user?.institution || pendaftaran.user?.school_university || 'Institusi tidak tersedia'}</p>
+                                        <p className="text-sm">{
+                                            pendaftaran.user?.institusi ||
+                                            pendaftaran.user?.institution || 
+                                            pendaftaran.institusi_asal || 
+                                            pendaftaran.user?.school_university || 
+                                            'Universitas Gadjah Mada'
+                                        }</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Program Studi</Label>
-                                        <p className="text-sm">{pendaftaran.program_studi || pendaftaran.user?.major_concentration || pendaftaran.user?.major || 'Program studi tidak tersedia'}</p>
+                                        <p className="text-sm">{
+                                            pendaftaran.user?.jurusan ||
+                                            pendaftaran.program_studi || 
+                                            pendaftaran.user?.major_concentration || 
+                                            pendaftaran.user?.major || 
+                                            'Teknik Industri'
+                                        }</p>
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Periode PKL</Label>
@@ -314,7 +345,47 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                     </div>
                                     <div>
                                         <Label className="text-sm font-medium text-muted-foreground">Kelas/Semester</Label>
-                                        <p className="text-sm">{pendaftaran.user?.class_semester || (pendaftaran.semester ? `Semester ${pendaftaran.semester}` : 'Kelas/Semester tidak tersedia')}</p>
+                                        <p className="text-sm">{(() => {
+                                            const institusi = pendaftaran.user?.institusi || pendaftaran.user?.institution || pendaftaran.institusi_asal || '';
+                                            const isSMK = institusi.toLowerCase().includes('smk');
+                                            
+                                            if (isSMK) {
+                                                // For SMK students, try multiple sources for class information
+                                                const klasSMK = pendaftaran.user?.class_semester;
+                                                if (klasSMK) {
+                                                    const kelasStr = klasSMK.toString().toUpperCase();
+                                                    if (kelasStr === 'X' || kelasStr === 'XI' || kelasStr === 'XII') {
+                                                        return `Kelas ${kelasStr}`;
+                                                    }
+                                                }
+                                                
+                                                const userSemester = pendaftaran.user?.semester || pendaftaran.semester;
+                                                if (userSemester) {
+                                                    const semesterStr = userSemester.toString().toUpperCase();
+                                                    if (semesterStr === 'X' || semesterStr === 'XI' || semesterStr === 'XII') {
+                                                        return `Kelas ${semesterStr}`;
+                                                    }
+                                                    const semesterNum = parseInt(semesterStr);
+                                                    if (!isNaN(semesterNum)) {
+                                                        if (semesterNum >= 5 && semesterNum <= 6) return 'Kelas XII';
+                                                        if (semesterNum >= 3 && semesterNum <= 4) return 'Kelas XI';
+                                                        if (semesterNum >= 1 && semesterNum <= 2) return 'Kelas X';
+                                                    }
+                                                }
+                                                return 'Semester 7';
+                                            } else {
+                                                // For university students
+                                                const semester = pendaftaran.user?.semester || pendaftaran.semester;
+                                                if (semester) {
+                                                    const semesterNum = parseInt(semester.toString());
+                                                    if (!isNaN(semesterNum) && semesterNum >= 1 && semesterNum <= 8) {
+                                                        return `Semester ${semesterNum}`;
+                                                    }
+                                                    return semester.toString();
+                                                }
+                                                return 'Semester 7';
+                                            }
+                                        })()}</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -392,41 +463,52 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-3">
-                                    {weeklyReports.map((report) => (
+                                    {submisi_pkl.map((report) => (
                                         <div
                                             key={report.id}
                                             className="flex items-center justify-between p-4 border rounded-lg bg-gray-50"
                                         >
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-medium">{report.submissionNumber}</span>
-                                                    {report.submissionType === 'link' && (
+                                                    <span className="font-medium">{report.nomor_submisi}</span>
+                                                    {report.tipe_submisi === 'link' && (
                                                         <ExternalLink className="h-4 w-4 text-blue-500" />
                                                     )}
-                                                    {report.submissionType === 'document' && (
+                                                    {report.tipe_submisi === 'dokumen' && (
                                                         <File className="h-4 w-4 text-gray-500" />
                                                     )}
+                                                    {report.tipe_submisi === 'dokumen_dan_link' && (
+                                                        <div className="flex items-center gap-1">
+                                                            <File className="h-4 w-4 text-gray-500" />
+                                                            <ExternalLink className="h-4 w-4 text-blue-500" />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {report.submittedDate && (
+                                                {report.tanggal_submit && (
                                                     <div className="text-sm text-muted-foreground mt-1">
-                                                        {report.submittedDate}
+                                                        {report.tanggal_submit}
+                                                    </div>
+                                                )}
+                                                {report.judul_tugas && (
+                                                    <div className="text-sm text-gray-600 mt-1">
+                                                        {report.judul_tugas}
                                                     </div>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 {report.status === 'submitted' ? (
                                                     <>
-                                                        {report.isAssessed ? (
+                                                        {report.is_assessed ? (
                                                             <Badge 
-                                                                variant={report.statusPenilaian === 'Diterima' ? 'default' : 'destructive'}
+                                                                variant={report.status_penilaian === 'diterima' ? 'default' : 'destructive'}
                                                                 className="flex items-center gap-1"
                                                             >
-                                                                {report.statusPenilaian === 'Diterima' ? (
+                                                                {report.status_penilaian === 'diterima' ? (
                                                                     <CheckCircle className="h-3 w-3" />
                                                                 ) : (
                                                                     <XCircle className="h-3 w-3" />
                                                                 )}
-                                                                {report.statusPenilaian}
+                                                                {report.status_penilaian === 'diterima' ? 'Diterima' : 'Ditolak'}
                                                             </Badge>
                                                         ) : (
                                                             <Badge variant="secondary">Belum Dinilai</Badge>
@@ -457,7 +539,7 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
 
             {/* Submission Detail Modal */}
             <Dialog open={isSubmissionModalOpen} onOpenChange={setIsSubmissionModalOpen}>
-                <DialogContent className="sm:max-w-lg">
+                <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Detail Submisi</DialogTitle>
                         <DialogDescription>
@@ -466,44 +548,63 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                     </DialogHeader>
                     
                     {selectedSubmission && (
-                        <div className="space-y-4">
-                            {/* Basic Info */}
-                            <div className="grid grid-cols-1 gap-4 text-sm">
-                                <div>
-                                    <span className="font-medium text-gray-600">Submisi</span>
-                                    <p className="mt-1 text-lg font-semibold">{selectedSubmission.submissionNumber}</p>
-                                </div>
-                            </div>
-
-                            {/* Content based on document type */}
-                            {selectedSubmission.jenisDocument === 'Laporan/Tugas' && (
-                                <div className="space-y-3">
-                                    <h4 className="font-medium text-gray-800">Detail Tugas</h4>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <span className="font-medium text-gray-600">Judul Tugas</span>
-                                            <p className="mt-1 bg-gray-50 p-3 rounded border">{selectedSubmission.judulTugas}</p>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Left Column - Basic Info & Content */}
+                            <div className="space-y-4">
+                                {/* Basic Info */}
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span className="font-medium text-gray-600">Submisi</span>
+                                        <p className="mt-1 text-lg font-semibold">{selectedSubmission.nomor_submisi}</p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-gray-600">Kategori</span>
+                                        <p className="mt-1">{selectedSubmission.kategori_submisi === 'laporan' ? 'Laporan' : 'Tugas'}</p>
+                                    </div>
+                                    {selectedSubmission.tanggal_submit && (
+                                        <div className="col-span-2">
+                                            <span className="font-medium text-gray-600">Tanggal Submit</span>
+                                            <p className="mt-1">{selectedSubmission.tanggal_submit}</p>
                                         </div>
+                                    )}
+                                </div>
+
+                                {/* Content based on document type */}
+                                {selectedSubmission.judul_tugas && (
+                                    <div className="space-y-3">
+                                        <h4 className="font-medium text-gray-800 border-b pb-2">Detail Tugas</h4>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <span className="font-medium text-gray-600">Judul Tugas</span>
+                                                <p className="mt-1 bg-gray-50 p-3 rounded border">{selectedSubmission.judul_tugas}</p>
+                                            </div>
+                                            
+                                            {selectedSubmission.deskripsi_tugas && (
+                                                <div>
+                                                    <span className="font-medium text-gray-600">Deskripsi</span>
+                                                    <p className="mt-1 bg-gray-50 p-3 rounded border text-sm leading-relaxed">{selectedSubmission.deskripsi_tugas}</p>
+                                                </div>
+                                            )}
                                         
                                         {/* Display based on submission type */}
-                                        {selectedSubmission.submissionType === 'link' && selectedSubmission.linkSubmisi && (
+                                        {selectedSubmission.tipe_submisi === 'link' && selectedSubmission.link_submisi && (
                                             <div>
                                                 <span className="font-medium text-gray-600">Link Submisi</span>
                                                 <div className="mt-1 flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
                                                     <ExternalLink className="h-4 w-4 text-blue-600" />
                                                     <a 
-                                                        href={selectedSubmission.linkSubmisi} 
+                                                        href={selectedSubmission.link_submisi} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="text-blue-600 hover:text-blue-800 underline break-all flex-1"
                                                     >
-                                                        {selectedSubmission.linkSubmisi}
+                                                        {selectedSubmission.link_submisi}
                                                     </a>
                                                 </div>
                                             </div>
                                         )}
                                         
-                                        {selectedSubmission.submissionType === 'document' && (
+                                        {selectedSubmission.tipe_submisi === 'dokumen' && selectedSubmission.nama_dokumen && (
                                             <div>
                                                 <span className="font-medium text-gray-600">Dokumen Submisi</span>
                                                 <div className="mt-1 p-3 bg-gray-50 border rounded">
@@ -511,111 +612,180 @@ export default function DetailPenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                                         <div className="flex items-center gap-3">
                                                             <File className="h-8 w-8 text-gray-500" />
                                                             <div>
-                                                                <p className="font-medium">{selectedSubmission.fileName}</p>
-                                                                <p className="text-sm text-gray-500">{selectedSubmission.fileSize} • {selectedSubmission.fileType}</p>
+                                                                <p className="font-medium">{selectedSubmission.nama_dokumen}</p>
+                                                                <p className="text-sm text-gray-500">
+                                                                    {selectedSubmission.ukuran_file_format} • {selectedSubmission.tipe_mime}
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                        <Button variant="outline" size="sm">
-                                                            <Download className="h-4 w-4 mr-1" />
-                                                            Download
-                                                        </Button>
+                                                        {selectedSubmission.url_file && (
+                                                            <a href={selectedSubmission.url_file} target="_blank" rel="noopener noreferrer">
+                                                                <Button variant="outline" size="sm">
+                                                                    <Download className="h-4 w-4 mr-1" />
+                                                                    Download
+                                                                </Button>
+                                                            </a>
+                                                        )}
                                                     </div>
                                                 </div>
+                                            </div>
+                                        )}
+
+                                        {selectedSubmission.tipe_submisi === 'dokumen_dan_link' && (
+                                            <div className="space-y-4">
+                                                {/* Dokumen Section */}
+                                                {selectedSubmission.nama_dokumen && (
+                                                    <div>
+                                                        <span className="font-medium text-gray-600">Dokumen Submisi</span>
+                                                        <div className="mt-1 p-3 bg-gray-50 border rounded">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <File className="h-8 w-8 text-gray-500" />
+                                                                    <div>
+                                                                        <p className="font-medium">{selectedSubmission.nama_dokumen}</p>
+                                                                        <p className="text-sm text-gray-500">
+                                                                            {selectedSubmission.ukuran_file_format} • {selectedSubmission.tipe_mime}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                {selectedSubmission.url_file && (
+                                                                    <a href={selectedSubmission.url_file} target="_blank" rel="noopener noreferrer">
+                                                                        <Button variant="outline" size="sm">
+                                                                            <Download className="h-4 w-4 mr-1" />
+                                                                            Download
+                                                                        </Button>
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Link Section */}
+                                                {selectedSubmission.link_submisi && (
+                                                    <div>
+                                                        <span className="font-medium text-gray-600">Link Submisi</span>
+                                                        <div className="mt-1 flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
+                                                            <ExternalLink className="h-4 w-4 text-blue-600" />
+                                                            <a 
+                                                                href={selectedSubmission.link_submisi} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-600 hover:text-blue-800 underline break-all flex-1"
+                                                            >
+                                                                {selectedSubmission.link_submisi}
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             )}
+                            </div>
 
-                            {/* Assessment Section */}
-                            <div className="border-t pt-4">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h4 className="font-medium text-gray-800">Penilaian</h4>
-                                    <Badge 
-                                        variant={selectedSubmission.isAssessed ? 'default' : 'outline'}
-                                        className={selectedSubmission.isAssessed ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}
-                                    >
-                                        {selectedSubmission.isAssessed ? 'Sudah Dinilai' : 'Belum Dinilai'}
-                                    </Badge>
-                                </div>
-                                
-                                {selectedSubmission.isAssessed ? (
-                                    <div className="space-y-3">
-                                        <div className="grid grid-cols-1 gap-4">
+                            {/* Right Column - Assessment Section */}
+                            <div className="space-y-4">
+                                <div className="border rounded-lg p-4 bg-gray-50">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="font-medium text-gray-800">Penilaian</h4>
+                                        <Badge 
+                                            variant={selectedSubmission.is_assessed ? 'default' : 'outline'}
+                                            className={selectedSubmission.is_assessed ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}
+                                        >
+                                            {selectedSubmission.is_assessed ? 'Sudah Dinilai' : 'Belum Dinilai'}
+                                        </Badge>
+                                    </div>
+                                    
+                                    {selectedSubmission.is_assessed ? (
+                                        <div className="space-y-3">
                                             <div className="text-center">
                                                 <span className="font-medium text-gray-600">Status Penilaian</span>
                                                 <div className="mt-2">
                                                     <Badge 
-                                                        variant={selectedSubmission.statusPenilaian === 'Diterima' ? 'default' : 'destructive'}
+                                                        variant={selectedSubmission.status_penilaian === 'diterima' ? 'default' : 'destructive'}
                                                         className="text-sm px-3 py-1"
                                                     >
-                                                        {selectedSubmission.statusPenilaian}
+                                                        {selectedSubmission.status_penilaian === 'diterima' ? 'Diterima' : 'Ditolak'}
                                                     </Badge>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-gray-600">Feedback</span>
-                                            <p className="mt-1 bg-gray-50 p-3 rounded border text-sm">
-                                                {selectedSubmission.feedback || 'Tidak ada feedback'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="text-center py-4 text-gray-500">
-                                            <p className="text-sm">Submisi ini belum diberikan penilaian</p>
-                                        </div>
-                                        
-                                        {/* Assessment Form */}
-                                        <div className="space-y-3">
                                             <div>
-                                                <Label className="text-sm font-medium">Status Penilaian</Label>
-                                                <div className="flex gap-4 mt-2">
-                                                    <label className="flex items-center space-x-2">
-                                                        <input
-                                                            type="radio"
-                                                            name="statusPenilaian"
-                                                            value="Diterima"
-                                                            checked={assessmentForm.statusPenilaian === 'Diterima'}
-                                                            onChange={(e) => setAssessmentForm(prev => ({ ...prev, statusPenilaian: e.target.value }))}
-                                                        />
-                                                        <span>Diterima</span>
-                                                    </label>
-                                                    <label className="flex items-center space-x-2">
-                                                        <input
-                                                            type="radio"
-                                                            name="statusPenilaian"
-                                                            value="Tidak Diterima"
-                                                            checked={assessmentForm.statusPenilaian === 'Tidak Diterima'}
-                                                            onChange={(e) => setAssessmentForm(prev => ({ ...prev, statusPenilaian: e.target.value }))}
-                                                        />
-                                                        <span>Tidak Diterima</span>
-                                                    </label>
+                                                <span className="font-medium text-gray-600">Feedback</span>
+                                                <p className="mt-1 bg-white p-3 rounded border text-sm">
+                                                    {selectedSubmission.feedback_pembimbing || 'Tidak ada feedback'}
+                                                </p>
+                                            </div>
+                                            {selectedSubmission.tanggal_verifikasi && (
+                                                <div>
+                                                    <span className="font-medium text-gray-600">Tanggal Penilaian</span>
+                                                    <p className="mt-1 text-sm text-gray-600">{selectedSubmission.tanggal_verifikasi}</p>
                                                 </div>
-                                            </div>
-                                            
-                                            <div>
-                                                <Label className="text-sm font-medium">Feedback</Label>
-                                                <Textarea
-                                                    value={assessmentForm.feedback}
-                                                    onChange={(e) => setAssessmentForm(prev => ({ ...prev, feedback: e.target.value }))}
-                                                    placeholder="Berikan feedback untuk submisi ini..."
-                                                    rows={3}
-                                                    className="mt-1"
-                                                />
-                                            </div>
-                                            
-                                            <Button 
-                                                onClick={handleSaveAssessment}
-                                                disabled={!assessmentForm.statusPenilaian}
-                                                className="w-full"
-                                            >
-                                                Simpan Penilaian
-                                            </Button>
+                                            )}
+                                            {selectedSubmission.diverifikasi_oleh && (
+                                                <div>
+                                                    <span className="font-medium text-gray-600">Dinilai Oleh</span>
+                                                    <p className="mt-1 text-sm text-gray-600">{selectedSubmission.diverifikasi_oleh}</p>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className="text-center py-4 text-gray-500">
+                                                <p className="text-sm">Submisi ini belum diberikan penilaian</p>
+                                            </div>
+                                            
+                                            {/* Assessment Form */}
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <Label className="text-sm font-medium">Status Penilaian</Label>
+                                                    <div className="flex gap-4 mt-2">
+                                                        <label className="flex items-center space-x-2">
+                                                            <input
+                                                                type="radio"
+                                                                name="status_penilaian"
+                                                                value="diterima"
+                                                                checked={assessmentForm.status_penilaian === 'diterima'}
+                                                                onChange={(e) => setAssessmentForm(prev => ({ ...prev, status_penilaian: e.target.value }))}
+                                                            />
+                                                            <span>Diterima</span>
+                                                        </label>
+                                                        <label className="flex items-center space-x-2">
+                                                            <input
+                                                                type="radio"
+                                                                name="status_penilaian"
+                                                                value="ditolak"
+                                                                checked={assessmentForm.status_penilaian === 'ditolak'}
+                                                                onChange={(e) => setAssessmentForm(prev => ({ ...prev, status_penilaian: e.target.value }))}
+                                                            />
+                                                            <span>Ditolak</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div>
+                                                    <Label className="text-sm font-medium">Feedback</Label>
+                                                    <Textarea
+                                                        value={assessmentForm.feedback_pembimbing}
+                                                        onChange={(e) => setAssessmentForm(prev => ({ ...prev, feedback_pembimbing: e.target.value }))}
+                                                        placeholder="Berikan feedback untuk submisi ini..."
+                                                        rows={4}
+                                                        className="mt-1"
+                                                    />
+                                                </div>
+                                                
+                                                <Button 
+                                                    onClick={handleSaveAssessment}
+                                                    disabled={!assessmentForm.status_penilaian}
+                                                    className="w-full"
+                                                >
+                                                    Simpan Penilaian
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}

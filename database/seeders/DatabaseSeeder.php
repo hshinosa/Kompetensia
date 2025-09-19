@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             PendaftaranPKLSeeder::class,
             PenilaianSertifikasiSeeder::class,
             PenilaianPKLSeeder::class,
+            DokumenPenggunaSeeder::class,
             BlogSeeder::class,
             VideoSeeder::class,
         ]);

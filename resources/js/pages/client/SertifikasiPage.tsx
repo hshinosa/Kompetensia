@@ -47,7 +47,7 @@ export default function SertifikasiPage({ sertifikasiList = [], searchParams = {
         style={{ backgroundImage: `url('/images/hero-sertif.png')` }}
       >
         <div className="absolute inset-0 bg-black opacity-30" />
-        <div className="relative z-10 container mx-auto px-8 lg:px-12 h-full flex items-center">
+        <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
           <div className="max-w-2xl text-white">
             <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight mb-4">Tingkatkan Skill Dengan Sertifikasi Terpercaya</h1>
             <p className="text-lg lg:text-xl text-white/90 mb-6">Kumpulan sertifikasi kredibel untuk karier yang lebih pasti dalam satu platform</p>
@@ -56,7 +56,7 @@ export default function SertifikasiPage({ sertifikasiList = [], searchParams = {
         </div>
       </header>
 
-      <main className="container mx-auto py-10">
+      <main className="container mx-auto px-4 py-10">
         <DaftarSertifikasi 
           sertifikasiList={sertifikasiList}
           searchParams={searchParams}

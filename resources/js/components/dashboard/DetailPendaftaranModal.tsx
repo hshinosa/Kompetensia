@@ -51,6 +51,16 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   
+  // Debug log to see what data we're receiving
+  React.useEffect(() => {
+    if (isOpen && pendaftarData) {
+      console.log('DetailPendaftaranModal data:', pendaftarData);
+      console.log('Biodata:', pendaftarData.biodata);
+      console.log('Sertifikasi:', pendaftarData.sertifikasi);
+      console.log('PKL Info:', pendaftarData.pkl_info);
+    }
+  }, [isOpen, pendaftarData]);
+  
   const approve = async () => { 
     setIsProcessing(true);
     setError(null);

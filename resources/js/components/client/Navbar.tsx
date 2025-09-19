@@ -34,14 +34,14 @@ export default function Navbar() {
   return (
     <>
       <nav className="flex items-center px-20 py-5 bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
-        <div className="text-2xl font-semibold mr-8">
+        <div className="text-2xl font-semibold mr-8 text-gray-900">
           <Link href="/">Kompetensia</Link>
         </div>
-        <div className="flex flex-1 justify-end items-center gap-8 text-lg mr-6">
-          <Link href="/sertifikasi" className="hover:underline">Sertifikasi</Link>
-          <Link href="/pkl" className="hover:underline">PKL</Link>
-          <Link href="#tentang" className="hover:underline">Tentang</Link>
-          <Link href="#testimoni" className="hover:underline">Testimoni</Link>
+        <div className="flex flex-1 justify-end items-center gap-8 text-lg mr-6 text-gray-900">
+          <Link href="/sertifikasi" className="hover:underline hover:text-purple-700 transition-colors">Sertifikasi</Link>
+          <Link href="/pkl" className="hover:underline hover:text-purple-700 transition-colors">PKL</Link>
+          <Link href="#tentang" className="hover:underline hover:text-purple-700 transition-colors">Tentang</Link>
+          <Link href="#testimoni" className="hover:underline hover:text-purple-700 transition-colors">Testimoni</Link>
         </div>
         
         {/* Authentication Section */}

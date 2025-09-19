@@ -1,86 +1,192 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
+
+interface User {
+  id: number;
+  nama: string;
+  nama_lengkap?: string;
+  email: string;
+  no_telp?: string;
+  role: string;
+}
+
+interface PageProps extends Record<string, any> {
+  auth?: {
+    user?: User;
+    client?: User;
+  };
+}
 
 interface Props {
   onClose: () => void;
+  selectedBatch?: {id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string} | null;
 }
 
-export default function PendaftaranModal({ onClose }: Props) {
-  const [nama, setNama] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [batch, setBatch] = useState('Batch 1 | 10 Mei 2025 - 10 Juni 2025');
+export default function PendaftaranModal({ onClose, selectedBatch }: Props) {
+  const { auth } = usePage<PageProps>().props;
+  const user = auth?.client; // Menggunakan client auth
+  
+  const [isClosing, setIsClosing] = useState(false);
+  const [nama, setNama] = useState(user?.nama_lengkap || user?.nama || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.no_telp || '');
+  
+  // Set default batch based on selectedBatch or fallback to first option
+  const defaultBatchOption = selectedBatch 
+    ? `${selectedBatch.nama_batch} | ${new Date(selectedBatch.tanggal_mulai).toLocaleDateString('id-ID')} - ${new Date(selectedBatch.tanggal_selesai).toLocaleDateString('id-ID')}`
+    : 'Batch 1 | 10 Mei 2025 - 10 Juni 2025';
+  
+  const [batch, setBatch] = useState(defaultBatchOption);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    setIsClosing(false);
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  // Update batch when selectedBatch changes
+  useEffect(() => {
+    if (selectedBatch) {
+      const batchText = `${selectedBatch.nama_batch} | ${new Date(selectedBatch.tanggal_mulai).toLocaleDateString('id-ID')} - ${new Date(selectedBatch.tanggal_selesai).toLocaleDateString('id-ID')}`;
+      setBatch(batchText);
+    }
+  }, [selectedBatch]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
+
+  // Handle animated close
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 200); // Match animation duration
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    // For now just close modal; integrate with backend later
-    console.log({ nama, email, phone, batch });
-    onClose();
+    // Include selected batch ID in the submission
+    const formData = {
+      nama,
+      email,
+      phone,
+      batch,
+      batch_id: selectedBatch?.id || null
+    };
+    console.log('Form submission data:', formData);
+    handleClose();
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <button aria-label="Close modal" onClick={onClose} className="absolute inset-0 bg-black opacity-40" />
-
-      <form onSubmit={submit} className="relative bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl z-10">
-        <button type="button" onClick={onClose} className="absolute right-6 top-6 w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-white hover:bg-orange-500 transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-        <h3 className="text-2xl font-bold mb-6 text-gray-900">Pendaftaran Sertifikasi</h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <label className="block">
-            <div className="text-sm font-medium mb-2 text-gray-700">Nama Lengkap *</div>
-            <input 
-              value={nama} 
-              onChange={(e) => setNama(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-              placeholder="Masukkan nama lengkap"
-              required
-            />
-          </label>
-
-          <label className="block">
-            <div className="text-sm font-medium mb-2 text-gray-700">Alamat Email *</div>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-              placeholder="email@domain.com"
-              required
-            />
-          </label>
+    <div 
+      className={`fixed inset-0 backdrop-blur-xs backdrop-brightness-90 flex items-center justify-center z-[9999] p-4 transition-all duration-200 ${
+        isClosing ? 'animate-out fade-out' : 'animate-in fade-in'
+      }`}
+      onClick={handleBackdropClick}
+    >
+      <div className={`bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative transition-all duration-200 ${
+        isClosing ? 'animate-out zoom-out-95' : 'animate-in zoom-in-95'
+      }`}>
+        {/* Header */}
+        <div className="bg-purple-600 text-white p-6 rounded-t-2xl relative">
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center hover:bg-orange-500 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          <h2 className="text-2xl font-bold mb-2">Pendaftaran Sertifikasi</h2>
+          <p className="text-purple-100">Lengkapi data di bawah untuk mendaftar sertifikasi</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <label className="block">
-            <div className="text-sm font-medium mb-2 text-gray-700">No Telepon *</div>
-            <input 
-              type="tel"
-              value={phone} 
-              onChange={(e) => setPhone(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
-              placeholder="08xxxxxxxxxx"
-              required
-            />
-          </label>
+        {/* Form Content */}
+        <form onSubmit={submit} className="p-6">
+          <div className="space-y-6 mb-6">
+            <label className="block">
+              <div className="text-sm font-medium mb-2 text-gray-700">Nama Lengkap *</div>
+              <input 
+                value={nama} 
+                onChange={(e) => setNama(e.target.value)} 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900" 
+                placeholder="Masukkan nama lengkap"
+                required
+              />
+            </label>
 
-          <label className="block">
-            <div className="text-sm font-medium mb-2 text-gray-700">Batch Sertifikasi *</div>
-            <select 
-              value={batch} 
-              onChange={(e) => setBatch(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              required
-            >
-              <option>Batch 1 | 10 Mei 2025 - 10 Juni 2025</option>
-              <option>Batch 2 | 25 Agustus 2025</option>
-              <option>Batch 3 | 25 Desember 2025</option>
-            </select>
-          </label>
-        </div>
+            <label className="block">
+              <div className="text-sm font-medium mb-2 text-gray-700">Alamat Email *</div>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900" 
+                placeholder="email@domain.com"
+                required
+              />
+            </label>
+
+            <label className="block">
+              <div className="text-sm font-medium mb-2 text-gray-700">No Telepon *</div>
+              <input 
+                type="tel"
+                value={phone} 
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setPhone(value);
+                }} 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900" 
+                placeholder="08xxxxxxxxxx"
+                required
+              />
+            </label>
+
+            <label className="block">
+              <div className="text-sm font-medium mb-2 text-gray-700">Batch Sertifikasi *</div>
+              <select 
+                value={batch} 
+                onChange={(e) => setBatch(e.target.value)} 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-700"
+                required
+              >
+                {selectedBatch ? (
+                  <option value={defaultBatchOption}>{defaultBatchOption}</option>
+                ) : (
+                  <>
+                    <option value="Batch 1 | 10 Mei 2025 - 10 Juni 2025">Batch 1 | 10 Mei 2025 - 10 Juni 2025</option>
+                    <option value="Batch 2 | 25 Agustus 2025">Batch 2 | 25 Agustus 2025</option>
+                    <option value="Batch 3 | 25 Desember 2025">Batch 3 | 25 Desember 2025</option>
+                  </>
+                )}
+              </select>
+            </label>
+          </div>
 
         <div className="flex items-start gap-3 mb-8 p-4 bg-orange-50 border border-orange-200 rounded-lg">
           <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -91,22 +197,25 @@ export default function PendaftaranModal({ onClose }: Props) {
           <span className="text-sm text-gray-700">Sebelum mendaftar sertifikasi, tolong cek kembali data profil yang akan dipakai di sertifikasimu nanti.</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-gray-200">
-          <button 
-            type="submit" 
-            className="w-full sm:w-auto px-8 py-3 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-colors"
-          >
-            Daftar Sekarang
-          </button>
-          <button 
-            type="button" 
-            onClick={() => alert('Ubah profile')} 
-            className="w-full sm:w-auto px-8 py-3 rounded-lg border border-orange-400 text-orange-600 font-semibold hover:bg-orange-50 transition-colors"
-          >
-            Ubah Profile
-          </button>
-        </div>
-      </form>
+          <div className="flex justify-end pt-6 border-t border-gray-200">
+            <div className="flex items-center gap-4">
+              <button 
+                type="button" 
+                onClick={() => alert('Ubah profile')} 
+                className="px-6 py-3 rounded-lg border border-orange-400 text-orange-600 font-semibold hover:bg-orange-50 transition-colors"
+              >
+                Ubah Profile
+              </button>
+              <button 
+                type="submit" 
+                className="px-8 py-3 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-colors"
+              >
+                Daftar Sekarang
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

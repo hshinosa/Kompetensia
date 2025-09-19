@@ -88,6 +88,14 @@ class UserFactory extends Factory
                 // For universities, use semester numbers
                 return fake()->numberBetween(4, 8);
             },
+            'class_semester' => function (array $attributes) {
+                // Check if institution is SMK - untuk SMK, assign class level (X, XI, XII)
+                if (str_contains($attributes['institusi'], 'SMK')) {
+                    return fake()->randomElement(['X', 'XI', 'XII']);
+                }
+                // For universities, this field is not used
+                return null;
+            },
             'role' => 'mahasiswa',
             'aktif' => true,
             'status_akun' => 'aktif',

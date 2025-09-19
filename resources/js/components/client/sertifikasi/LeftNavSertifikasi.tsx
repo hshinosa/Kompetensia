@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 interface Props {
-  readonly onOpen?: () => void;
+  readonly onScrollToBatch?: () => void;
 }
 
-export default function LeftNavSertifikasi({ onOpen }: Props) {
+export default function LeftNavSertifikasi({ onScrollToBatch }: Props) {
   const [activeSection, setActiveSection] = useState<string>('');
 
   const sections = [
@@ -82,10 +82,10 @@ export default function LeftNavSertifikasi({ onOpen }: Props) {
         
         <div>
           <button 
-            onClick={() => onOpen?.()}
+            onClick={() => onScrollToBatch?.()}
             className="w-full px-4 py-3 rounded-2xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors"
           >
-            Daftar Sekarang
+            Lihat Jadwal Batch
           </button>
         </div>
       </div>

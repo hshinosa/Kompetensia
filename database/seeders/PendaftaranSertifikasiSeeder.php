@@ -62,6 +62,34 @@ class PendaftaranSertifikasiSeeder extends Seeder
             'Motivasi yang disampaikan kurang spesifik dan detail.'
         ];
 
+        // Sample file types for berkas_persyaratan
+        $sampleFiles = [
+            'CV_Updated.pdf',
+            'Transkrip_Nilai.pdf',
+            'Portfolio_Project.pdf',
+            'Sertifikat_Kursus.pdf',
+            'Ijazah_Diploma.pdf',
+            'KTP_Scan.pdf',
+            'Foto_Formal.jpg',
+            'Surat_Rekomendasi.pdf',
+            'Proposal_Project.docx',
+            'Screenshot_Achievement.png'
+        ];
+
+        // Sample URLs for portfolio links
+        $sampleUrls = [
+            'https://github.com/username/portfolio',
+            'https://linkedin.com/in/username',
+            'https://behance.net/username',
+            'https://dribbble.com/username',
+            'https://gitlab.com/username/projects',
+            'https://codepen.io/username',
+            'https://figma.com/@username',
+            'https://personal-website.com',
+            'https://medium.com/@username',
+            'https://dev.to/username'
+        ];
+
         foreach ($students as $index => $student) {
             // Determine status based on weighted probability
             $statusRand = rand(1, 100);
@@ -81,6 +109,27 @@ class PendaftaranSertifikasiSeeder extends Seeder
             $daysAgo = rand(1, 60);
             $registrationDate = now()->subDays($daysAgo);
             
+            // Generate berkas_persyaratan
+            $berkasPersyaratan = [];
+            
+            // Always include required documents
+            $berkasPersyaratan['cv'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+            $berkasPersyaratan['transkrip'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+            
+            // Add optional documents (70% chance each)
+            if (rand(1, 100) <= 70) {
+                $berkasPersyaratan['portfolio'] = $sampleUrls[array_rand($sampleUrls)];
+            }
+            if (rand(1, 100) <= 70) {
+                $berkasPersyaratan['sertifikat_pendukung'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+            }
+            if (rand(1, 100) <= 50) {
+                $berkasPersyaratan['surat_rekomendasi'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+            }
+            if (rand(1, 100) <= 40) {
+                $berkasPersyaratan['portfolio_link'] = $sampleUrls[array_rand($sampleUrls)];
+            }
+            
             $data = [
                 'user_id' => $student->id,
                 'sertifikasi_id' => $selectedSertifikasi->id,
@@ -88,6 +137,7 @@ class PendaftaranSertifikasiSeeder extends Seeder
                 'tanggal_pendaftaran' => $registrationDate,
                 'status' => $status,
                 'motivasi' => $motivations[array_rand($motivations)],
+                'berkas_persyaratan' => $berkasPersyaratan,
                 'created_at' => $registrationDate,
                 'updated_at' => $registrationDate,
             ];
@@ -124,6 +174,17 @@ class PendaftaranSertifikasiSeeder extends Seeder
                     $secondStatus = ['Pengajuan', 'Disetujui', 'Ditolak'][array_rand(['Pengajuan', 'Disetujui', 'Ditolak'])];
                     $secondRegDate = now()->subDays(rand(1, 30));
                     
+                    // Generate berkas for second application
+                    $secondBerkas = [];
+                    $secondBerkas['cv'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+                    $secondBerkas['transkrip'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+                    if (rand(1, 100) <= 80) {
+                        $secondBerkas['portfolio'] = $sampleUrls[array_rand($sampleUrls)];
+                    }
+                    if (rand(1, 100) <= 60) {
+                        $secondBerkas['pengalaman_tambahan'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+                    }
+                    
                     $secondData = [
                         'user_id' => $student->id,
                         'sertifikasi_id' => $secondSertifikasi->id,
@@ -131,6 +192,7 @@ class PendaftaranSertifikasiSeeder extends Seeder
                         'tanggal_pendaftaran' => $secondRegDate,
                         'status' => $secondStatus,
                         'motivasi' => 'Ingin memperluas kompetensi dengan mengikuti sertifikasi tambahan.',
+                        'berkas_persyaratan' => $secondBerkas,
                         'created_at' => $secondRegDate,
                         'updated_at' => $secondRegDate,
                     ];

@@ -92,7 +92,7 @@ class PenilaianSertifikasiController extends Controller
     public function batchPenilaian($sertifikasiId, $batchId)
     {
         $batch = BatchSertifikasi::with([
-            'sertifikasi',
+            'sertifikasi.asesor', // Load asesor relationship
             'pendaftaran' => function($query) {
                 $query->where('status', 'Disetujui'); // Only approved registrations
             },
@@ -112,14 +112,14 @@ class PenilaianSertifikasiController extends Controller
                 'sertifikasi' => [
                     'id' => $batch->sertifikasi->id,
                     'nama_sertifikasi' => $batch->sertifikasi->nama_sertifikasi,
-                    'nama_asesor' => $batch->sertifikasi->nama_asesor,
+                    'nama_asesor' => $batch->sertifikasi->asesor?->nama_asesor, // Use asesor relationship
                 ],
                 'pendaftaran' => $batch->pendaftaran->map(function ($pendaftaran) {
                     return [
                         'id' => $pendaftaran->id,
                         'user' => [
                             'id' => $pendaftaran->user->id,
-                            'name' => $pendaftaran->user->name,
+                            'name' => $pendaftaran->user->nama, // Use 'nama' field from database
                             'email' => $pendaftaran->user->email,
                         ],
                         'tanggal_pendaftaran' => $pendaftaran->tanggal_pendaftaran?->format('Y-m-d'),

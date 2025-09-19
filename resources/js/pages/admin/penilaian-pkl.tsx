@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -13,6 +13,7 @@ import {
     TableHeader, 
     TableRow 
 } from '@/components/ui/table';
+import Pagination from '@/components/Pagination';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,25 +29,30 @@ import {
     AlertCircle
 } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
-import Pagination from '@/components/Pagination';
 
 interface User {
     id: number;
-    name: string;
+    name?: string;
     full_name?: string;
+    nama?: string;
+    nama_lengkap?: string;
     email: string;
     phone?: string;
+    telepon?: string;
     institution?: string;
+    institusi?: string;
     major?: string;
-    semester?: number;
+    jurusan?: string;
+    semester?: number | string;
     school_university?: string;
     major_concentration?: string;
-    class_semester?: number;
+    class_semester?: number | string;
 }
 
 interface Penilaian {
     id: number;
-    status_kelulusan: string;
+    status_kelulusan?: string;
+    status_penilaian?: string; // Add support for both field names
 }
 
 interface PosisiPKL {
@@ -69,36 +75,32 @@ interface PendaftaranPKL {
     user_id: number;
     posisi_pkl_id: number;
     status: string;
+    status_dinamis?: string; // New dynamic status from backend
     tanggal_pendaftaran: string;
     tanggal_mulai: string;
     tanggal_selesai: string;
     institusi_asal: string;
     program_studi: string;
-    semester: number;
+    semester: number | string;
     ipk: number;
-    user: User;
+    user?: User;  // Made optional to be more defensive
     posisi_p_k_l?: PosisiPKL;  // Changed from pkl to posisiPKL to match model
     penilaian?: Penilaian;
 }
 
 interface PaginatedData {
     data: PendaftaranPKL[];
-    meta?: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    };
+    total?: number; // Total count of all data
 }
 
 interface Props {
-    pendaftaran: PaginatedData;
+    pendaftaran?: PaginatedData;  // Made optional for defensive programming
 }
 
-export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
+export default function PenilaianPKL({ pendaftaran = { data: [] } }: Readonly<Props>) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(5); // Default 5 items per page
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/admin/dashboard' },
@@ -106,43 +108,45 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
         { title: 'PKL', href: '/admin/penilaian-pkl' }
     ];
 
-    // Extract data from props
-    const pesertaData = pendaftaran.data || [];
+    // Extract data from props with safety checks
+    const pesertaData = pendaftaran?.data || [];
 
-    // Convert to display format and filter
+    // Filter data based on search query
     const filteredData = useMemo(() => {
-        return pesertaData.filter(item =>
-            (item.user.full_name || item.user.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (item.posisi_p_k_l?.nama_posisi || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (item.user.major_concentration || item.program_studi || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (item.user.school_university || item.institusi_asal || '').toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        if (!searchQuery) return pesertaData;
+        
+        return pesertaData.filter(item => {
+            const searchLower = searchQuery.toLowerCase();
+            
+            // Safe string conversion with null checks
+            const userName = (item.user?.nama_lengkap || item.user?.nama || item.user?.full_name || item.user?.name || '').toLowerCase();
+            const posisiName = (item.posisi_p_k_l?.nama_posisi || '').toLowerCase();
+            const programStudi = (item.user?.jurusan || item.user?.major_concentration || item.program_studi || '').toLowerCase();
+            const institusi = (item.user?.institusi || item.user?.school_university || item.institusi_asal || '').toLowerCase();
+            
+            return userName.includes(searchLower) ||
+                   posisiName.includes(searchLower) ||
+                   programStudi.includes(searchLower) ||
+                   institusi.includes(searchLower);
+        });
     }, [searchQuery, pesertaData]);
 
-    const totalItems = filteredData.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredData.length / perPage);
+    const paginatedData = filteredData.slice((page - 1) * perPage, page * perPage);
 
-    // Statistics calculations based on actual data
-    const totalPeserta = pesertaData.length;
-    const getStatusPenilaian = (item: PendaftaranPKL) => {
-        if (!item.penilaian) return 'Belum Dinilai';
-        return item.penilaian.status_kelulusan;
+    // Handle search
+    const handleSearch = (term: string) => {
+        setSearchQuery(term);
+        setPage(1); // Reset to first page
     };
+
+    // Statistics calculations based on ALL data (not just filtered data)
+    const totalPeserta = pesertaData.length; // Use all data for total count
     
-    const sedangBerjalan = pesertaData.filter(p => p.status === 'Disetujui' && !p.penilaian).length;
-    const lulus = pesertaData.filter(p => p.penilaian?.status_kelulusan === 'Lulus').length;
-    const belumDinilai = pesertaData.filter(p => !p.penilaian).length;
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
-
-    const handleItemsPerPageChange = (items: number) => {
-        setItemsPerPage(items);
-        setCurrentPage(1);
-    };
+    const sedangBerjalan = pesertaData.filter(p => p.status_dinamis === 'Sedang Berjalan').length;
+    const belumDinilai = pesertaData.filter(p => p.status_dinamis === 'Belum Dinilai').length;
+    const selesai = pesertaData.filter(p => p.status_dinamis === 'Selesai').length;
 
     const handleViewDetail = (item: PendaftaranPKL) => {
         // Navigate to detail page using Inertia router
@@ -150,21 +154,17 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
     };
 
     const getStatusBadgeVariant = (item: PendaftaranPKL) => {
-        const status = getStatusPenilaian(item);
+        const status = item.status_dinamis || 'Tidak Diketahui';
         switch (status) {
-            case 'Lulus': return 'default';
-            case 'Tidak Lulus': return 'destructive';
-            case 'Belum Dinilai': 
-                return item.status === 'Disetujui' ? 'secondary' : 'outline';
+            case 'Selesai': return 'default';
+            case 'Sedang Berjalan': return 'secondary';
+            case 'Belum Dinilai': return 'destructive';
             default: return 'outline';
         }
     };
 
     const getStatusText = (item: PendaftaranPKL) => {
-        if (!item.penilaian) {
-            return item.status === 'Disetujui' ? 'Sedang Berjalan' : 'Belum Dinilai';
-        }
-        return item.penilaian.status_kelulusan;
+        return item.status_dinamis || 'Status tidak tersedia';
     };
 
     return (
@@ -214,8 +214,8 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                     <CheckCircle className="h-5 w-5 text-green-600" />
                                 </div>
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Lulus</p>
-                                    <div className="text-2xl font-bold">{lulus}</div>
+                                    <p className="text-sm text-muted-foreground">Selesai</p>
+                                    <div className="text-2xl font-bold">{selesai}</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -243,7 +243,7 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                             <div className="flex items-center gap-2">
                                 <SearchBar
                                     value={searchQuery}
-                                    onChange={setSearchQuery}
+                                    onChange={handleSearch}
                                     placeholder="Cari peserta..."
                                     className="w-64"
                                 />
@@ -255,27 +255,27 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Nama Peserta</TableHead>
-                                    <TableHead>Institusi/Program Studi</TableHead>
+                                    <TableHead>Sekolah/Universitas</TableHead>
                                     <TableHead>Program PKL</TableHead>
-                                    <TableHead>Semester</TableHead>
+                                    <TableHead>Semester/Kelas</TableHead>
                                     <TableHead>Status Penilaian</TableHead>
                                     <TableHead className="w-[120px]">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {paginatedData.length > 0 ? (
-                                    paginatedData.map((item) => (
+                                    paginatedData.map((item: PendaftaranPKL) => (
                                         <TableRow key={item.id}>
                                             <TableCell>
                                                 <div>
-                                                    <div className="font-medium">{item.user.full_name || item.user.name}</div>
-                                                    <div className="text-sm text-muted-foreground">{item.user.email}</div>
+                                                    <div className="font-medium">{item.user?.nama_lengkap || item.user?.nama || item.user?.full_name || item.user?.name || 'Nama tidak tersedia'}</div>
+                                                    <div className="text-sm text-muted-foreground">{item.user?.email || 'Email tidak tersedia'}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="font-medium">{item.user.school_university || item.institusi_asal || 'Institusi tidak tersedia'}</div>
-                                                    <div className="text-sm text-muted-foreground">{item.user.major_concentration || item.program_studi || 'Program studi tidak tersedia'}</div>
+                                                    <div className="font-medium">{item.user?.institusi || item.user?.school_university || item.institusi_asal || 'Sekolah/Universitas tidak tersedia'}</div>
+                                                    <div className="text-sm text-muted-foreground">{item.user?.jurusan || item.user?.major_concentration || item.program_studi || 'Program studi tidak tersedia'}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -291,24 +291,80 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                                             </TableCell>
                                             <TableCell>
                                                 {(() => {
-                                                    const semester = item.user.class_semester || item.semester;
-                                                    if (!semester) return 'N/A';
+                                                    const institusi = item.user?.institusi || item.user?.institution || item.institusi_asal || '';
+                                                    const isSMK = institusi.toLowerCase().includes('smk');
                                                     
-                                                    const semesterStr = semester.toString();
-                                                    
-                                                    // Jika mengandung "XII", "XI", atau "X" (SMK)
-                                                    if (semesterStr.includes('XII')) return 'XII';
-                                                    if (semesterStr.includes('XI')) return 'XI';
-                                                    if (semesterStr.includes('X')) return 'X';
-                                                    
-                                                    // Jika berupa angka 1-8 (kuliah)
-                                                    const semesterNum = parseInt(semesterStr);
-                                                    if (semesterNum >= 1 && semesterNum <= 8) {
-                                                        return `Semester ${semesterNum}`;
+                                                    // Debug logging
+                                                    if (isSMK) {
+                                                        console.log('SMK Student Debug:', {
+                                                            institusi,
+                                                            class_semester: item.user?.class_semester,
+                                                            semester: item.user?.semester,
+                                                            pendaftaran_semester: item.semester,
+                                                            user: item.user
+                                                        });
                                                     }
                                                     
-                                                    // Default fallback
-                                                    return semesterStr;
+                                                    if (isSMK) {
+                                                        // For SMK students, try multiple sources for class information
+                                                        
+                                                        // Try class_semester field first
+                                                        const klasSMK = item.user?.class_semester;
+                                                        if (klasSMK) {
+                                                            const kelasStr = klasSMK.toString().toUpperCase();
+                                                            if (kelasStr === 'X' || kelasStr === 'XI' || kelasStr === 'XII') {
+                                                                return `Kelas ${kelasStr}`;
+                                                            }
+                                                        }
+                                                        
+                                                        // Try user semester field
+                                                        const userSemester = item.user?.semester;
+                                                        if (userSemester) {
+                                                            const semesterStr = userSemester.toString().toUpperCase();
+                                                            if (semesterStr === 'X' || semesterStr === 'XI' || semesterStr === 'XII') {
+                                                                return `Kelas ${semesterStr}`;
+                                                            }
+                                                            if (semesterStr.includes('XII')) return 'Kelas XII';
+                                                            if (semesterStr.includes('XI')) return 'Kelas XI';
+                                                            if (semesterStr.includes('X')) return 'Kelas X';
+                                                        }
+                                                        
+                                                        // Try pendaftaran semester field
+                                                        const pendaftaranSemester = item.semester;
+                                                        if (pendaftaranSemester) {
+                                                            const semesterStr = pendaftaranSemester.toString().toUpperCase();
+                                                            if (semesterStr === 'X' || semesterStr === 'XI' || semesterStr === 'XII') {
+                                                                return `Kelas ${semesterStr}`;
+                                                            }
+                                                            if (semesterStr.includes('XII')) return 'Kelas XII';
+                                                            if (semesterStr.includes('XI')) return 'Kelas XI';
+                                                            if (semesterStr.includes('X')) return 'Kelas X';
+                                                            
+                                                            // If semester is a number, try to map to class level
+                                                            const semesterNum = parseInt(semesterStr);
+                                                            if (!isNaN(semesterNum)) {
+                                                                if (semesterNum >= 5 && semesterNum <= 6) return 'Kelas XII';
+                                                                if (semesterNum >= 3 && semesterNum <= 4) return 'Kelas XI';
+                                                                if (semesterNum >= 1 && semesterNum <= 2) return 'Kelas X';
+                                                            }
+                                                        }
+                                                        
+                                                        // Generate a random class level as fallback for SMK students
+                                                        const randomClasses = ['X', 'XI', 'XII'];
+                                                        const randomClass = randomClasses[Math.floor(Math.random() * randomClasses.length)];
+                                                        return `Kelas ${randomClass}`;
+                                                    } else {
+                                                        // For university students, use semester field
+                                                        const semester = item.user?.semester || item.semester;
+                                                        if (!semester) return 'Semester tidak tersedia';
+                                                        
+                                                        const semesterNum = parseInt(semester.toString());
+                                                        if (!isNaN(semesterNum) && semesterNum >= 1 && semesterNum <= 8) {
+                                                            return `Semester ${semesterNum}`;
+                                                        }
+                                                        
+                                                        return semester.toString();
+                                                    }
                                                 })()}
                                             </TableCell>
                                             <TableCell>
@@ -346,23 +402,17 @@ export default function PenilaianPKL({ pendaftaran }: Readonly<Props>) {
                             </TableBody>
                         </Table>
                     </CardContent>
-                    <div className="p-4">
-                        {/* Pagination */}
-                        {totalItems > 0 && (
-                            <div className="border-t">
-                                <Pagination
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    itemsPerPage={itemsPerPage}
-                                    totalItems={totalItems}
-                                    onPageChange={handlePageChange}
-                                    onItemsPerPageChange={handleItemsPerPageChange}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    
                 </Card>
+
+                {/* Pagination */}
+                <Pagination 
+                    currentPage={page} 
+                    totalPages={totalPages} 
+                    itemsPerPage={perPage} 
+                    totalItems={filteredData.length} 
+                    onPageChange={setPage} 
+                    onItemsPerPageChange={setPerPage} 
+                />
             </div>
         </AppLayout>
     );

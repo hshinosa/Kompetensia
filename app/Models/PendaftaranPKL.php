@@ -52,6 +52,12 @@ class PendaftaranPKL extends Model
         return $this->hasOne(PenilaianPKL::class, 'pendaftaran_id');
     }
 
+    public function submisi()
+    {
+        return $this->hasMany(UserDocument::class, 'pendaftaran_pkl_id')
+                    ->where('jenis_dokumen', 'submisi_pkl');
+    }
+
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);

@@ -48,11 +48,11 @@ class PendaftaranPKLSeeder extends Seeder
         ];
 
         foreach ($students as $student) {
-            // Determine status based on probability
+            // Determine status based on probability - ensure more approved for testing
             $statusRand = rand(1, 100);
-            if ($statusRand <= 35) {
+            if ($statusRand <= 20) {
                 $status = 'Pengajuan';
-            } elseif ($statusRand <= 70) {
+            } elseif ($statusRand <= 75) {  // 55% chance of approval
                 $status = 'Disetujui';
             } else {
                 $status = 'Ditolak';
@@ -71,8 +71,8 @@ class PendaftaranPKLSeeder extends Seeder
                 'tanggal_pendaftaran' => $registrationDate,
                 'status' => $status,
                 'motivasi' => $motivations[array_rand($motivations)],
-                'institusi_asal' => $student->institution,
-                'program_studi' => $student->major,
+                'institusi_asal' => $student->institusi ?? $student->institution ?? 'Institusi tidak tersedia',
+                'program_studi' => $student->jurusan ?? $student->major ?? 'Program studi tidak tersedia',
                 'semester' => $student->semester,
                 'created_at' => $registrationDate,
                 'updated_at' => $registrationDate,
@@ -87,9 +87,41 @@ class PendaftaranPKLSeeder extends Seeder
                 $data['updated_at'] = $processedDate;
                 
                 if ($status === 'Disetujui') {
-                    // Add PKL schedule for approved applications
-                    $data['tanggal_mulai'] = now()->addDays(rand(7, 30))->format('Y-m-d');
-                    $data['tanggal_selesai'] = now()->addDays(rand(90, 120))->format('Y-m-d');
+                    // SEMUA yang disetujui HARUS memiliki tanggal magang - NO EXCEPTIONS
+                    $scheduleType = rand(1, 4);
+                    
+                    // Initialize default dates first
+                    $startDate = now()->addDays(7);
+                    $endDate = now()->addDays(67);
+                    
+                    if ($scheduleType === 1) {
+                        // Already finished (sudah selesai) - started 60-90 days ago, ended 1-15 days ago
+                        $startDate = now()->subDays(rand(60, 90));
+                        $endDate = now()->subDays(rand(1, 15));
+                    } elseif ($scheduleType === 2) {
+                        // Currently running (sedang berjalan) - started 1-30 days ago, ends in 30-60 days
+                        $startDate = now()->subDays(rand(1, 30));
+                        $endDate = now()->addDays(rand(30, 60));
+                    } elseif ($scheduleType === 3) {
+                        // Starting soon (akan dimulai) - will start in 1-7 days
+                        $startDate = now()->addDays(rand(1, 7));
+                        $endDate = $startDate->copy()->addDays(rand(60, 90));
+                    } else {
+                        // Starting next month (bulan depan)
+                        $startDate = now()->addDays(rand(25, 35));
+                        $endDate = $startDate->copy()->addDays(rand(60, 90));
+                    }
+                    
+                    // FORCE set tanggal untuk SEMUA yang disetujui - WAJIB TIDAK BOLEH NULL
+                    $data['tanggal_mulai'] = $startDate->format('Y-m-d');
+                    $data['tanggal_selesai'] = $endDate->format('Y-m-d');
+                    
+                    // Validate that dates are actually set
+                    if (empty($data['tanggal_mulai']) || empty($data['tanggal_selesai'])) {
+                        // Fallback: force set dates if somehow still empty
+                        $data['tanggal_mulai'] = now()->addDays(7)->format('Y-m-d');
+                        $data['tanggal_selesai'] = now()->addDays(67)->format('Y-m-d');
+                    }
                 } elseif ($status === 'Ditolak') {
                     $data['catatan_admin'] = $rejectionNotes[array_rand($rejectionNotes)];
                 }
@@ -119,8 +151,8 @@ class PendaftaranPKLSeeder extends Seeder
                         'tanggal_pendaftaran' => $secondRegDate,
                         'status' => $secondStatus,
                         'motivasi' => 'Ingin mencoba posisi lain untuk memperluas pengalaman.',
-                        'institusi_asal' => $student->institution,
-                        'program_studi' => $student->major,
+                        'institusi_asal' => $student->institusi ?? $student->institution ?? 'Institusi tidak tersedia',
+                        'program_studi' => $student->jurusan ?? $student->major ?? 'Program studi tidak tersedia',
                         'semester' => $student->semester,
                         'created_at' => $secondRegDate,
                         'updated_at' => $secondRegDate,
@@ -132,8 +164,41 @@ class PendaftaranPKLSeeder extends Seeder
                         $secondData['updated_at'] = $secondProcessedDate;
                         
                         if ($secondStatus === 'Disetujui') {
-                            $secondData['tanggal_mulai'] = now()->addDays(rand(7, 30))->format('Y-m-d');
-                            $secondData['tanggal_selesai'] = now()->addDays(rand(90, 120))->format('Y-m-d');
+                            // SEMUA aplikasi kedua yang disetujui HARUS memiliki tanggal magang - NO EXCEPTIONS
+                            $secondScheduleType = rand(1, 4);
+                            
+                            // Initialize default dates first
+                            $secondStartDate = now()->addDays(7);
+                            $secondEndDate = now()->addDays(67);
+                            
+                            if ($secondScheduleType === 1) {
+                                // Already finished (sudah selesai) - started 60-90 days ago, ended 1-15 days ago
+                                $secondStartDate = now()->subDays(rand(60, 90));
+                                $secondEndDate = now()->subDays(rand(1, 15));
+                            } elseif ($secondScheduleType === 2) {
+                                // Currently running (sedang berjalan) - started 1-30 days ago, ends in 30-60 days
+                                $secondStartDate = now()->subDays(rand(1, 30));
+                                $secondEndDate = now()->addDays(rand(30, 60));
+                            } elseif ($secondScheduleType === 3) {
+                                // Starting soon (akan dimulai) - will start in 1-7 days
+                                $secondStartDate = now()->addDays(rand(1, 7));
+                                $secondEndDate = $secondStartDate->copy()->addDays(rand(60, 90));
+                            } else {
+                                // Starting next month (bulan depan)
+                                $secondStartDate = now()->addDays(rand(25, 35));
+                                $secondEndDate = $secondStartDate->copy()->addDays(rand(60, 90));
+                            }
+                            
+                            // FORCE set tanggal untuk SEMUA aplikasi kedua yang disetujui - WAJIB TIDAK BOLEH NULL
+                            $secondData['tanggal_mulai'] = $secondStartDate->format('Y-m-d');
+                            $secondData['tanggal_selesai'] = $secondEndDate->format('Y-m-d');
+                            
+                            // Validate that dates are actually set
+                            if (empty($secondData['tanggal_mulai']) || empty($secondData['tanggal_selesai'])) {
+                                // Fallback: force set dates if somehow still empty
+                                $secondData['tanggal_mulai'] = now()->addDays(7)->format('Y-m-d');
+                                $secondData['tanggal_selesai'] = now()->addDays(67)->format('Y-m-d');
+                            }
                         } elseif ($secondStatus === 'Ditolak') {
                             $secondData['catatan_admin'] = $rejectionNotes[array_rand($rejectionNotes)];
                         }

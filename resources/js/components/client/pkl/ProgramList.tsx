@@ -70,7 +70,7 @@ export default function ProgramList({ posisiPKL, searchTerm, onSearchChange }: P
   return (
     <article>
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-4">Program yang tersedia</h2>
+        <h2 className="text-2xl text-gray-900 font-semibold mb-4">Program yang tersedia</h2>
         
         {/* Search Bar */}
         <div className="relative mb-6 max-w-md">

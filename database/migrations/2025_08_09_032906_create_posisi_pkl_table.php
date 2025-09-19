@@ -107,10 +107,20 @@ return new class extends Migration {
             $table->string('fileType')->nullable();
             $table->timestamps();
         });
+
+        // Tambahkan foreign key constraint untuk dokumen_pengguna setelah tabel pendaftaran_pkl dibuat
+        Schema::table('dokumen_pengguna', function (Blueprint $table) {
+            $table->foreign('pendaftaran_pkl_id')->references('id')->on('pendaftaran_pkl')->onDelete('cascade');
+        });
     }
 
     public function down(): void
     {
+        // Hapus foreign key constraint terlebih dahulu
+        Schema::table('dokumen_pengguna', function (Blueprint $table) {
+            $table->dropForeign(['pendaftaran_pkl_id']);
+        });
+
         Schema::dropIfExists('laporan_mingguan');
         Schema::dropIfExists('penilaian_pkl');
         Schema::dropIfExists('pendaftaran_pkl');

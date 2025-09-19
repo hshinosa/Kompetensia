@@ -93,6 +93,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/penilaian-pkl/overview', [PKLController::class, 'penilaianOverview'])->name('penilaian-pkl.overview');
     Route::get('/penilaian-pkl/{id}', [PKLController::class, 'penilaianShow'])->name('detail-penilaian-pkl');
     Route::post('/penilaian-pkl/{pendaftaranId}', [PKLController::class, 'penilaianStore'])->name('penilaian-pkl.store');
+    Route::post('/penilaian-pkl-submisi/{submisiId}', [PKLController::class, 'penilaianSubmisiStore'])->name('penilaian-pkl-submisi.store');
 
     Route::get('/penilaian-sertifikasi', [PenilaianSertifikasiController::class, 'index'])->name('penilaian-sertifikasi');
     Route::get('/penilaian-sertifikasi/{id}', [PenilaianSertifikasiController::class, 'show'])->name('detail-penilaian-sertifikasi');

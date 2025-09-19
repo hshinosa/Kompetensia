@@ -138,7 +138,7 @@ export default function PKLPage({ posisiPKL, openModal, programId, programData, 
       <div className="">
         <HeroPKL />
 
-        <main className="container mx-auto py-10">
+        <main className="container mx-auto px-4 py-10">
           <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
             <aside className="lg:col-span-1">
               <LeftNavPKL 

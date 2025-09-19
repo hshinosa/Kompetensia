@@ -22,90 +22,128 @@ class UserDocument extends Model
         'terverifikasi',
         'aktif',
         'catatan',
-        'verified_at',
-        'verified_by'
+        'tanggal_verifikasi',
+        'diverifikasi_oleh',
+        
+        // Fields untuk PKL submissions
+        'nomor_submisi',
+        'tipe_submisi', // 'link' | 'dokumen'
+        'kategori_submisi', // 'laporan' | 'tugas'
+        'judul_tugas',
+        'deskripsi_tugas',
+        'link_submisi',
+        'status_penilaian', // 'menunggu' | 'diterima' | 'ditolak'
+        'feedback_pembimbing',
+        'pendaftaran_pkl_id',
+        'tanggal_submit'
     ];
 
     protected $casts = [
         'terverifikasi' => 'boolean',
         'aktif' => 'boolean',
-        'verified_at' => 'datetime',
+        'tanggal_verifikasi' => 'datetime',
+        'tanggal_submit' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
 
     // Relationships
-    public function user()
+    public function pengguna()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function verifiedBy()
+    public function diverifikasiOleh()
     {
-        return $this->belongsTo(User::class, 'verified_by');
+        return $this->belongsTo(User::class, 'diverifikasi_oleh');
+    }
+
+    public function pendaftaranPKL()
+    {
+        return $this->belongsTo(PendaftaranPKL::class, 'pendaftaran_pkl_id');
     }
 
     // Scopes
-    public function scopeByType($query, $type)
+    public function scopeBerdasarkanTipe($query, $tipe)
     {
-        return $query->where('jenis_dokumen', $type);
+        return $query->where('jenis_dokumen', $tipe);
     }
 
-    public function scopeVerified($query)
+    public function scopeTerverifikasi($query)
     {
         return $query->where('terverifikasi', true);
     }
 
-    public function scopeActive($query)
+    public function scopeAktif($query)
     {
         return $query->where('aktif', true);
     }
 
-    public function scopeByUser($query, $userId)
+    public function scopeBerdasarkanPengguna($query, $userId)
     {
         return $query->where('user_id', $userId);
     }
 
+    public function scopeSubmisiPKL($query)
+    {
+        return $query->where('jenis_dokumen', 'submisi_pkl');
+    }
+
+    public function scopeBerdasarkanPendaftaranPKL($query, $pklId)
+    {
+        return $query->where('pendaftaran_pkl_id', $pklId);
+    }
+
+    public function scopeMenungguPenilaian($query)
+    {
+        return $query->where('status_penilaian', 'menunggu');
+    }
+
+    public function scopeDiterima($query)
+    {
+        return $query->where('status_penilaian', 'diterima');
+    }
+
     // Accessors
-    public function getFileUrlAttribute()
+    public function getUrlFileAttribute()
     {
         return $this->path_file ? Storage::url($this->path_file) : null;
     }
 
-    public function getFileSizeHumanAttribute()
+    public function getUkuranFileFormatAttribute()
     {
-        $size = $this->ukuran_file;
-        if (!$size) {
-            return 'Unknown';
+        $ukuran = $this->ukuran_file;
+        if (!$ukuran) {
+            return 'Tidak diketahui';
         }
         
-        $units = ['B', 'KB', 'MB', 'GB'];
+        $satuan = ['B', 'KB', 'MB', 'GB'];
         
-        for ($i = 0; $size > 1024 && $i < count($units) - 1; $i++) {
-            $size /= 1024;
+        for ($i = 0; $ukuran > 1024 && $i < count($satuan) - 1; $i++) {
+            $ukuran /= 1024;
         }
         
-        return round($size, 2) . ' ' . $units[$i];
+        return round($ukuran, 2) . ' ' . $satuan[$i];
     }
 
     // Methods
-    public function verify($verifierId, $notes = null)
+    public function verifikasi($verifikatorId, $catatan = null)
     {
         return $this->update([
             'terverifikasi' => true,
-            'verified_by' => $verifierId,
-            'verified_at' => now(),
-            'catatan' => $notes
+            'diverifikasi_oleh' => $verifikatorId,
+            'tanggal_verifikasi' => now(),
+            'catatan' => $catatan
         ]);
     }
 
-    public function reject($verifierId, $notes)
+    public function tolak($verifikatorId, $catatan)
     {
         return $this->update([
             'terverifikasi' => false,
-            'verified_by' => $verifierId,
-            'verified_at' => now(),
-            'catatan' => $notes
+            'diverifikasi_oleh' => $verifikatorId,
+            'tanggal_verifikasi' => now(),
+            'catatan' => $catatan
         ]);
     }
 

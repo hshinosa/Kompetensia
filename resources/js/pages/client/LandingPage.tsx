@@ -35,12 +35,28 @@ interface SertifikasiItem {
   slug: string;
 }
 
+interface PKLProgram {
+  readonly id: number;
+  readonly title: string;
+  readonly nama_posisi: string;
+  readonly desc: string;
+  readonly tags: string[];
+  readonly kategori: string;
+  readonly tipe: string;
+  readonly durasi_bulan: number;
+  readonly persyaratan: string[];
+  readonly benefits: string[];
+  readonly jumlah_pendaftar: number;
+  readonly status: string;
+}
+
 interface LandingPageProps {
   readonly featuredBlogs?: Artikel[];
   readonly popularSertifikasi?: SertifikasiItem[];
+  readonly pklPrograms?: PKLProgram[];
 }
 
-export default function LandingPage({ featuredBlogs = [], popularSertifikasi = [] }: LandingPageProps) {
+export default function LandingPage({ featuredBlogs = [], popularSertifikasi = [], pklPrograms = [] }: LandingPageProps) {
   const [showLogin, setShowLogin] = useState(false);
 
   return (
@@ -52,7 +68,7 @@ export default function LandingPage({ featuredBlogs = [], popularSertifikasi = [
           <div id="sertifikasi">
             <SertifikasiPopuler sertifikasiList={popularSertifikasi} />
           </div>
-          <ProgramPKL />
+          <ProgramPKL pklPrograms={pklPrograms} />
           <MengapaSertifikasiPKL />
           <ArtikelPilihan articles={featuredBlogs} />
           <ApaKataAlumni />

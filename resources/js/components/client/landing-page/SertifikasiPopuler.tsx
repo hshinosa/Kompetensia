@@ -21,52 +21,40 @@ interface SertifikasiPopulerProps {
 
 const defaultSertifikasi: SertifikasiItem[] = [
   {
-    id: 0,
-    title: 'Digital Marketing',
-    batch: 'Batch 1',
-    date: '25 April 2025',
-    rating: '4.7',
-    peserta: 46,
-    kategori: 'Marketing',
-    mentor: 'Alyssa',
-    slug: '#',
-    type: 'BNSP',
-  },
-  {
     id: 1,
-    title: 'Junior Programmer',
-    batch: 'Batch 1',
-    date: '25 April 2025',
-    rating: '4.7',
-    peserta: 46,
-    kategori: 'Programming',
-    mentor: 'Alyssa',
-    slug: '#',
+    title: 'Web Development',
+    batch: 'Batch 1 - Web Development',
+    date: '29 September 2025',
+    rating: '4.8',
+    peserta: 14,
+    kategori: 'BNSP',
+    mentor: 'Pak Budi Raharjo',
+    slug: 'web-development',
     type: 'BNSP',
   },
   {
     id: 2,
-    title: 'Content Creator',
-    batch: 'Batch 1',
-    date: '25 April 2025',
-    rating: '4.7',
-    peserta: 46,
-    kategori: 'Marketing',
-    mentor: 'Alyssa',
-    slug: '#',
+    title: 'Digital Marketing',
+    batch: 'Batch 1 - Digital Marketing',
+    date: '22 September 2025',
+    rating: '4.8',
+    peserta: 12,
+    kategori: 'Industri',
+    mentor: 'Pak Ahmad Santoso',
+    slug: 'digital-marketing',
     type: 'Industri',
   },
   {
     id: 3,
-    title: 'Desain Grafis',
-    batch: 'Batch 1',
-    date: '25 April 2025',
-    rating: '4.7',
-    peserta: 46,
-    kategori: 'Design',
-    mentor: 'Alyssa',
-    slug: '#',
-    type: 'Industri',
+    title: 'Network Engineering',
+    batch: 'Batch akan segera dibuka',
+    date: 'TBA',
+    rating: '4.8',
+    peserta: 7,
+    kategori: 'BNSP',
+    mentor: 'Instruktur Profesional',
+    slug: 'network-engineering',
+    type: 'BNSP',
   },
 ];
 
@@ -84,7 +72,7 @@ export default function SertifikasiPopuler({ sertifikasiList = [] }: Sertifikasi
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-6">Skema Sertifikasi Populer</h2>
+        <h2 className="text-2xl font-bold mb-6 text-gray-900">Skema Sertifikasi Populer</h2>
       <div className="flex gap-4 mb-8">
         <button 
           onClick={() => setActiveFilter('BNSP')}

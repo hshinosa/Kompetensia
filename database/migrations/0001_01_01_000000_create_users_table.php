@@ -130,21 +130,36 @@ return new class extends Migration
         Schema::create('dokumen_pengguna', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('jenis_dokumen'); // CV, Portofolio, Sertifikat, dll.
+            $table->string('jenis_dokumen'); // CV, Portofolio, Sertifikat, submisi_pkl, dll.
             $table->string('nama_dokumen');
-            $table->string('path_file');
-            $table->string('ukuran_file')->nullable();
+            $table->string('path_file')->nullable();
+            $table->bigInteger('ukuran_file')->nullable();
             $table->string('tipe_mime')->nullable();
             $table->boolean('terverifikasi')->default(false);
             $table->boolean('aktif')->default(true);
             $table->text('catatan')->nullable();
-            $table->timestamp('verified_at')->nullable();
-            $table->foreignId('verified_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->timestamp('tanggal_verifikasi')->nullable();
+            $table->foreignId('diverifikasi_oleh')->nullable()->constrained('users')->onDelete('set null');
+            
+            // Field untuk submisi PKL
+            $table->string('nomor_submisi')->nullable();
+            $table->enum('tipe_submisi', ['link', 'dokumen', 'dokumen_dan_link'])->nullable();
+            $table->enum('kategori_submisi', ['laporan', 'tugas'])->nullable();
+            $table->string('judul_tugas')->nullable();
+            $table->text('deskripsi_tugas')->nullable();
+            $table->string('link_submisi')->nullable();
+            $table->enum('status_penilaian', ['menunggu', 'diterima', 'ditolak'])->default('menunggu');
+            $table->text('feedback_pembimbing')->nullable();
+            $table->unsignedBigInteger('pendaftaran_pkl_id')->nullable();
+            $table->timestamp('tanggal_submit')->nullable();
+            
             $table->timestamps();
             
             $table->index(['user_id', 'jenis_dokumen']);
             $table->index(['terverifikasi']);
             $table->index(['aktif']);
+            $table->index(['pendaftaran_pkl_id', 'kategori_submisi']);
+            $table->index('status_penilaian');
         });
     }
 

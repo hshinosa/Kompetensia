@@ -45,8 +45,8 @@ class DashboardController extends Controller
                             'id' => 'sertifikasi_' . $item->id,
                             'original_id' => $item->id,
                             'user_id' => $item->user->id,
-                            'nama' => $item->user->name,
-                            'full_name' => $item->user->full_name ?? $item->user->name,
+                            'nama' => $item->user->nama ?? $item->user->name ?? 'Nama tidak tersedia',
+                            'full_name' => $item->user->nama_lengkap ?? $item->user->full_name ?? $item->user->nama ?? $item->user->name ?? 'Nama tidak tersedia',
                             'jenis_pendaftaran' => 'Sertifikasi Kompetensi',
                             'program' => $item->sertifikasi->nama_sertifikasi,
                             'batch' => $batchDisplay,
@@ -78,8 +78,8 @@ class DashboardController extends Controller
                             'id' => 'pkl_' . $item->id,
                             'original_id' => $item->id,
                             'user_id' => $item->user->id,
-                            'nama' => $item->user->name,
-                            'full_name' => $item->user->full_name ?? $item->user->name,
+                            'nama' => $item->user->nama ?? $item->user->name ?? 'Nama tidak tersedia',
+                            'full_name' => $item->user->nama_lengkap ?? $item->user->full_name ?? $item->user->nama ?? $item->user->name ?? 'Nama tidak tersedia',
                             'jenis_pendaftaran' => 'Praktik Kerja Lapangan',
                             'program' => $item->posisiPKL ? $item->posisiPKL->nama_posisi : 'Tidak ada posisi',
                             'batch' => $batchDisplay,
@@ -129,20 +129,23 @@ class DashboardController extends Controller
                 // Format data untuk sertifikasi
                 $formattedData = [
                     'user_id' => $pendaftaran->user->id,
-                    'nama' => $pendaftaran->user->name,
-                    'full_name' => $pendaftaran->user->full_name ?? $pendaftaran->user->name,
+                    'nama' => $pendaftaran->user->nama ?? $pendaftaran->user->name ?? 'Nama tidak tersedia',
+                    'full_name' => $pendaftaran->user->nama_lengkap ?? $pendaftaran->user->full_name ?? $pendaftaran->user->nama ?? $pendaftaran->user->name,
                     'jenis_pendaftaran' => 'Sertifikasi Kompetensi',
                     'status' => $pendaftaran->status,
                     'catatan_admin' => $pendaftaran->catatan_admin,
                     'biodata' => [
-                        'nama' => $pendaftaran->user->name,
-                        'full_name' => $pendaftaran->user->full_name ?? $pendaftaran->user->name,
-                        'email' => $pendaftaran->user->email,
-                        'phone' => $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
-                        'address' => $pendaftaran->user->address,
-                        'birth_place' => $pendaftaran->user->birth_place ?? $pendaftaran->user->place_of_birth,
-                        'birth_date' => ($pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth) ? 
-                            ($pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth)->format('d-m-Y') : null,
+                        'nama' => $pendaftaran->user->nama ?? $pendaftaran->user->name ?? 'Nama tidak tersedia',
+                        'full_name' => $pendaftaran->user->nama_lengkap ?? $pendaftaran->user->full_name ?? $pendaftaran->user->nama ?? $pendaftaran->user->name,
+                        'email' => $pendaftaran->user->email ?? 'Email tidak tersedia',
+                        'phone' => $pendaftaran->user->telepon ?? $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
+                        'noTelepon' => $pendaftaran->user->telepon ?? $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
+                        'address' => $pendaftaran->user->alamat ?? $pendaftaran->user->address,
+                        'alamat' => $pendaftaran->user->alamat ?? $pendaftaran->user->address,
+                        'birth_place' => $pendaftaran->user->tempat_lahir ?? $pendaftaran->user->birth_place ?? $pendaftaran->user->place_of_birth,
+                        'birth_date' => ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth) ? 
+                            ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth)->format('d-m-Y') : null,
+                        'tempatTanggalLahir' => $this->formatBirthPlaceDate($pendaftaran->user),
                     ],
                     'sertifikasi' => [
                         'namaSertifikasi' => $pendaftaran->sertifikasi->nama_sertifikasi,
@@ -173,20 +176,23 @@ class DashboardController extends Controller
                 // Format data untuk PKL
                 $formattedData = [
                     'user_id' => $pendaftaran->user->id,
-                    'nama' => $pendaftaran->user->name,
-                    'full_name' => $pendaftaran->user->full_name ?? $pendaftaran->user->name,
+                    'nama' => $pendaftaran->user->nama ?? $pendaftaran->user->name ?? 'Nama tidak tersedia',
+                    'full_name' => $pendaftaran->user->nama_lengkap ?? $pendaftaran->user->full_name ?? $pendaftaran->user->nama ?? $pendaftaran->user->name,
                     'jenis_pendaftaran' => 'Praktik Kerja Lapangan',
                     'status' => $pendaftaran->status,
                     'catatan_admin' => $pendaftaran->catatan_admin,
                     'biodata' => [
-                        'nama' => $pendaftaran->user->name,
-                        'full_name' => $pendaftaran->user->full_name ?? $pendaftaran->user->name,
-                        'email' => $pendaftaran->user->email,
-                        'phone' => $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
-                        'address' => $pendaftaran->user->address,
-                        'birth_place' => $pendaftaran->user->birth_place ?? $pendaftaran->user->place_of_birth,
-                        'birth_date' => ($pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth) ? 
-                            ($pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth)->format('d-m-Y') : null,
+                        'nama' => $pendaftaran->user->nama ?? $pendaftaran->user->name ?? 'Nama tidak tersedia',
+                        'full_name' => $pendaftaran->user->nama_lengkap ?? $pendaftaran->user->full_name ?? $pendaftaran->user->nama ?? $pendaftaran->user->name,
+                        'email' => $pendaftaran->user->email ?? 'Email tidak tersedia',
+                        'phone' => $pendaftaran->user->telepon ?? $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
+                        'noTelepon' => $pendaftaran->user->telepon ?? $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
+                        'address' => $pendaftaran->user->alamat ?? $pendaftaran->user->address,
+                        'alamat' => $pendaftaran->user->alamat ?? $pendaftaran->user->address,
+                        'birth_place' => $pendaftaran->user->tempat_lahir ?? $pendaftaran->user->birth_place ?? $pendaftaran->user->place_of_birth,
+                        'birth_date' => ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth) ? 
+                            ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth)->format('d-m-Y') : null,
+                        'tempatTanggalLahir' => $this->formatBirthPlaceDate($pendaftaran->user),
                     ],
                     'pkl_info' => [
                         'namaPosisi' => $pendaftaran->posisiPKL ? $pendaftaran->posisiPKL->nama_posisi : 'Belum ditentukan',
@@ -449,5 +455,29 @@ class DashboardController extends Controller
             $current->addDay();
         }
         return response()->json(['pendaftaran_chart' => $pendaftaranChart]);
+    }
+
+    private function formatBirthPlaceDate($user)
+    {
+        $birthPlace = $user->tempat_lahir ?? $user->birth_place ?? $user->place_of_birth;
+        $birthDate = $user->tanggal_lahir ?? $user->birth_date ?? $user->date_of_birth;
+        
+        if ($birthPlace && $birthDate) {
+            if (is_string($birthDate)) {
+                return $birthPlace . ', ' . $birthDate;
+            } else {
+                return $birthPlace . ', ' . $birthDate->format('d-m-Y');
+            }
+        } elseif ($birthPlace) {
+            return $birthPlace;
+        } elseif ($birthDate) {
+            if (is_string($birthDate)) {
+                return $birthDate;
+            } else {
+                return $birthDate->format('d-m-Y');
+            }
+        }
+        
+        return '-';
     }
 }

@@ -51,7 +51,7 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
   };
 
   return (
-    <article className="border-2 border-purple-300 rounded-xl overflow-hidden bg-white flex flex-col hover:shadow-lg transition-shadow duration-300 h-[420px]">
+    <article className="border-2 border-purple-400 rounded-xl overflow-hidden bg-white flex flex-col hover:shadow-lg hover:border-purple-600 transition-all duration-300 h-[420px]">
       <div className="relative">
         <img 
           src={imageUrl} 

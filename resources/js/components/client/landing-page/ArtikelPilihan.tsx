@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ArticleDetailModal from './ArticleDetailModal';
 
 interface Artikel {
   id: number;
@@ -31,13 +32,31 @@ export default function ArtikelPilihan({ articles = [] }: ArtikelPilihanProps) {
   // Jika tidak ada artikel dari database, gunakan artikel default
   const displayArticles = articles.length > 0 ? articles : Array(4).fill(defaultArticle);
   
+  // Modal state
+  const [selectedArticle, setSelectedArticle] = useState<Artikel | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleArticleClick = (artikel: Artikel) => {
+    setSelectedArticle(artikel);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedArticle(null);
+  };
+  
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-4">Artikel Pilihan</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-900">Artikel Pilihan</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {displayArticles.slice(0, 4).map((artikel, idx) => (
-            <div key={artikel.id || idx} className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col min-w-[270px] md:min-w-[320px] max-w-full overflow-hidden">
+            <div 
+              key={artikel.id || idx} 
+              className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col min-w-[270px] md:min-w-[320px] max-w-full overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleArticleClick(artikel)}
+            >
               <div className="relative">
                 <img src={artikel.img} alt={artikel.title} className="w-full h-40 object-cover rounded-t-2xl" />
                 {artikel.type === 'video' && artikel.durasi && (
@@ -57,7 +76,7 @@ export default function ArtikelPilihan({ articles = [] }: ArtikelPilihanProps) {
               </div>
               <div className="p-6 flex-1 flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg font-bold flex-1">{artikel.title}</h3>
+                  <h3 className="text-lg font-bold flex-1 text-gray-900">{artikel.title}</h3>
                   {artikel.type === 'video' && (
                     <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-medium">
                       VIDEO
@@ -67,16 +86,34 @@ export default function ArtikelPilihan({ articles = [] }: ArtikelPilihanProps) {
                 <p className="text-sm text-gray-700 mb-2">{artikel.desc}</p>
                 <div className="text-xs text-gray-500 mb-4">{artikel.author}, {artikel.date}</div>
                 <div className="flex justify-between items-center mt-auto">
-                  <a href={artikel.slug !== '#' ? `/blog/${artikel.slug}` : '#'} className="text-purple-700 text-sm font-semibold">
+                  <span className="text-purple-700 text-sm font-semibold">
                     {artikel.type === 'video' ? 'Tonton Video' : 'Baca Selengkapnya'} &rarr;
-                  </a>
-                  <button className="text-gray-400 hover:text-gray-700"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M17 8v6a5 5 0 01-10 0V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 19v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button>
+                  </span>
+                  <button 
+                    className="text-gray-400 hover:text-gray-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleArticleClick(artikel);
+                    }}
+                  >
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                      <path d="M17 8v6a5 5 0 01-10 0V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 19v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Article Detail Modal */}
+      <ArticleDetailModal
+        article={selectedArticle}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </section>
   );
 }

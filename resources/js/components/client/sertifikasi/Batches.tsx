@@ -13,6 +13,7 @@ interface BatchData {
 
 interface Props {
   readonly batch?: BatchData;
+  readonly onBatchSelect?: (batch: {id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string}) => void;
 }
 
 const sampleBatches = [
@@ -21,10 +22,10 @@ const sampleBatches = [
   { id: 3, name: 'Batch 3', date: '25 Desember 2025', peserta: 45 },
 ];
 
-export default function Batches({ batch }: Props) {
+export default function Batches({ batch, onBatchSelect }: Props) {
   return (
     <div id="batch">
-      <h4 className="text-lg font-semibold mb-4">Jadwal Batch</h4>
+      <h4 className="text-lg font-semibold mb-4 text-gray-900">Jadwal Batch</h4>
       
       {batch ? (
         <div className="border-2 border-purple-300 rounded-lg p-4 max-w-md">
@@ -47,7 +48,15 @@ export default function Batches({ batch }: Props) {
           <div className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 w-fit mt-2">
             {batch.status}
           </div>
-          <button className="w-full mt-4 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
+          <button 
+            onClick={() => onBatchSelect?.({
+              id: batch.id,
+              nama_batch: batch.nama_batch,
+              tanggal_mulai: batch.tanggal_mulai,
+              tanggal_selesai: batch.tanggal_selesai
+            })}
+            className="w-full mt-4 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+          >
             Daftar Batch
           </button>
         </div>
@@ -58,7 +67,15 @@ export default function Batches({ batch }: Props) {
               <div className="font-semibold">{b.name}</div>
               <div className="text-sm text-gray-600">{b.date}</div>
               <div className="text-sm text-gray-600 mt-2 mb-4">👥 {b.peserta} Peserta</div>
-              <button className="mt-auto px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
+              <button 
+                onClick={() => onBatchSelect?.({
+                  id: b.id,
+                  nama_batch: b.name,
+                  tanggal_mulai: b.date,
+                  tanggal_selesai: b.date
+                })}
+                className="mt-auto px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+              >
                 Daftar Batch
               </button>
             </div>

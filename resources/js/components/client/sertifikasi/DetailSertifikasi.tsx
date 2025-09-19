@@ -37,15 +37,16 @@ interface SertifikasiData {
 
 interface Props {
   readonly sertifikasi?: SertifikasiData;
+  readonly onBatchSelect?: (batch: {id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string}) => void;
 }
 
-export default function DetailSertifikasi({ sertifikasi }: Props) {
+export default function DetailSertifikasi({ sertifikasi, onBatchSelect }: Props) {
   const defaultDescription = 'Sertifikasi Digital Marketing adalah program yang dirancang untuk membekali kamu dengan pengetahuan dan keterampilan praktis dalam mengelola strategi pemasaran di dunia digital...';
   
   return (
     <article>
       <div id="detail" className="mb-8">
-        <h2 className="text-2xl font-semibold">Detail Sertifikasi</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">Detail Sertifikasi</h2>
         <p className="text-sm text-gray-700 mt-3">{sertifikasi?.deskripsi || defaultDescription}</p>
         {sertifikasi?.jenis_sertifikasi && (
           <div className="mt-3">
@@ -61,7 +62,7 @@ export default function DetailSertifikasi({ sertifikasi }: Props) {
       </div>
 
       <div className="mt-16">
-        <Batches batch={sertifikasi?.batch} />
+        <Batches batch={sertifikasi?.batch} onBatchSelect={onBatchSelect} />
       </div>
 
       <div className="mt-16">

@@ -54,7 +54,7 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
   };
 
   return (
-    <article className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 min-h-[450px] flex flex-col">
+    <article className="bg-white border-2 border-purple-400 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-purple-600 transition-all duration-300 min-h-[450px] flex flex-col">
       <div className="relative">
         <img 
           src={imageUrl} 
@@ -70,7 +70,7 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
       </div>
 
       <div className="p-4 flex-1 flex flex-col">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2 min-h-[3.5rem]">{sertifikasi.title}</h3>
+        <h3 className="font-semibold text-lg mb-2 line-clamp-2 min-h-[3.5rem] text-gray-900">{sertifikasi.title}</h3>
         <div className="text-sm text-gray-600 mb-3 min-h-[2.5rem] flex items-start">{sertifikasi.batch} • {sertifikasi.date}</div>
 
         <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
@@ -89,7 +89,7 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
             alt="mentor" 
             className="w-8 h-8 rounded-full border-2 border-white" 
           />
-          <div className="text-sm font-medium line-clamp-1">{sertifikasi.mentor}</div>
+          <div className="text-sm font-medium line-clamp-1 text-gray-900">{sertifikasi.mentor}</div>
         </div>
 
         <div className="flex gap-3">

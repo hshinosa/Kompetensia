@@ -58,7 +58,7 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
       peserta: item.batch?.reduce((total, batch) => total + (batch.peserta_terdaftar || 0), 0) || 0,
       kategori: item.jenis_sertifikasi,
       img: item.thumbnail_url,
-      mentor: item.asesor?.nama_asesor || 'Instructor',
+      mentor: item.asesor?.nama_asesor || 'Instruktur Profesional',
       slug: item.slug,
       type: item.jenis_sertifikasi,
     }));
@@ -152,7 +152,7 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
   return (
     <article>
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Daftar Sertifikasi</h2>
+        <h2 className="text-2xl font-semibold mb-2 text-gray-900">Daftar Sertifikasi</h2>
         <p className="text-gray-600 mb-6">Pilih skema sertifikasi yang sesuai dengan bidang dan kebutuhanmu.</p>
         
         {/* Search Bar */}
@@ -179,7 +179,7 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
             <button 
               key={category}
               onClick={() => handleCategoryChange(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedCategory === category
                   ? 'bg-purple-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

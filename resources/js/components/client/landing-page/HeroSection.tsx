@@ -2,10 +2,10 @@ import React from 'react';
 
 export default function HeroSection() {
   return (
-    <section className="container mx-auto px-4 lg:px-5">
+    <section className="container mx-auto px-4">
       <div className="flex flex-row justify-between items-center py-12 relative">
         <div className="flex-1">
-          <h1 className="text-5xl font-bold mb-6 leading-tight">
+          <h1 className="text-5xl font-bold mb-6 leading-tight text-gray-900">
             Satu Platform, Siap<br />Tingkatkan Kompetensimu
           </h1>
           <p className="text-xl mb-8 text-gray-700 max-w-xl">
@@ -59,15 +59,15 @@ export default function HeroSection() {
           <div className="grid grid-cols-2 grid-rows-2 gap-6 relative w-[600px] h-[520px]">
             <div className="row-span-2 col-span-1 rounded-3xl overflow-hidden shadow-2xl relative">
               <img src="/images/hero1.png" alt="Main" className="object-cover w-full h-full" />
-              <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-2 rounded-lg text-base font-semibold shadow">30+ Sertifikasi Keahlian</div>
+              <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-2 rounded-lg text-base text-gray-600 font-semibold shadow">30+ Sertifikasi Keahlian</div>
             </div>
             <div className="col-span-1 row-span-1 rounded-3xl overflow-hidden shadow-2xl relative">
               <img src="/images/hero2.png" alt="Peserta Didik" className="object-cover w-full h-full" />
-              <div className="absolute top-4 left-4 bg-white/90 px-4 py-2 rounded-lg text-base font-semibold shadow">100+ peserta didik</div>
+              <div className="absolute top-4 left-4 bg-white/90 px-4 py-2 rounded-lg text-base text-gray-600 font-semibold shadow">100+ peserta didik</div>
             </div>
             <div className="col-span-1 row-span-1 rounded-3xl overflow-hidden shadow-2xl relative">
               <img src="/images/hero3.png" alt="Mentor" className="object-cover w-full h-full" />
-              <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-2 rounded-lg text-base font-semibold shadow">10+ Mentor</div>
+              <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-2 rounded-lg text-base text-gray-600 font-semibold shadow">10+ Mentor</div>
             </div>
           </div>
         </div>

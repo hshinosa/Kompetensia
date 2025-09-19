@@ -61,6 +61,30 @@ interface PreviewSertifikasiProps {
 
 export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi }: PreviewSertifikasiProps) {
   const [open, setOpen] = useState(false);
+  const [selectedBatch, setSelectedBatch] = useState<{id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string} | null>(null);
+
+  // Function to scroll to batch section
+  const scrollToBatchSection = () => {
+    const batchElement = document.getElementById('batch');
+    if (batchElement) {
+      batchElement.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
+  // Function to handle batch selection and open modal
+  const handleBatchSelect = (batch: {id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string}) => {
+    setSelectedBatch(batch);
+    setOpen(true);
+  };
+
+  // Function to close modal and reset selected batch
+  const handleCloseModal = () => {
+    setOpen(false);
+    setSelectedBatch(null);
+  };
 
   // Log data untuk debugging
   console.log('Sertifikasi data:', sertifikasi);
@@ -71,16 +95,16 @@ export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi
       <Navbar />
 
       <div className="">
-        <HeroSertifikasi sertifikasi={sertifikasi} onOpen={() => setOpen(true)} />
+        <HeroSertifikasi sertifikasi={sertifikasi} onScrollToBatch={scrollToBatchSection} />
 
-        <main className="container mx-auto py-10">
+        <main className="container mx-auto px-4 py-10">
           <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
             <aside className="lg:col-span-1">
-              <LeftNavSertifikasi onOpen={() => setOpen(true)} />
+              <LeftNavSertifikasi onScrollToBatch={scrollToBatchSection} />
             </aside>
 
             <section className="lg:col-span-5">
-              <DetailSertifikasi sertifikasi={sertifikasi} />
+              <DetailSertifikasi sertifikasi={sertifikasi} onBatchSelect={handleBatchSelect} />
             </section>
           </div>
         </main>
@@ -88,14 +112,14 @@ export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi
 
       {/* Recommendations are full-width edge-to-edge */}
       <div id="recommend" className="w-full bg-white">
-        <div className="container mx-auto px-10 py-10">
+        <div className="container mx-auto px-4 py-10">
           <RekomendasiSertifikasi rekomendasiSertifikasi={rekomendasiSertifikasi} />
         </div>
       </div>
 
       <Footer />
 
-      {open && <PendaftaranModal onClose={() => setOpen(false)} />}
+      {open && <PendaftaranModal onClose={handleCloseModal} selectedBatch={selectedBatch} />}
     </div>
   );
 }

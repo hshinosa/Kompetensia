@@ -22,13 +22,13 @@ export default function MengapaSertifikasiPKL() {
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-2">Mengapa Harus Sertifikasi & PKL di Kami?</h2>
+        <h2 className="text-2xl font-bold mb-2 text-gray-900">Mengapa Harus Sertifikasi & PKL di Kami?</h2>
         <p className="text-gray-700 mb-8">Biar perjalanan sertifikasi dan kompetensimu lancar, jelas, dan tanpa ribet, kami siap jadi partner terbaik dalam setiap langkah karirmu!</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {reasons.map((item, idx) => (
             <div key={item.title} className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col p-8">
               <div className="mb-4">{item.icon}</div>
-              <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+              <h3 className="text-lg font-bold mb-2 text-gray-900">{item.title}</h3>
               <p className="text-sm text-gray-700">{item.desc}</p>
             </div>
           ))}

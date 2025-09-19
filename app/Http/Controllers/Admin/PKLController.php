@@ -110,11 +110,54 @@ class PKLController extends Controller
 
     public function penilaianIndex()
     {
+        // Get only APPROVED applications for assessment - no pending applications
         $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])
-            ->approved()
+            ->where('status', 'Disetujui') // Only approved applications
             ->latest()
-            ->paginate(5);
-        return Inertia::render('admin/penilaian-pkl', ['pendaftaran' => $pendaftaran]);
+            ->get(); // Remove pagination - get all data
+        
+        // Add dynamic status based on internship period and assessment
+        $pendaftaranWithStatus = $pendaftaran->map(function ($item) {
+            $now = now();
+            $startDate = $item->tanggal_mulai ? \Carbon\Carbon::parse($item->tanggal_mulai) : null;
+            $endDate = $item->tanggal_selesai ? \Carbon\Carbon::parse($item->tanggal_selesai) : null;
+            $hasPenilaian = $item->penilaian()->exists();
+            
+            // For approved applications, dates MUST exist
+            if ($item->status === 'Disetujui') {
+                // If somehow approved but no dates (should not happen), force default status
+                if (!$startDate || !$endDate) {
+                    $item->status_dinamis = 'Periode Belum Ditentukan';
+                } else {
+                    if ($now->lt($startDate)) {
+                        // Internship hasn't started yet
+                        $item->status_dinamis = 'Belum Dimulai';
+                    } elseif ($now->between($startDate, $endDate)) {
+                        // Currently in internship period
+                        $item->status_dinamis = 'Sedang Berjalan';
+                    } elseif ($now->gt($endDate)) {
+                        // Internship period has ended
+                        if ($hasPenilaian) {
+                            $item->status_dinamis = 'Selesai';
+                        } else {
+                            $item->status_dinamis = 'Belum Dinilai';
+                        }
+                    }
+                }
+            } else {
+                // For non-approved applications, status doesn't depend on dates
+                $item->status_dinamis = $item->status; // Use original status
+            }
+            
+            return $item;
+        });
+        
+        return Inertia::render('admin/penilaian-pkl', [
+            'pendaftaran' => [
+                'data' => $pendaftaranWithStatus,
+                'total' => $pendaftaranWithStatus->count()
+            ]
+        ]);
     }
 
     public function penilaianOverview(Request $request)
@@ -149,13 +192,88 @@ class PKLController extends Controller
     public function penilaianShow($id)
     {
         $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])->findOrFail($id);
-        return Inertia::render('admin/detail-penilaian-pkl', ['pendaftaran' => $pendaftaran]);
+        
+        // Add dynamic status for detail view
+        $now = now();
+        $startDate = $pendaftaran->tanggal_mulai ? \Carbon\Carbon::parse($pendaftaran->tanggal_mulai) : null;
+        $endDate = $pendaftaran->tanggal_selesai ? \Carbon\Carbon::parse($pendaftaran->tanggal_selesai) : null;
+        $hasPenilaian = $pendaftaran->penilaian()->exists();
+        
+        if ($pendaftaran->status === 'Disetujui' && $startDate && $endDate) {
+            if ($now->lt($startDate)) {
+                $pendaftaran->status_dinamis = 'Belum Dimulai';
+            } elseif ($now->between($startDate, $endDate)) {
+                $pendaftaran->status_dinamis = 'Sedang Berjalan';
+            } elseif ($now->gt($endDate)) {
+                $pendaftaran->status_dinamis = $hasPenilaian ? 'Selesai' : 'Belum Dinilai';
+            }
+        } else {
+            $pendaftaran->status_dinamis = $pendaftaran->status;
+        }
+        
+        // Ambil submisi PKL dari UserDocument
+        $submisiPKL = \App\Models\UserDocument::where('user_id', $pendaftaran->user_id)
+            ->where('pendaftaran_pkl_id', $pendaftaran->id)
+            ->where('jenis_dokumen', 'submisi_pkl')
+            ->with(['diverifikasiOleh'])
+            ->orderBy('tanggal_submit', 'asc')
+            ->get()
+            ->map(function($submisi) {
+                return [
+                    'id' => $submisi->id,
+                    'nomor_submisi' => $submisi->nomor_submisi,
+                    'tanggal_submit' => $submisi->tanggal_submit ? $submisi->tanggal_submit->format('d M Y') : null,
+                    'status' => $submisi->tanggal_submit ? 'submitted' : 'pending',
+                    'kategori_submisi' => $submisi->kategori_submisi, // 'laporan' | 'tugas'
+                    'tipe_submisi' => $submisi->tipe_submisi, // 'link' | 'dokumen'
+                    'judul_tugas' => $submisi->judul_tugas,
+                    'deskripsi_tugas' => $submisi->deskripsi_tugas,
+                    'link_submisi' => $submisi->link_submisi,
+                    'nama_dokumen' => $submisi->nama_dokumen,
+                    'path_file' => $submisi->path_file,
+                    'ukuran_file' => $submisi->ukuran_file,
+                    'tipe_mime' => $submisi->tipe_mime,
+                    'url_file' => $submisi->url_file,
+                    'ukuran_file_format' => $submisi->ukuran_file_format,
+                    'is_assessed' => $submisi->status_penilaian !== 'menunggu',
+                    'status_penilaian' => $submisi->status_penilaian, // 'menunggu' | 'diterima' | 'ditolak'
+                    'feedback_pembimbing' => $submisi->feedback_pembimbing,
+                    'tanggal_verifikasi' => $submisi->tanggal_verifikasi ? $submisi->tanggal_verifikasi->format('d M Y') : null,
+                    'diverifikasi_oleh' => $submisi->diverifikasiOleh?->nama ?? $submisi->diverifikasiOleh?->nama_lengkap,
+                ];
+            });
+        
+        return Inertia::render('admin/detail-penilaian-pkl', [
+            'pendaftaran' => $pendaftaran,
+            'submisi_pkl' => $submisiPKL
+        ]);
     }
 
     public function penilaianStore(StorePenilaianPKLRequest $request, $pendaftaranId)
     {
         $this->penilaianService->nilai($pendaftaranId, $request->validated(), auth()->id());
         return redirect()->route('admin.penilaian-pkl')->with('success', 'Penilaian PKL berhasil disimpan');
+    }
+
+    public function penilaianSubmisiStore(Request $request, $submisiId)
+    {
+        $request->validate([
+            'status_penilaian' => 'required|in:diterima,ditolak',
+            'feedback_pembimbing' => 'nullable|string|max:1000'
+        ]);
+
+        $submisi = \App\Models\UserDocument::where('jenis_dokumen', 'submisi_pkl')
+            ->findOrFail($submisiId);
+
+        $submisi->update([
+            'status_penilaian' => $request->status_penilaian,
+            'feedback_pembimbing' => $request->feedback_pembimbing,
+            'tanggal_verifikasi' => now(),
+            'diverifikasi_oleh' => auth()->id(),
+            'terverifikasi' => $request->status_penilaian === 'diterima'
+        ]);
+
+        return redirect()->back()->with('success', 'Penilaian submisi berhasil disimpan');
     }
 
     public function apiIndex(Request $request)

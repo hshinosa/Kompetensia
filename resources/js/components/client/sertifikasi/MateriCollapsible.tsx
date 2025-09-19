@@ -44,10 +44,10 @@ export default function MateriCollapsible({ moduls }: Props) {
 
   return (
     <div id="materi">
-      <h3 className="text-lg font-semibold mb-4">Materi sertifikasi yang kamu pelajari</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-900">Materi sertifikasi yang kamu pelajari</h3>
       <div className="space-y-3">
         {displayModuls.map((modul) => (
-          <div key={modul.id} className="border border-purple-200 rounded-lg overflow-hidden">
+          <div key={modul.id} className="border border-purple-200 text-gray-900 rounded-lg overflow-hidden">
             <button
               className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-purple-50 transition-colors duration-200"
               onClick={() => setOpen((cur) => (cur === modul.id ? null : modul.id))}

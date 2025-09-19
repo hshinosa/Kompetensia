@@ -148,9 +148,34 @@ class ClientController extends Controller
                 ];
             });
 
+        // Ambil program PKL yang aktif (maksimal 6 untuk landing page)
+        $pklPrograms = PosisiPKL::active()
+            ->with('creator')
+            ->withCount(['pendaftaran as jumlah_pendaftar'])
+            ->orderBy('created_at', 'desc')
+            ->limit(6)
+            ->get()
+            ->map(function ($posisi) {
+                return [
+                    'id' => $posisi->id,
+                    'title' => $posisi->nama_posisi,
+                    'nama_posisi' => $posisi->nama_posisi,
+                    'desc' => $posisi->deskripsi,
+                    'tags' => [$posisi->tipe, $posisi->kategori],
+                    'kategori' => $posisi->kategori,
+                    'tipe' => $posisi->tipe,
+                    'durasi_bulan' => $posisi->durasi_bulan,
+                    'persyaratan' => $posisi->persyaratan ?? [],
+                    'benefits' => $posisi->benefits ?? [],
+                    'jumlah_pendaftar' => $posisi->jumlah_pendaftar,
+                    'status' => $posisi->status,
+                ];
+            });
+
         return Inertia::render('client/LandingPage', [
             'featuredBlogs' => $featuredContent,
             'popularSertifikasi' => $popularSertifikasi,
+            'pklPrograms' => $pklPrograms,
         ]);
     }
 
