@@ -99,117 +99,6 @@ interface SubmisiPKL {
     diverifikasi_oleh?: string;
 }
 
-const weeklyReports: WeeklyReport[] = [
-    { 
-        id: 1, 
-        submissionNumber: 'Submisi 1', 
-        submittedDate: '28 Jul 2025', 
-        status: 'submitted',
-        jenisDocument: 'Laporan/Tugas',
-        submissionType: 'link',
-        isAssessed: true,
-        statusPenilaian: 'Diterima',
-        feedback: 'Implementasi fitur login sudah baik, dokumentasi lengkap',
-        judulTugas: 'Implementasi Fitur Login dengan React',
-        deskripsiTugas: 'Membuat sistem autentikasi menggunakan React dan Laravel',
-        linkSubmisi: 'https://github.com/hashfi/pkl-login-feature'
-    },
-    { 
-        id: 2, 
-        submissionNumber: 'Submisi 2', 
-        submittedDate: '04 Agu 2025', 
-        status: 'submitted',
-        jenisDocument: 'Laporan/Tugas',
-        submissionType: 'document',
-        isAssessed: true,
-        statusPenilaian: 'Tidak Diterima',
-        feedback: 'Laporan perlu perbaikan pada bagian analisis dan testing',
-        judulTugas: 'Laporan Analisis Dashboard Analytics',
-        deskripsiTugas: 'Dokumentasi lengkap pengembangan dashboard dengan Chart.js',
-        fileName: 'Laporan_Dashboard_Analytics.pdf',
-        fileSize: '2.5 MB',
-        fileType: 'PDF'
-    },
-    { 
-        id: 3, 
-        submissionNumber: 'Submisi 3', 
-        submittedDate: '11 Agu 2025', 
-        status: 'submitted',
-        jenisDocument: 'Laporan/Tugas',
-        submissionType: 'link',
-        isAssessed: false,
-        judulTugas: 'API Integration dengan Third Party Services',
-        deskripsiTugas: 'Integrasi dengan API eksternal untuk fitur payment gateway',
-        linkSubmisi: 'https://github.com/hashfi/pkl-api-integration'
-    },
-    { 
-        id: 4, 
-        submissionNumber: 'Submisi 4', 
-        submittedDate: '18 Agu 2025', 
-        status: 'submitted',
-        jenisDocument: 'Laporan/Tugas',
-        submissionType: 'document',
-        isAssessed: true,
-        statusPenilaian: 'Diterima',
-        feedback: 'Dokumentasi database optimization sangat detail dan implementasi baik',
-        judulTugas: 'Dokumentasi Database Optimization',
-        deskripsiTugas: 'Laporan lengkap optimisasi query database dan implementasi indexing',
-        fileName: 'Database_Optimization_Report.docx',
-        fileSize: '1.8 MB',
-        fileType: 'DOCX'
-    },
-    { 
-        id: 5, 
-        submissionNumber: 'Submisi 5', 
-        submittedDate: '25 Agu 2025', 
-        status: 'submitted',
-        jenisDocument: 'Laporan/Tugas',
-        submissionType: 'link',
-        isAssessed: true,
-        statusPenilaian: 'Diterima',
-        feedback: 'Penerapan security yang baik dan testing comprehensive',
-        judulTugas: 'Security Implementation dan Authentication',
-        deskripsiTugas: 'Implementasi security features seperti rate limiting, CORS, dan JWT authentication',
-        linkSubmisi: 'https://github.com/hashfi/pkl-security'
-    },
-    { 
-        id: 6, 
-        submissionNumber: 'Submisi 6', 
-        submittedDate: '01 Sep 2025', 
-        status: 'submitted',
-        jenisDocument: 'Laporan/Tugas',
-        submissionType: 'document',
-        isAssessed: false,
-        judulTugas: 'Laporan Mobile App Development',
-        deskripsiTugas: 'Dokumentasi pengembangan aplikasi mobile companion menggunakan React Native',
-        fileName: 'Mobile_App_Development.pdf',
-        fileSize: '3.2 MB',
-        fileType: 'PDF'
-    },
-    { 
-        id: 7, 
-        submissionNumber: 'Submisi 7', 
-        submittedDate: '08 Sep 2025', 
-        status: 'submitted',
-        jenisDocument: 'Laporan/Tugas',
-        submissionType: 'link',
-        isAssessed: true,
-        statusPenilaian: 'Tidak Diterima',
-        feedback: 'Perlu perbaikan pada error handling dan user experience',
-        judulTugas: 'DevOps dan Deployment Automation',
-        deskripsiTugas: 'Setup CI/CD pipeline menggunakan GitHub Actions dan Docker',
-        linkSubmisi: 'https://github.com/hashfi/pkl-devops'
-    },
-    { 
-        id: 8, 
-        submissionNumber: 'Submisi 8', 
-        status: 'pending',
-        jenisDocument: '',
-        submissionType: '',
-        isAssessed: false
-    }
-];
-
 export default function DetailPenilaianPKL({ pendaftaran, submisi_pkl }: Readonly<Props>) {
     const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
     const [selectedSubmission, setSelectedSubmission] = useState<SubmisiPKL | null>(null);
@@ -539,7 +428,7 @@ export default function DetailPenilaianPKL({ pendaftaran, submisi_pkl }: Readonl
 
             {/* Submission Detail Modal */}
             <Dialog open={isSubmissionModalOpen} onOpenChange={setIsSubmissionModalOpen}>
-                <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-7xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Detail Submisi</DialogTitle>
                         <DialogDescription>

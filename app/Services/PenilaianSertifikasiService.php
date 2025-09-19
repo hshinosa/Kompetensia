@@ -31,7 +31,7 @@ class PenilaianSertifikasiService
     private function compute(array $data, int $sertifikasiId, int $batchId, int $pendaftaranId, int $asesorId): array
     {
         return [
-            'status_kelulusan' => $data['status_kelulusan'],
+            'status_penilaian' => $data['status_kelulusan'], // Map status_kelulusan to status_penilaian
             'catatan_asesor' => $data['catatan_asesor'] ?? null,
             'tanggal_penilaian' => now(),
             'asesor_id' => $asesorId,

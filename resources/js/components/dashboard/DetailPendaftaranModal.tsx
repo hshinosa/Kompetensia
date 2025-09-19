@@ -2,6 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, Download, LinkIcon } from 'lucide-react';
 
 export interface BiodataPeserta { 
   nama: string; 
@@ -14,6 +15,7 @@ export interface BiodataPeserta {
   tempatTanggalLahir?: string; 
   alamat?: string; 
   noTelepon?: string;
+  berkas_persyaratan?: Record<string, string> | null;
 }
 
 export interface SertifikasiKompetensi { 
@@ -155,6 +157,68 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
                     <div className="text-sm font-medium text-muted-foreground mb-1">Alamat</div>
                     <p className="text-sm font-medium">{pendaftarData.biodata.address || pendaftarData.biodata.alamat || '-'}</p>
                   </div>
+
+                  {/* Berkas Persyaratan - Khusus untuk PKL */}
+                  {pendaftarData.jenis_pendaftaran === 'Praktik Kerja Lapangan' && pendaftarData.biodata.berkas_persyaratan && (
+                    <div className="border-t pt-4">
+                      <div className="text-sm font-medium text-muted-foreground mb-3">Berkas Persyaratan</div>
+                      <div className="space-y-3">
+                        {(() => {
+                          const berkas = pendaftarData.biodata.berkas_persyaratan;
+                          
+                          return (
+                            <>
+                              {/* CV */}
+                              {berkas.cv && (
+                                <div>
+                                  <span className="block text-xs font-medium text-gray-700 mb-1">CV</span>
+                                  <div className="p-2 bg-gray-50 border rounded">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <FileText className="h-6 w-6 text-gray-500" />
+                                        <div>
+                                          <p className="text-xs font-medium">CV</p>
+                                          <p className="text-xs text-gray-500">{berkas.cv.split('/').pop()}</p>
+                                        </div>
+                                      </div>
+                                      <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="h-6 px-2 text-xs"
+                                        onClick={() => window.open(`/storage/${berkas.cv}`, '_blank')}
+                                      >
+                                        <Download className="h-3 w-3 mr-1" />
+                                        Lihat
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Portfolio */}
+                              {berkas.portfolio && (
+                                <div>
+                                  <span className="block text-xs font-medium text-gray-700 mb-1">Portfolio</span>
+                                  <div className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                                    <LinkIcon className="h-3 w-3 text-blue-600" />
+                                    <a 
+                                      href={berkas.portfolio} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 underline break-all flex-1 text-xs"
+                                    >
+                                      {berkas.portfolio}
+                                    </a>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               {/* Program-specific Information */}

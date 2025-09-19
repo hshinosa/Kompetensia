@@ -122,15 +122,16 @@ class PenilaianSertifikasiController extends Controller
                             'name' => $pendaftaran->user->nama, // Use 'nama' field from database
                             'email' => $pendaftaran->user->email,
                         ],
+                        'berkas_persyaratan' => $pendaftaran->berkas_persyaratan, // Add berkas field
                         'tanggal_pendaftaran' => $pendaftaran->tanggal_pendaftaran?->format('Y-m-d'),
                         'status' => $pendaftaran->status,
                         'penilaian' => $pendaftaran->penilaian ? [
                             'id' => $pendaftaran->penilaian->id,
-                            'status_kelulusan' => $pendaftaran->penilaian->status_kelulusan,
+                            'status_kelulusan' => $pendaftaran->penilaian->status_penilaian, // Map status_penilaian to status_kelulusan
                             'nilai_kompetensi' => $pendaftaran->penilaian->nilai_kompetensi,
                             'nilai_wawancara' => $pendaftaran->penilaian->nilai_wawancara,
                             'nilai_praktek' => $pendaftaran->penilaian->nilai_praktek,
-                            'catatan' => $pendaftaran->penilaian->catatan,
+                            'catatan_asesor' => $pendaftaran->penilaian->catatan_asesor, // Use consistent field name
                             'tanggal_penilaian' => $pendaftaran->penilaian->tanggal_penilaian?->format('Y-m-d'),
                         ] : null,
                     ];
@@ -143,13 +144,25 @@ class PenilaianSertifikasiController extends Controller
 
     public function store(StorePenilaianSertifikasiRequest $request, $pendaftaranId)
     {
-        $this->service->nilaiIndividu($request->validated(), $pendaftaranId, auth()->id());
-        return redirect()->route('admin.penilaian-sertifikasi')->with('success', 'Penilaian sertifikasi berhasil disimpan');
+        $asesorId = auth()->id();
+        if (!$asesorId) {
+            return redirect()->back()->withErrors(['error' => 'User tidak terautentikasi']);
+        }
+        
+        $this->service->nilaiIndividu($request->validated(), $pendaftaranId, $asesorId);
+        
+        // Redirect back to batch page instead of main page
+        return redirect()->back()->with('success', 'Penilaian sertifikasi berhasil disimpan');
     }
 
     public function batchStore(BatchStorePenilaianSertifikasiRequest $request, $sertifikasiId, $batchId)
     {
-        $this->service->nilaiBatch($request->validated()['penilaian'], $sertifikasiId, $batchId, auth()->id());
+        $asesorId = auth()->id();
+        if (!$asesorId) {
+            return redirect()->back()->withErrors(['error' => 'User tidak terautentikasi']);
+        }
+        
+        $this->service->nilaiBatch($request->validated()['penilaian'], $sertifikasiId, $batchId, $asesorId);
         return redirect()->route('admin.batch-penilaian-sertifikasi', ['sertifikasiId' => $sertifikasiId, 'batchId' => $batchId])
             ->with('success', 'Penilaian batch berhasil disimpan');
     }
@@ -178,16 +191,26 @@ class PenilaianSertifikasiController extends Controller
 
     public function apiStore(StorePenilaianSertifikasiRequest $request)
     {
+        $asesorId = auth()->id();
+        if (!$asesorId) {
+            return response()->json(['error' => 'User tidak terautentikasi'], 401);
+        }
+        
         $data = $request->validated();
-        $this->service->nilaiIndividu($data, $data['pendaftaran_id'], auth()->id());
+        $this->service->nilaiIndividu($data, $data['pendaftaran_id'], $asesorId);
         return response()->json(['message' => 'Penilaian berhasil disimpan']);
     }
 
     public function apiUpdate(StorePenilaianSertifikasiRequest $request, $id)
     {
+        $asesorId = auth()->id();
+        if (!$asesorId) {
+            return response()->json(['error' => 'User tidak terautentikasi'], 401);
+        }
+        
         // Reuse same rules; we upsert by pendaftaran reference
         $data = $request->validated();
-        $this->service->nilaiIndividu($data, $data['pendaftaran_id'], auth()->id());
+        $this->service->nilaiIndividu($data, $data['pendaftaran_id'], $asesorId);
         return response()->json(['message' => 'Penilaian berhasil diperbarui']);
     }
 }

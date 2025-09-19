@@ -47,6 +47,30 @@ class PendaftaranPKLSeeder extends Seeder
             'Nilai akademik untuk posisi ini belum mencukupi.'
         ];
 
+        // Sample files for CV
+        $sampleFiles = [
+            'CV_Updated.pdf',
+            'Curriculum_Vitae.pdf',
+            'Resume_Latest.pdf',
+            'CV_Student.pdf',
+            'My_CV.pdf',
+            'Professional_CV.pdf'
+        ];
+
+        // Sample URLs for portfolio
+        $sampleUrls = [
+            'https://github.com/username/portfolio',
+            'https://linkedin.com/in/username',
+            'https://behance.net/username',
+            'https://dribbble.com/username',
+            'https://gitlab.com/username/projects',
+            'https://codepen.io/username',
+            'https://figma.com/@username',
+            'https://personal-website.com',
+            'https://medium.com/@username',
+            'https://dev.to/username'
+        ];
+
         foreach ($students as $student) {
             // Determine status based on probability - ensure more approved for testing
             $statusRand = rand(1, 100);
@@ -65,12 +89,23 @@ class PendaftaranPKLSeeder extends Seeder
             $daysAgo = rand(1, 45);
             $registrationDate = now()->subDays($daysAgo);
             
+            // Generate berkas_persyaratan untuk PKL (CV wajib + Portfolio opsional)
+            $berkasPersyaratan = [
+                'cv' => 'pkl_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)]
+            ];
+            
+            // 70% kemungkinan memiliki portfolio
+            if (rand(1, 100) <= 70) {
+                $berkasPersyaratan['portfolio'] = $sampleUrls[array_rand($sampleUrls)];
+            }
+            
             $data = [
                 'user_id' => $student->id,
                 'posisi_pkl_id' => $selectedPosisi->id,
                 'tanggal_pendaftaran' => $registrationDate,
                 'status' => $status,
                 'motivasi' => $motivations[array_rand($motivations)],
+                'berkas_persyaratan' => $berkasPersyaratan,
                 'institusi_asal' => $student->institusi ?? $student->institution ?? 'Institusi tidak tersedia',
                 'program_studi' => $student->jurusan ?? $student->major ?? 'Program studi tidak tersedia',
                 'semester' => $student->semester,
@@ -145,12 +180,23 @@ class PendaftaranPKLSeeder extends Seeder
                     $secondStatus = ['Pengajuan', 'Disetujui', 'Ditolak'][array_rand(['Pengajuan', 'Disetujui', 'Ditolak'])];
                     $secondRegDate = now()->subDays(rand(1, 20));
                     
+                    // Generate berkas_persyaratan untuk aplikasi kedua
+                    $secondBerkas = [
+                        'cv' => 'pkl_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)]
+                    ];
+                    
+                    // 70% kemungkinan memiliki portfolio
+                    if (rand(1, 100) <= 70) {
+                        $secondBerkas['portfolio'] = $sampleUrls[array_rand($sampleUrls)];
+                    }
+                    
                     $secondData = [
                         'user_id' => $student->id,
                         'posisi_pkl_id' => $secondPosisi->id,
                         'tanggal_pendaftaran' => $secondRegDate,
                         'status' => $secondStatus,
                         'motivasi' => 'Ingin mencoba posisi lain untuk memperluas pengalaman.',
+                        'berkas_persyaratan' => $secondBerkas,
                         'institusi_asal' => $student->institusi ?? $student->institution ?? 'Institusi tidak tersedia',
                         'program_studi' => $student->jurusan ?? $student->major ?? 'Program studi tidak tersedia',
                         'semester' => $student->semester,

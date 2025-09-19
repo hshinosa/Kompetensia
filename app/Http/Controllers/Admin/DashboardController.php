@@ -146,6 +146,7 @@ class DashboardController extends Controller
                         'birth_date' => ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth) ? 
                             ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth)->format('d-m-Y') : null,
                         'tempatTanggalLahir' => $this->formatBirthPlaceDate($pendaftaran->user),
+                        'berkas_persyaratan' => $pendaftaran->berkas_persyaratan,
                     ],
                     'sertifikasi' => [
                         'namaSertifikasi' => $pendaftaran->sertifikasi->nama_sertifikasi,
@@ -193,6 +194,7 @@ class DashboardController extends Controller
                         'birth_date' => ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth) ? 
                             ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth)->format('d-m-Y') : null,
                         'tempatTanggalLahir' => $this->formatBirthPlaceDate($pendaftaran->user),
+                        'berkas_persyaratan' => $pendaftaran->berkas_persyaratan,
                     ],
                     'pkl_info' => [
                         'namaPosisi' => $pendaftaran->posisiPKL ? $pendaftaran->posisiPKL->nama_posisi : 'Belum ditentukan',

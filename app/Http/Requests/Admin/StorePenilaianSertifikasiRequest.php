@@ -12,7 +12,6 @@ class StorePenilaianSertifikasiRequest extends FormRequest
     {
         return [
             'pendaftaran_id' => 'required|exists:pendaftaran_sertifikasi,id',
-            'status_kelulusan' => 'required|in:Diterima,Ditolak',
             'status_kelulusan' => 'required|in:Belum Dinilai,Diterima,Ditolak',
             'catatan_asesor' => 'nullable|string'
         ];

@@ -90,6 +90,20 @@ class PendaftaranSertifikasiSeeder extends Seeder
             'https://dev.to/username'
         ];
 
+        // Sample tasks untuk berkas sertifikasi
+        $sampleTasks = [
+            'Implementasi Sistem Manajemen Database',
+            'Pengembangan Aplikasi Web Responsif',
+            'Analisis Data dengan Machine Learning',
+            'Desain Interface User Experience',
+            'Optimasi Performa Website',
+            'Integrasi API RESTful Services',
+            'Pembuatan Dashboard Analytics',
+            'Implementasi Sistem Keamanan Web',
+            'Pengembangan Mobile Application',
+            'Automatisasi Testing dan Deployment'
+        ];
+
         foreach ($students as $index => $student) {
             // Determine status based on weighted probability
             $statusRand = rand(1, 100);
@@ -109,25 +123,32 @@ class PendaftaranSertifikasiSeeder extends Seeder
             $daysAgo = rand(1, 60);
             $registrationDate = now()->subDays($daysAgo);
             
-            // Generate berkas_persyaratan
-            $berkasPersyaratan = [];
+            // Generate berkas_persyaratan dengan format sederhana: judul_tugas (wajib) + link_url/file (opsional)
+            // Tambahan: CV dan portfolio untuk kompatibilitas dengan DetailPendaftaranModal
+            $berkasPersyaratan = [
+                'judul_tugas' => $sampleTasks[array_rand($sampleTasks)], // Wajib ada
+            ];
             
-            // Always include required documents
+            // Tambahkan CV (wajib untuk sertifikasi)
             $berkasPersyaratan['cv'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
-            $berkasPersyaratan['transkrip'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
             
-            // Add optional documents (70% chance each)
+            // 40% hanya file, 30% hanya link, 30% keduanya untuk tugas utama
+            $berkasType = rand(1, 100);
+            if ($berkasType <= 40) {
+                // Hanya file tugas
+                $berkasPersyaratan['file'] = 'sertifikasi_documents/' . uniqid() . '_dokumen_tugas.pdf';
+            } elseif ($berkasType <= 70) {
+                // Hanya link tugas
+                $berkasPersyaratan['link_url'] = $sampleUrls[array_rand($sampleUrls)];
+            } else {
+                // File dan link tugas
+                $berkasPersyaratan['file'] = 'sertifikasi_documents/' . uniqid() . '_dokumen_tugas.pdf';
+                $berkasPersyaratan['link_url'] = $sampleUrls[array_rand($sampleUrls)];
+            }
+            
+            // 70% kemungkinan memiliki portfolio link
             if (rand(1, 100) <= 70) {
                 $berkasPersyaratan['portfolio'] = $sampleUrls[array_rand($sampleUrls)];
-            }
-            if (rand(1, 100) <= 70) {
-                $berkasPersyaratan['sertifikat_pendukung'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
-            }
-            if (rand(1, 100) <= 50) {
-                $berkasPersyaratan['surat_rekomendasi'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
-            }
-            if (rand(1, 100) <= 40) {
-                $berkasPersyaratan['portfolio_link'] = $sampleUrls[array_rand($sampleUrls)];
             }
             
             $data = [
@@ -176,13 +197,30 @@ class PendaftaranSertifikasiSeeder extends Seeder
                     
                     // Generate berkas for second application
                     $secondBerkas = [];
+                    
+                    // Generate simple berkas structure: judul_tugas, link_url, file
+                    // Tambahan: CV dan portfolio untuk kompatibilitas dengan DetailPendaftaranModal
+                    $secondBerkas['judul_tugas'] = $sampleTasks[array_rand($sampleTasks)];
+                    
+                    // Tambahkan CV (wajib untuk sertifikasi)
                     $secondBerkas['cv'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
-                    $secondBerkas['transkrip'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
-                    if (rand(1, 100) <= 80) {
-                        $secondBerkas['portfolio'] = $sampleUrls[array_rand($sampleUrls)];
+                    
+                    $secondBerkasType = rand(1, 100);
+                    if ($secondBerkasType <= 40) {
+                        // 40% chance: only file
+                        $secondBerkas['file'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+                    } elseif ($secondBerkasType <= 70) {
+                        // 30% chance: only link
+                        $secondBerkas['link_url'] = $sampleUrls[array_rand($sampleUrls)];
+                    } else {
+                        // 30% chance: both file and link
+                        $secondBerkas['file'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+                        $secondBerkas['link_url'] = $sampleUrls[array_rand($sampleUrls)];
                     }
-                    if (rand(1, 100) <= 60) {
-                        $secondBerkas['pengalaman_tambahan'] = 'sertifikasi_documents/' . uniqid() . '_' . $sampleFiles[array_rand($sampleFiles)];
+                    
+                    // 70% kemungkinan memiliki portfolio link
+                    if (rand(1, 100) <= 70) {
+                        $secondBerkas['portfolio'] = $sampleUrls[array_rand($sampleUrls)];
                     }
                     
                     $secondData = [
