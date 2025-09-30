@@ -40,8 +40,8 @@ export default function Navbar() {
         <div className="flex flex-1 justify-end items-center gap-8 text-lg mr-6 text-gray-900">
           <Link href="/sertifikasi" className="hover:underline hover:text-purple-700 transition-colors">Sertifikasi</Link>
           <Link href="/pkl" className="hover:underline hover:text-purple-700 transition-colors">PKL</Link>
-          <Link href="#tentang" className="hover:underline hover:text-purple-700 transition-colors">Tentang</Link>
-          <Link href="#testimoni" className="hover:underline hover:text-purple-700 transition-colors">Testimoni</Link>
+          <Link href="/artikel" className="hover:underline hover:text-purple-700 transition-colors">Artikel</Link>
+          <Link href="/video" className="hover:underline hover:text-purple-700 transition-colors">Video</Link>
         </div>
         
         {/* Authentication Section */}

@@ -5,8 +5,17 @@ use App\Http\Controllers\Client\PKLController;
 use App\Http\Controllers\Client\SertifikasiController;
 use App\Http\Controllers\Client\Auth\LoginController;
 use App\Http\Controllers\Client\Auth\RegisterController;
+use App\Http\Controllers\Client\ArtikelController;
+use App\Http\Controllers\Client\VideoController;
+use App\Http\Controllers\Api\PendaftaranSertifikasiController;
+use App\Http\Controllers\Api\PendaftaranPKLController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+// CSRF token route untuk client
+Route::get('/client/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
+});
 
 // Client auth routes (guest only)
 Route::middleware('client.guest')->group(function () {
@@ -30,11 +39,15 @@ Route::middleware(['client'])->group(function () {
     
     Route::post('/client/sertifikasi/{id}/upload', [SertifikasiController::class, 'uploadTugas'])->name('client.sertifikasi.upload');
     
+    Route::post('/client/sertifikasi/{id}/review', [SertifikasiController::class, 'submitReview'])->name('client.sertifikasi.review');
+    
     Route::get('/client/pkl', [PKLController::class, 'index'])->name('client.pkl');
     
     Route::get('/client/pkl/{id}', [PKLController::class, 'show'])->name('client.pkl.detail');
     
     Route::post('/client/pkl/{id}/upload', [PKLController::class, 'uploadDocument'])->name('client.pkl.upload');
+    
+    Route::get('/client/pkl/download/{uploadId}', [PKLController::class, 'downloadDocument'])->name('client.pkl.download');
     
     Route::get('/client/sertifikat-saya', function () {
         return Inertia::render('client/sertifikat-saya/index');
@@ -43,4 +56,32 @@ Route::middleware(['client'])->group(function () {
     Route::get('/client/pengaturan', function () {
         return Inertia::render('client/pengaturan/index');
     })->name('client.pengaturan');
+
+    // Pendaftaran Sertifikasi routes
+    Route::prefix('client/pendaftaran-sertifikasi')->name('client.pendaftaran-sertifikasi.')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('client/pendaftaran-sertifikasi/index');
+        })->name('index');
+        Route::get('/my-registrations', [PendaftaranSertifikasiController::class, 'getByUser'])->name('my-registrations');
+        Route::post('/', [SertifikasiController::class, 'storePendaftaran'])->name('store');
+        Route::get('/{id}/detail', [SertifikasiController::class, 'getRegistrationDetail'])->name('detail');
+        Route::get('/{id}', [PendaftaranSertifikasiController::class, 'show'])->name('show');
+        Route::put('/{id}', [PendaftaranSertifikasiController::class, 'update'])->name('update');
+    });
+
+    // Pendaftaran PKL routes
+    Route::prefix('client/pendaftaran-pkl')->name('client.pendaftaran-pkl.')->group(function () {
+        Route::get('/', [PKLController::class, 'showPendaftaran'])->name('index');
+        Route::post('/', [PKLController::class, 'storePendaftaran'])->name('store');
+        Route::get('/my-registrations', [PendaftaranPKLController::class, 'getByUser'])->name('my-registrations');
+        Route::get('/{id}/detail', [PKLController::class, 'getRegistrationDetail'])->name('detail');
+        Route::get('/{id}', [PendaftaranPKLController::class, 'show'])->name('show');
+        Route::put('/{id}', [PendaftaranPKLController::class, 'update'])->name('update');
+    });
 });
+
+// Public routes (artikel & video)
+Route::get('/artikel', [ArtikelController::class, 'index'])->name('client.artikel');
+Route::get('/artikel/{slug}', [ArtikelController::class, 'show'])->name('client.artikel.show');
+Route::get('/video', [VideoController::class, 'index'])->name('client.video');
+Route::get('/video/{slug}', [VideoController::class, 'show'])->name('client.video.show');

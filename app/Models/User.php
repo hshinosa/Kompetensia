@@ -13,88 +13,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens;
 
     protected $fillable = [
-        // Basic user fields (sesuai migration baru)
         'nama',
         'nama_lengkap',
         'email',
-        'telepon',
+        'telepon', 
         'password',
         'alamat',
         'tanggal_lahir',
         'tempat_lahir',
-        'jenis_kelamin',
-        'institusi',
-        'jurusan',
-        'semester',
         'role',
-        'aktif',
         'status_akun',
-        'tipe_pengguna',
+        'aktif',
         'foto_profil',
-        
-        // Legacy fields untuk backward compatibility
-        'name',
-        'full_name',
-        'phone',
-        'address',
-        'birth_date',
-        'birth_place',
-        'institution',
-        'major',
-        'is_active',
-        'account_status',
-        'user_type',
-        'avatar',
-        
-        // Contact & personal info
-        'gender',
-        'place_of_birth',
-        'date_of_birth',
-        
-        // Education (dari PKL migration)
-        'school_university',
-        'major_concentration',
-        'class_semester',
-        
-        // Social Media
-        'instagram_handle',
-        'tiktok_handle',
-        
-        // Equipment & Skills
-        'has_laptop',
-        'has_dslr',
-        'has_video_review_experience',
-        'interested_in_content_creation',
-        'transportation',
-        
-        // Skills & Experience
-        'skills_to_improve',
-        'skills_to_contribute',
-        
-        // Preferences & Goals
-        'preferred_field',
-        'preferred_field_type',
-        'motivation_level',
-        'self_rating',
-        
-        // Compliance & Agreement
-        'is_smoker',
-        'agrees_to_school_return_if_violation',
-        'agrees_to_return_if_absent_twice',
-        
-        // Internship Period
-        'internship_start_period',
-        'internship_end_period',
-        
-        // Documents
-        'cv_path',
-        'portfolio_path',
-        
-        // System fields
-        'last_login_at',
-        'last_login_ip',
-        'profile_completion_percentage',
-        'has_viewed_company_profile'
+        'gender'
     ];
 
     protected $hidden = [
@@ -108,25 +39,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'tanggal_lahir' => 'date',
-            'birth_date' => 'date',
-            'date_of_birth' => 'date',
-            'semester' => 'integer',
-            'gpa' => 'decimal:2',
-            'internship_start_period' => 'date',
-            'internship_end_period' => 'date',
-            'last_login_at' => 'datetime',
             'aktif' => 'boolean',
-            'is_active' => 'boolean',
-            'has_laptop' => 'boolean',
-            'has_dslr' => 'boolean',
-            'has_video_review_experience' => 'boolean',
-            'interested_in_content_creation' => 'boolean',
-            'has_viewed_company_profile' => 'boolean',
-            'motivation_level' => 'integer',
-            'is_smoker' => 'boolean',
-            'agrees_to_school_return_if_violation' => 'boolean',
-            'agrees_to_return_if_absent_twice' => 'boolean',
-            'profile_completion_percentage' => 'integer',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 
@@ -141,55 +56,9 @@ class User extends Authenticatable
         return $this->hasMany(PendaftaranPKL::class);
     }
 
-    public function penilaianPKLAsPembimbing()
-    {
-        return $this->hasMany(PenilaianPKL::class, 'pembimbing_id');
-    }
-
-    public function sertifikasiCreated()
-    {
-        return $this->hasMany(Sertifikasi::class, 'created_by');
-    }
-
-    public function sertifikasiUpdated()
-    {
-        return $this->hasMany(Sertifikasi::class, 'updated_by');
-    }
-
-    // New relationships
-    public function activities()
-    {
-        return $this->hasMany(UserActivity::class);
-    }
-
     public function aktivitas()
     {
         return $this->hasMany(UserActivity::class);
-    }
-
-    public function documents()
-    {
-        return $this->hasMany(UserDocument::class);
-    }
-
-    public function dokumen()
-    {
-        return $this->hasMany(UserDocument::class);
-    }
-
-    public function internshipApplications()
-    {
-        return $this->hasMany(InternshipApplication::class);
-    }
-
-    public function evaluationsAsEvaluator()
-    {
-        return $this->hasMany(InternshipEvaluation::class, 'evaluator_id');
-    }
-
-    public function evaluationsAsApprover()
-    {
-        return $this->hasMany(InternshipEvaluation::class, 'approved_by');
     }
 
     // Scopes
@@ -198,50 +67,14 @@ class User extends Authenticatable
         return $query->where('role', 'admin');
     }
 
-    public function scopeUser($query)
+    public function scopeMahasiswa($query)
     {
-        return $query->where('role', 'user');
+        return $query->where('role', 'mahasiswa');
     }
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
-    }
-
-    public function scopeByUserType($query, $type)
-    {
-        return $query->where('user_type', $type);
-    }
-
-    public function scopeByAccountStatus($query, $status)
-    {
-        return $query->where('account_status', $status);
-    }
-
-
-    // Accessors
-    public function getAvatarUrlAttribute()
-    {
-        return $this->avatar ? asset('storage/' . $this->avatar) : null;
-    }
-
-    public function getDisplayName()
-    {
-        return $this->full_name ?: $this->name;
-    }
-
-    public function getAgeAttribute()
-    {
-        return $this->date_of_birth ? $this->date_of_birth->age : null;
-    }
-
-    public function getProfileCompletionPercentageAttribute($value)
-    {
-        if ($value) {
-            return $value;
-        }
-        
-        return $this->calculateProfileCompletion();
+        return $query->where('aktif', true);
     }
 
     // Methods
@@ -250,57 +83,13 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
-    public function isUser()
+    public function isMahasiswa()
     {
-        return $this->role === 'user';
+        return $this->role === 'mahasiswa';
     }
 
     public function isActive()
     {
-        return $this->is_active && $this->account_status === 'active';
+        return $this->aktif;
     }
-
-    public function canApplyForInternship()
-    {
-        return $this->user_type === 'student' && $this->isActive();
-    }
-
-    public function calculateProfileCompletion()
-    {
-        $requiredFields = [
-            'nama_lengkap', 'email', 'telepon', 'jenis_kelamin', 'alamat',
-            'tanggal_lahir', 'tempat_lahir', 'institusi',
-            'jurusan', 'semester'
-        ];
-        
-        $filledFields = 0;
-        foreach ($requiredFields as $field) {
-            if (!empty($this->getAttribute($field))) {
-                $filledFields++;
-            }
-        }
-        
-        return round(($filledFields / count($requiredFields)) * 100);
-    }
-
-    public function updateLastLogin($ipAddress = null)
-    {
-        $this->update([
-            'last_login_at' => now(),
-            'last_login_ip' => $ipAddress
-        ]);
-    }
-
-    public function logActivity($type, $description, $metadata = null, $ipAddress = null, $userAgent = null)
-    {
-        return $this->activities()->create([
-            'activity_type' => $type,
-            'description' => $description,
-            'metadata' => $metadata,
-            'ip_address' => $ipAddress,
-            'user_agent' => $userAgent
-        ]);
-    }
-
-    // asesor role/relations removed
 }

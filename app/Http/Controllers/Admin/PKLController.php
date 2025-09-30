@@ -211,35 +211,33 @@ class PKLController extends Controller
             $pendaftaran->status_dinamis = $pendaftaran->status;
         }
         
-        // Ambil submisi PKL dari UserDocument
-        $submisiPKL = \App\Models\UserDocument::where('user_id', $pendaftaran->user_id)
-            ->where('pendaftaran_pkl_id', $pendaftaran->id)
-            ->where('jenis_dokumen', 'submisi_pkl')
-            ->with(['diverifikasiOleh'])
-            ->orderBy('tanggal_submit', 'asc')
+        // Ambil submisi PKL dari UploadDokumenPKL (NEW SYSTEM)
+        $submisiPKL = \App\Models\UploadDokumenPKL::where('user_id', $pendaftaran->user_id)
+            ->where('pendaftaran_id', $pendaftaran->id)
+            ->orderBy('tanggal_upload', 'asc')
             ->get()
             ->map(function($submisi) {
                 return [
                     'id' => $submisi->id,
-                    'nomor_submisi' => $submisi->nomor_submisi,
-                    'tanggal_submit' => $submisi->tanggal_submit ? $submisi->tanggal_submit->format('d M Y') : null,
-                    'status' => $submisi->tanggal_submit ? 'submitted' : 'pending',
-                    'kategori_submisi' => $submisi->kategori_submisi, // 'laporan' | 'tugas'
-                    'tipe_submisi' => $submisi->tipe_submisi, // 'link' | 'dokumen'
+                    'nomor_submisi' => 'DOC-' . $submisi->id,
+                    'tanggal_submit' => $submisi->tanggal_upload ? $submisi->tanggal_upload->format('d M Y') : null,
+                    'status' => $submisi->tanggal_upload ? 'submitted' : 'pending',
+                    'kategori_submisi' => $submisi->jenis_dokumen, // 'proposal' | 'laporan-mingguan' | 'laporan-akhir' | 'evaluasi'
+                    'tipe_submisi' => 'dokumen', // Always document in new system
                     'judul_tugas' => $submisi->judul_tugas,
-                    'deskripsi_tugas' => $submisi->deskripsi_tugas,
-                    'link_submisi' => $submisi->link_submisi,
-                    'nama_dokumen' => $submisi->nama_dokumen,
-                    'path_file' => $submisi->path_file,
-                    'ukuran_file' => $submisi->ukuran_file,
-                    'tipe_mime' => $submisi->tipe_mime,
-                    'url_file' => $submisi->url_file,
-                    'ukuran_file_format' => $submisi->ukuran_file_format,
-                    'is_assessed' => $submisi->status_penilaian !== 'menunggu',
-                    'status_penilaian' => $submisi->status_penilaian, // 'menunggu' | 'diterima' | 'ditolak'
-                    'feedback_pembimbing' => $submisi->feedback_pembimbing,
-                    'tanggal_verifikasi' => $submisi->tanggal_verifikasi ? $submisi->tanggal_verifikasi->format('d M Y') : null,
-                    'diverifikasi_oleh' => $submisi->diverifikasiOleh?->nama ?? $submisi->diverifikasiOleh?->nama_lengkap,
+                    'deskripsi_tugas' => $submisi->jenis_dokumen_text,
+                    'link_submisi' => $submisi->link_url,
+                    'nama_dokumen' => $submisi->file_name,
+                    'path_file' => $submisi->file_path,
+                    'ukuran_file' => $submisi->file_size,
+                    'tipe_mime' => $submisi->file_type,
+                    'url_file' => $submisi->file_path ? '/storage/' . $submisi->file_path : null,
+                    'ukuran_file_format' => $submisi->formatted_file_size,
+                    'is_assessed' => $submisi->status !== 'pending',
+                    'status_penilaian' => $this->mapStatusToPenilaian($submisi->status), // Convert to frontend format
+                    'feedback_pembimbing' => $submisi->feedback,
+                    'tanggal_verifikasi' => $submisi->tanggal_review ? $submisi->tanggal_review->format('d M Y') : null,
+                    'diverifikasi_oleh' => $submisi->assessor,
                 ];
             });
         
@@ -251,8 +249,14 @@ class PKLController extends Controller
 
     public function penilaianStore(StorePenilaianPKLRequest $request, $pendaftaranId)
     {
-        $this->penilaianService->nilai($pendaftaranId, $request->validated(), auth()->id());
-        return redirect()->route('admin.penilaian-pkl')->with('success', 'Penilaian PKL berhasil disimpan');
+        try {
+            $this->penilaianService->nilai($pendaftaranId, $request->validated());
+            return redirect()->route('admin.penilaian-pkl')->with('success', 'Penilaian PKL berhasil disimpan');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Gagal menyimpan penilaian: ' . $e->getMessage()]);
+        }
     }
 
     public function penilaianSubmisiStore(Request $request, $submisiId)
@@ -262,12 +266,11 @@ class PKLController extends Controller
             'feedback_pembimbing' => 'nullable|string|max:1000'
         ]);
 
-        $submisi = \App\Models\UserDocument::where('jenis_dokumen', 'submisi_pkl')
-            ->findOrFail($submisiId);
+        $submisi = \App\Models\UploadDokumenPKL::findOrFail($submisiId);
 
         $submisi->update([
-            'status_penilaian' => $request->status_penilaian,
-            'feedback_pembimbing' => $request->feedback_pembimbing,
+            'status' => $request->status_penilaian === 'diterima' ? 'approved' : 'rejected',
+            'feedback' => $request->feedback_pembimbing,
             'tanggal_verifikasi' => now(),
             'diverifikasi_oleh' => auth()->id(),
             'terverifikasi' => $request->status_penilaian === 'diterima'
@@ -365,5 +368,15 @@ class PKLController extends Controller
     $data['benefits'] = array_filter(explode("\n", $data['benefits']));
         
     return $data;
+    }
+
+    private function mapStatusToPenilaian($status)
+    {
+        return match ($status) {
+            'approved' => 'diterima',
+            'rejected' => 'ditolak',
+            'pending' => 'menunggu',
+            default => 'menunggu'
+        };
     }
 }

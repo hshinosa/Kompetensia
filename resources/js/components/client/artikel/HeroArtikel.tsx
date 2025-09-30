@@ -1,0 +1,38 @@
+import React from 'react';
+
+export default function HeroArtikel() {
+  const title = 'Artikel & Insight';
+  const description = 'Jelajahi artikel terbaru tentang teknologi, karir, dan tips pengembangan diri. Dapatkan wawasan berharga dari para ahli untuk mendukung perjalanan profesional Anda.';
+  const backgroundImage = "url('/images/hero-artikel.png')";
+
+  const scrollToArtikelList = () => {
+    const element = document.getElementById('artikel-list');
+    if (element) {
+      const offsetTop = element.offsetTop - 100;
+      window.scrollTo({
+        top: offsetTop,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  return (
+    <header className="relative w-full h-[380px] lg:h-[420px] bg-cover bg-center rounded-b-md" style={{ backgroundImage }}>
+      <div className="absolute inset-0 bg-black opacity-30" />
+      <div className="relative z-10 container mx-auto px-4 lg:px-0 h-full flex items-center">
+        <div className="max-w-2xl text-white">
+          <h1 className="text-3xl lg:text-4xl font-extrabold mb-3">{title}</h1>
+          <p className="text-sm lg:text-base text-white/90">{description}</p>
+          <div className="mt-6">
+            <button 
+              onClick={scrollToArtikelList}
+              className="px-6 py-3 rounded-lg bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors text-lg"
+            >
+              Jelajahi Artikel
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}

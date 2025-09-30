@@ -22,15 +22,9 @@ interface UserIndonesia {
     alamat?: string;
     tanggal_lahir?: string;
     tempat_lahir?: string;
-    institusi?: string;
-    jurusan?: string;
-    semester?: number;
     foto_profil?: string;
     aktif: boolean;
-    status_akun?: string;
     gender?: string;
-    instagram_handle?: string;
-    tiktok_handle?: string;
     created_at: string;
     updated_at: string;
 }
@@ -51,14 +45,8 @@ export default function UserEdit({ pengguna }: Readonly<UserEditProps>) {
         alamat: pengguna.alamat || '',
         tanggal_lahir: pengguna.tanggal_lahir || '',
         tempat_lahir: pengguna.tempat_lahir || '',
-        institusi: pengguna.institusi || '',
-        jurusan: pengguna.jurusan || '',
-        semester: pengguna.semester || '',
         gender: pengguna.gender || '',
-        instagram_handle: pengguna.instagram_handle || '',
-        tiktok_handle: pengguna.tiktok_handle || '',
         aktif: pengguna.aktif ?? true,
-        status_akun: pengguna.status_akun || 'aktif',
         password: '',
         password_confirmation: ''
     });
@@ -270,92 +258,11 @@ export default function UserEdit({ pengguna }: Readonly<UserEditProps>) {
                                 </CardContent>
                             </Card>
 
-                            {/* Media Sosial */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Hash className="h-5 w-5" />
-                                        Media Sosial
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="instagram_handle">Instagram Handle</Label>
-                                            <Input
-                                                id="instagram_handle"
-                                                value={data.instagram_handle}
-                                                onChange={(e) => setData('instagram_handle', e.target.value)}
-                                                placeholder="username (tanpa @)"
-                                            />
-                                            {errors.instagram_handle && <p className="text-sm text-red-500">{errors.instagram_handle}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="tiktok_handle">TikTok Handle</Label>
-                                            <Input
-                                                id="tiktok_handle"
-                                                value={data.tiktok_handle}
-                                                onChange={(e) => setData('tiktok_handle', e.target.value)}
-                                                placeholder="username (tanpa @)"
-                                            />
-                                            {errors.tiktok_handle && <p className="text-sm text-red-500">{errors.tiktok_handle}</p>}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
                         </div>
                     </div>
 
                     {/* Detailed Information Sections */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Informasi Akademik */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <GraduationCap className="h-5 w-5" />
-                                    Informasi Akademik
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="institusi">Institusi</Label>
-                                    <Input
-                                        id="institusi"
-                                        value={data.institusi}
-                                        onChange={(e) => setData('institusi', e.target.value)}
-                                        placeholder="Masukkan nama institusi"
-                                    />
-                                    {errors.institusi && <p className="text-sm text-red-500">{errors.institusi}</p>}
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="jurusan">Jurusan</Label>
-                                    <Input
-                                        id="jurusan"
-                                        value={data.jurusan}
-                                        onChange={(e) => setData('jurusan', e.target.value)}
-                                        placeholder="Masukkan jurusan"
-                                    />
-                                    {errors.jurusan && <p className="text-sm text-red-500">{errors.jurusan}</p>}
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="semester">Semester</Label>
-                                    <Select value={data.semester?.toString()} onValueChange={(value) => setData('semester', parseInt(value) || '')}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Pilih semester" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((sem) => (
-                                                <SelectItem key={sem} value={sem.toString()}>
-                                                    Semester {sem}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.semester && <p className="text-sm text-red-500">{errors.semester}</p>}
-                                </div>
-                            </CardContent>
-                        </Card>
-
                         {/* Informasi Sistem */}
                         <Card>
                             <CardHeader>
@@ -373,28 +280,11 @@ export default function UserEdit({ pengguna }: Readonly<UserEditProps>) {
                                                 <SelectValue placeholder="Pilih role" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {roleOptions.map((option) => (
-                                                    <SelectItem key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </SelectItem>
-                                                ))}
+                                                <SelectItem value="mahasiswa">Mahasiswa</SelectItem>
+                                                <SelectItem value="admin">Admin</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="status_akun">Status Akun</Label>
-                                        <Select value={data.status_akun} onValueChange={(value) => setData('status_akun', value)}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Pilih status" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="aktif">Aktif</SelectItem>
-                                                <SelectItem value="tidak_aktif">Tidak Aktif</SelectItem>
-                                                <SelectItem value="suspended">Suspended</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.status_akun && <p className="text-sm text-red-500">{errors.status_akun}</p>}
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-2">

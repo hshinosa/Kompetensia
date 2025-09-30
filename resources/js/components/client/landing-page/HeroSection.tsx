@@ -1,9 +1,69 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function HeroSection() {
+  const [showElips, setShowElips] = useState(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.querySelector('[data-hero-section]');
+      if (heroSection) {
+        const rect = heroSection.getBoundingClientRect();
+        // Hide elips when hero section starts to go out of view (more strict)
+        setShowElips(rect.bottom > 100); // Hide when hero bottom is 100px from top
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial state
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <section className="container mx-auto px-4">
-      <div className="flex flex-row justify-between items-center py-12 relative">
+    <>
+      {/* Elips Background - Fixed position dengan conditional visibility */}
+      {showElips && (
+        <div className="fixed top-0 right-0 w-[1200px] h-[1000px] pointer-events-none" style={{ zIndex: 0 }}>
+          <img 
+            src="/images/elips-herobg.svg" 
+            alt="" 
+            className="w-full h-full object-contain opacity-60"
+            style={{ transform: 'translate(0%, -10%)' }}
+            onLoad={() => console.log('Elips SVG loaded successfully')}
+            onError={(e) => {
+              console.log('SVG failed to load, showing fallback');
+              e.currentTarget.style.display = 'none';
+              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+              if (fallback) fallback.style.display = 'block';
+            }}
+          />
+          {/* Fallback - inline SVG */}
+          <svg 
+            className="w-full h-full" 
+            viewBox="0 0 1200 1000" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <ellipse 
+              cx="600" 
+              cy="500" 
+              rx="500" 
+              ry="350" 
+              fill="url(#elipsGradient)" 
+            />
+            <defs>
+              <linearGradient id="elipsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#E879F9" stopOpacity="0.7" />
+                <stop offset="50%" stopColor="#C084FC" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#A855F7" stopOpacity="0.5" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      )}
+
+      <section className="relative" data-hero-section>
+        <div className="container mx-auto px-4 relative z-10">
+        <div className="flex flex-row justify-between items-center py-12 relative">
         <div className="flex-1">
           <h1 className="text-5xl font-bold mb-6 leading-tight text-gray-900">
             Satu Platform, Siap<br />Tingkatkan Kompetensimu
@@ -37,25 +97,6 @@ export default function HeroSection() {
         </div>
         
         <div className="flex-1 flex justify-end relative">
-          <svg
-            className="absolute right-0 top-0 h-[520px] w-[480px] -z-10"
-            viewBox="0 0 480 520"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{filter: 'blur(2px)'}}
-          >
-            <path
-              d="M480 0 Q400 260 0 520 Q480 520 480 0 Z"
-              fill="url(#triangleGradient)"
-            />
-            <defs>
-              <linearGradient id="triangleGradient" x1="0" y1="0" x2="480" y2="520" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#C4B5FD" />
-                <stop offset="0.5" stopColor="#A78BFA" />
-                <stop offset="1" stopColor="#8B5CF6" />
-              </linearGradient>
-            </defs>
-          </svg>
           <div className="grid grid-cols-2 grid-rows-2 gap-6 relative w-[600px] h-[520px]">
             <div className="row-span-2 col-span-1 rounded-3xl overflow-hidden shadow-2xl relative">
               <img src="/images/hero1.png" alt="Main" className="object-cover w-full h-full" />
@@ -70,9 +111,10 @@ export default function HeroSection() {
               <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-2 rounded-lg text-base text-gray-600 font-semibold shadow">10+ Mentor</div>
             </div>
           </div>
+          </div>
         </div>
-      </div>
-      <div className="absolute right-0 top-0 w-2/5 h-full bg-gradient-to-br from-purple-200 via-purple-300 to-purple-400 rounded-bl-[200px] -z-10"></div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }

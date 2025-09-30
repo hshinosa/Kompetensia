@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import ArticleDetailModal from './ArticleDetailModal';
+import { router } from '@inertiajs/react';
+import VideoDetailModal from './VideoDetailModal';
 
 interface Artikel {
   id: number;
@@ -11,6 +12,18 @@ interface Artikel {
   desc: string;
   slug: string;
   durasi?: string;
+  video_data?: {
+    id: number;
+    nama_video: string;
+    slug: string;
+    deskripsi: string;
+    video_url: string;
+    thumbnail?: string;
+    uploader: string;
+    durasi: number;
+    views: number;
+    created_at: string;
+  };
 }
 
 interface ArtikelPilihanProps {
@@ -32,18 +45,27 @@ export default function ArtikelPilihan({ articles = [] }: ArtikelPilihanProps) {
   // Jika tidak ada artikel dari database, gunakan artikel default
   const displayArticles = articles.length > 0 ? articles : Array(4).fill(defaultArticle);
   
-  // Modal state
-  const [selectedArticle, setSelectedArticle] = useState<Artikel | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modal state untuk video
+  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
-  const handleArticleClick = (artikel: Artikel) => {
-    setSelectedArticle(artikel);
-    setIsModalOpen(true);
+  const handleItemClick = (artikel: Artikel) => {
+    if (artikel.type === 'video' && artikel.video_data) {
+      // Use video_data from server for modal
+      setSelectedVideo(artikel.video_data);
+      setIsVideoModalOpen(true);
+    } else if (artikel.type === 'video') {
+      // Fallback for videos without video_data
+      alert('Video data not available');
+    } else {
+      // Redirect to article show page
+      router.get(`/artikel/${artikel.slug}`);
+    }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedArticle(null);
+  const handleCloseVideoModal = () => {
+    setIsVideoModalOpen(false);
+    setSelectedVideo(null);
   };
   
   return (
@@ -55,7 +77,7 @@ export default function ArtikelPilihan({ articles = [] }: ArtikelPilihanProps) {
             <div 
               key={artikel.id || idx} 
               className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col min-w-[270px] md:min-w-[320px] max-w-full overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => handleArticleClick(artikel)}
+              onClick={() => handleItemClick(artikel)}
             >
               <div className="relative">
                 <img src={artikel.img} alt={artikel.title} className="w-full h-40 object-cover rounded-t-2xl" />
@@ -93,7 +115,7 @@ export default function ArtikelPilihan({ articles = [] }: ArtikelPilihanProps) {
                     className="text-gray-400 hover:text-gray-700"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleArticleClick(artikel);
+                      handleItemClick(artikel);
                     }}
                   >
                     <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
@@ -108,11 +130,11 @@ export default function ArtikelPilihan({ articles = [] }: ArtikelPilihanProps) {
         </div>
       </div>
 
-      {/* Article Detail Modal */}
-      <ArticleDetailModal
-        article={selectedArticle}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+      {/* Video Detail Modal */}
+      <VideoDetailModal
+        video={selectedVideo}
+        isOpen={isVideoModalOpen}
+        onClose={handleCloseVideoModal}
       />
     </section>
   );

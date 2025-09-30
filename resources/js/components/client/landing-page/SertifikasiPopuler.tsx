@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SertifikasiCard from '../sertifikasi/SertifikasiCard';
+import PendaftaranModal from '../sertifikasi/PendaftaranModal';
 
 interface SertifikasiItem {
   readonly id: number;
@@ -12,7 +13,23 @@ interface SertifikasiItem {
   readonly img?: string;
   readonly mentor: string;
   readonly slug?: string;
-  readonly type?: 'BNSP' | 'Industri';
+  readonly type?: string;
+  readonly sertifikasi_data?: {
+    readonly id: number;
+    readonly nama_sertifikasi: string;
+    readonly jenis_sertifikasi: string;
+    readonly deskripsi?: string;
+    readonly status: string;
+    readonly batch?: Array<{
+      readonly id: number;
+      readonly nama_batch: string;
+      readonly tanggal_mulai: string;
+      readonly tanggal_selesai: string;
+      readonly status: string;
+      readonly kapasitas_peserta?: number;
+      readonly peserta_terdaftar?: number;
+    }>;
+  };
 }
 
 interface SertifikasiPopulerProps {
@@ -59,15 +76,43 @@ const defaultSertifikasi: SertifikasiItem[] = [
 ];
 
 export default function SertifikasiPopuler({ sertifikasiList = [] }: SertifikasiPopulerProps) {
-  const [activeFilter, setActiveFilter] = useState<'BNSP' | 'Industri'>('BNSP');
+  const [activeFilter, setActiveFilter] = useState<string>('BNSP');
+  const [isPendaftaranModalOpen, setIsPendaftaranModalOpen] = useState(false);
+  const [selectedSertifikasiForModal, setSelectedSertifikasiForModal] = useState<any>(null);
   
-  // Jika tidak ada data dari database, gunakan data default
-  const displaySertifikasi = sertifikasiList.length > 0 ? sertifikasiList : defaultSertifikasi;
+  // Prioritas: gunakan data dari backend, fallback ke data default hanya jika benar-benar kosong
+  const displaySertifikasi = sertifikasiList.length > 0 ? sertifikasiList : [];
   
   // Filter data berdasarkan tipe yang dipilih
-  const filteredSertifikasi = displaySertifikasi.filter(item => 
-    item.type === activeFilter || (!item.type && activeFilter === 'BNSP') // default ke BNSP jika tidak ada type
-  );
+  const filteredSertifikasi = displaySertifikasi.filter(item => {
+    const itemType = item.type || item.kategori; // Use type or kategori
+    return itemType?.toLowerCase() === activeFilter.toLowerCase() || 
+           (!itemType && activeFilter === 'BNSP'); // default ke BNSP jika tidak ada type
+  });
+  
+  const handleRegisterClick = (sertifikasiCard: SertifikasiItem) => {
+    // Use complete sertifikasi data from backend if available
+    if (sertifikasiCard.sertifikasi_data) {
+      setSelectedSertifikasiForModal(sertifikasiCard.sertifikasi_data);
+    } else {
+      // Fallback to converted format for backwards compatibility
+      const sertifikasiForModal = {
+        id: sertifikasiCard.id,
+        nama_sertifikasi: sertifikasiCard.title,
+        jenis_sertifikasi: sertifikasiCard.kategori,
+        deskripsi: `Program sertifikasi ${sertifikasiCard.title}`,
+        status: 'Aktif',
+        batch: []
+      };
+      setSelectedSertifikasiForModal(sertifikasiForModal);
+    }
+    setIsPendaftaranModalOpen(true);
+  };
+  
+  const handleClosePendaftaran = () => {
+    setIsPendaftaranModalOpen(false);
+    setSelectedSertifikasiForModal(null);
+  };
   
   return (
     <section className="py-12">
@@ -95,14 +140,34 @@ export default function SertifikasiPopuler({ sertifikasiList = [] }: Sertifikasi
           Industri
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 auto-rows-fr">
-        {filteredSertifikasi.slice(0, 4).map((item, idx) => (
-          <div key={item.id || idx} className="min-w-[270px] md:min-w-[320px] max-w-full">
-            <SertifikasiCard sertifikasi={item} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr">
+        {filteredSertifikasi.map((item, idx) => (
+          <div key={item.id || idx} className="w-full">
+            <SertifikasiCard 
+              sertifikasi={item} 
+              onRegisterClick={handleRegisterClick}
+            />
           </div>
         ))}
       </div>
+      
+      {/* No Results Message */}
+      {filteredSertifikasi.length === 0 && (
+        <div className="text-center py-8">
+          <div className="text-gray-400 text-4xl mb-2">📋</div>
+          <h3 className="text-lg font-medium text-gray-900 mb-1">Belum ada sertifikasi {activeFilter}</h3>
+          <p className="text-gray-600 text-sm">Sertifikasi {activeFilter} akan segera tersedia</p>
+        </div>
+      )}
       </div>
+      
+      {/* Registration Modal */}
+      {isPendaftaranModalOpen && selectedSertifikasiForModal && (
+        <PendaftaranModal
+          onClose={handleClosePendaftaran}
+          sertifikasi={selectedSertifikasiForModal}
+        />
+      )}
     </section>
   );
 }

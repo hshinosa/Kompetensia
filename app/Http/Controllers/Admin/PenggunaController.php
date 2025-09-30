@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserActivity;
-use App\Models\UserDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -62,9 +61,9 @@ class PenggunaController extends Controller
             'aktivitas' => function($query) {
                 $query->latest()->limit(10);
             },
-            'dokumen' => function($query) {
-                $query->latest();
-            },
+            // 'dokumen' => function($query) {
+            //     $query->latest();
+            // },
             'pendaftaranPKL.posisiPKL',
             'pendaftaranSertifikasi.sertifikasi'
         ]);
@@ -74,7 +73,8 @@ class PenggunaController extends Controller
             'userStats' => [
                 'sertifikasi_count' => $pengguna->pendaftaranSertifikasi->count(),
                 'pkl_count' => $pengguna->pendaftaranPKL->count(),
-                'documents_count' => $pengguna->dokumen->count(),
+                // 'documents_count' => $pengguna->dokumen->count(),
+                'documents_count' => 0, // Temporary placeholder
                 'activities_count' => $pengguna->aktivitas->count(),
                 'profile_completion' => 75 // You can calculate this based on filled fields
             ]
@@ -158,15 +158,9 @@ class PenggunaController extends Controller
             'alamat' => 'nullable|string',
             'tanggal_lahir' => 'nullable|date',
             'tempat_lahir' => 'nullable|string|max:255',
-            'institusi' => 'nullable|string|max:255',
-            'jurusan' => 'nullable|string|max:255',
-            'semester' => 'nullable|integer|min:1|max:14',
-            'gender' => 'nullable|in:laki-laki,perempuan',
-            'instagram_handle' => 'nullable|string|max:255',
-            'tiktok_handle' => 'nullable|string|max:255',
-            'role' => 'required|in:mahasiswa,instruktur,asesor,admin',
-            'status_akun' => 'required|in:aktif,ditangguhkan,pending,diblokir,tidak_aktif,suspended',
-            'aktif' => 'boolean',
+            'gender' => 'nullable|in:Laki-laki,Perempuan',
+            'role' => 'required|in:mahasiswa,admin',
+            'aktif' => 'required|boolean',
         ]);
 
         $oldData = $pengguna->toArray();
@@ -179,16 +173,9 @@ class PenggunaController extends Controller
             'alamat' => $request->alamat,
             'tanggal_lahir' => $request->tanggal_lahir,
             'tempat_lahir' => $request->tempat_lahir,
-            'institusi' => $request->institusi,
-            'jurusan' => $request->jurusan,
-            'semester' => $request->semester,
             'gender' => $request->gender,
-            'instagram_handle' => $request->instagram_handle,
-            'tiktok_handle' => $request->tiktok_handle,
             'role' => $request->role,
-            'tipe_pengguna' => $request->role,
-            'status_akun' => $request->status_akun,
-            'aktif' => $request->boolean('aktif', true),
+            'aktif' => $request->aktif,
         ]);
 
         // Update password jika diisi
@@ -231,9 +218,9 @@ class PenggunaController extends Controller
         $userData = $pengguna->toArray();
 
         // Hapus dokumen terkait
-        $pengguna->dokumen()->each(function($dokumen) {
-            $dokumen->delete(); // Akan menghapus file fisik juga
-        });
+        // $pengguna->dokumen()->each(function($dokumen) {
+        //     $dokumen->delete(); // Akan menghapus file fisik juga
+        // });
 
         $pengguna->delete();
 

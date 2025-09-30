@@ -25,8 +25,8 @@ class AsesorController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_asesor', 'like', '%' . $search . '%')
-                  ->orWhere('jabatan_asesor', 'like', '%' . $search . '%')
-                  ->orWhere('instansi_asesor', 'like', '%' . $search . '%');
+                  ->orWhere('jabatan', 'like', '%' . $search . '%')
+                  ->orWhere('instansi', 'like', '%' . $search . '%');
             });
         }
 
@@ -42,8 +42,8 @@ class AsesorController extends Controller
             return [
                 'id' => $asesor->id,
                 'nama_asesor' => $asesor->nama_asesor,
-                'jabatan_asesor' => $asesor->jabatan_asesor,
-                'instansi_asesor' => $asesor->instansi_asesor,
+                'jabatan' => $asesor->jabatan,
+                'instansi' => $asesor->instansi,
                 'foto_asesor_url' => $asesor->foto_asesor_url,
                 'status' => $asesor->status,
                 'created_at' => $asesor->created_at->format('d/m/Y'),
@@ -191,22 +191,22 @@ class AsesorController extends Controller
             $search = $request->q;
             $query->where(function($q) use ($search) {
                 $q->where('nama_asesor', 'like', '%' . $search . '%')
-                  ->orWhere('jabatan_asesor', 'like', '%' . $search . '%')
-                  ->orWhere('instansi_asesor', 'like', '%' . $search . '%');
+                  ->orWhere('jabatan', 'like', '%' . $search . '%')
+                  ->orWhere('instansi', 'like', '%' . $search . '%');
             });
         }
 
-        $asesors = $query->select('id', 'nama_asesor', 'jabatan_asesor', 'instansi_asesor', 'foto_asesor')
+        $asesors = $query->select('id', 'nama_asesor', 'jabatan', 'instansi', 'foto')
             ->limit(10)
             ->get()
             ->map(function($asesor) {
                 return [
                     'id' => $asesor->id,
                     'name' => $asesor->nama_asesor,
-                    'label' => $asesor->nama_asesor . ' - ' . $asesor->jabatan_asesor . ' (' . $asesor->instansi_asesor . ')',
-                    'jabatan' => $asesor->jabatan_asesor,
-                    'instansi' => $asesor->instansi_asesor,
-                    'foto_asesor_url' => $asesor->foto_asesor ? asset('storage/' . $asesor->foto_asesor) : null
+                    'label' => $asesor->nama_asesor . ' - ' . $asesor->jabatan . ' (' . $asesor->instansi . ')',
+                    'jabatan' => $asesor->jabatan,
+                    'instansi' => $asesor->instansi,
+                    'foto_asesor_url' => $asesor->foto ? asset('storage/' . $asesor->foto) : null
                 ];
             });
 

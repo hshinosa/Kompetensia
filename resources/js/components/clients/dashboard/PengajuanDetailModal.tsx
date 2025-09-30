@@ -1,0 +1,646 @@
+import React, { useState, useEffect } from 'react';
+
+export interface PengajuanItem {
+  id: number;
+  tanggal: string;
+  jenis_pengajuan: string;
+  nama: string;
+  status: string;
+  deskripsi?: string;
+  institusi?: string;
+  periode?: string;
+  catatan?: string;
+}
+
+export interface DetailedRegistrationData {
+  id: number;
+  jenis_pengajuan: string;
+  status: string;
+  tanggal_pendaftaran: string;
+  tingkat_motivasi?: number;
+  nilai_diri?: string;
+  motivasi?: string;
+  posisi_pkl?: {
+    nama_posisi: string;
+    kategori: string;
+    tipe: string;
+    durasi_bulan: number;
+  };
+  sertifikasi?: {
+    nama_sertifikasi: string;
+    jenis_sertifikasi: string;
+    deskripsi: string;
+  };
+  batch?: {
+    nama_batch: string;
+    tanggal_mulai: string;
+    tanggal_selesai: string;
+    kapasitas_peserta: number;
+  };
+  data_diri: {
+    nama_lengkap: string;
+    email: string;
+    email_pendaftar?: string;
+    nomor_telepon: string;
+    nomor_handphone?: string;
+    no_telp?: string;
+    tempat_lahir?: string;
+    tanggal_lahir?: string;
+    alamat_lengkap?: string;
+    instagram?: string;
+    tiktok?: string;
+  };
+  background_pendidikan?: {
+    institusi_asal: string;
+    asal_sekolah?: string;
+    jenis_institusi?: string;
+    jurusan?: string;
+    kelas?: string;
+    program_studi?: string;
+    semester?: number;
+    awal_pkl?: string;
+    akhir_pkl?: string;
+  };
+  skill_minat?: {
+    kemampuan_ditingkatkan: string;
+    skill_kelebihan: string;
+    pernah_membuat_video: string;
+  };
+  motivasi_pkl?: {
+    motivasi: string;
+    tingkat_motivasi: number;
+    nilai_diri: string;
+  };
+  persyaratan_khusus?: {
+    memiliki_laptop: string;
+    memiliki_kamera_dslr: string;
+    transportasi_operasional: string;
+    apakah_merokok: string;
+    bersedia_ditempatkan: string;
+    bersedia_masuk_2_kali: string;
+  };
+  berkas?: {
+    cv_file_name?: string;
+    portfolio_file_name?: string;
+    berkas_persyaratan?: any;
+  };
+  cv_file_name?: string;
+  cv_file_path?: string;
+  portfolio_file_name?: string;
+  portfolio_file_path?: string;
+  berkas_persyaratan?: any;
+  catatan_admin?: string;
+}
+
+interface PengajuanDetailModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  pengajuanData: PengajuanItem | null;
+  detailedData?: DetailedRegistrationData | null;
+  isLoadingDetail?: boolean;
+}
+
+export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, detailedData, isLoadingDetail }: PengajuanDetailModalProps) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      setIsClosing(false);
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 200);
+  };
+
+  if (!isOpen || !pengajuanData) return null;
+
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatDateSimple = (dateString: string | null | undefined): string => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'Disetujui':
+        return {
+          text: 'Disetujui',
+          color: 'text-green-800',
+          bgColor: 'bg-green-100',
+          icon: (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          ),
+        };
+      case 'Ditolak':
+        return {
+          text: 'Ditolak',
+          color: 'text-red-800',
+          bgColor: 'bg-red-100',
+          icon: (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          ),
+        };
+      default:
+        return {
+          text: 'Sedang Diverifikasi',
+          color: 'text-yellow-800',
+          bgColor: 'bg-yellow-100',
+          icon: (
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+            </svg>
+          ),
+        };
+    }
+  };
+
+  const statusInfo = getStatusInfo(pengajuanData.status);
+
+  return (
+    <div 
+      className={`fixed inset-0 backdrop-blur-xs backdrop-brightness-90 flex items-center justify-center z-[9999] p-4 transition-all duration-200 ${
+        isClosing ? 'animate-out fade-out' : 'animate-in fade-in'
+      }`}
+      onClick={handleBackdropClick}
+    >
+      <div className={`bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative transition-all duration-200 ${
+        isClosing ? 'animate-out zoom-out-95' : 'animate-in zoom-in-95'
+      }`}>
+        {/* Header */}
+        <div className="bg-purple-600 text-white p-6 rounded-t-2xl relative">
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center hover:bg-orange-500 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          <h2 className="text-2xl font-bold mb-2">Detail Pengajuan</h2>
+          <p className="text-purple-100">{pengajuanData.jenis_pengajuan}</p>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {isLoadingDetail ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                <span className="text-gray-600">Memuat detail pendaftaran...</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Status Section */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-10 h-10 ${statusInfo.bgColor} rounded-full flex items-center justify-center ${statusInfo.color}`}>
+                    {statusInfo.icon}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Status Pengajuan</p>
+                    <p className={`text-sm ${statusInfo.color}`}>{statusInfo.text}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Tanggal Pengajuan</p>
+                  <p className="font-medium text-gray-900">{detailedData?.tanggal_pendaftaran || pengajuanData.tanggal}</p>
+                </div>
+              </div>
+
+              {detailedData ? (
+                /* Detailed Data Display */
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-6">
+                    {/* Program Info */}
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Program</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Pengajuan</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.jenis_pengajuan}</p>
+                        </div>
+                        {detailedData.posisi_pkl && (
+                          <>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Posisi PKL</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.posisi_pkl.nama_posisi}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.posisi_pkl.kategori}</p>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
+                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.posisi_pkl.tipe}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Durasi (Bulan)</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.posisi_pkl.durasi_bulan}</p>
+                            </div>
+                          </>
+                        )}
+                        {detailedData.sertifikasi && (
+                          <>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Nama Sertifikasi</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.nama_sertifikasi}</p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Sertifikasi</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.jenis_sertifikasi}</p>
+                            </div>
+                            {detailedData.sertifikasi.deskripsi && (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.deskripsi}</p>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {detailedData.batch && (
+                          <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-400">
+                            <h4 className="font-medium text-purple-800 mb-2">Batch yang Dipilih</h4>
+                            <div className="grid grid-cols-1 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium text-purple-700 mb-1">Nama Batch</label>
+                                <p className="text-purple-900">{detailedData.batch.nama_batch}</p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="block text-xs font-medium text-purple-700 mb-1">Tanggal Mulai</label>
+                                  <p className="text-purple-900">{detailedData.batch.tanggal_mulai}</p>
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-purple-700 mb-1">Tanggal Selesai</label>
+                                  <p className="text-purple-900">{detailedData.batch.tanggal_selesai}</p>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-purple-700 mb-1">Kapasitas Peserta</label>
+                                <p className="text-purple-900">{detailedData.batch.kapasitas_peserta} orang</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Data Diri */}
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Data Pribadi</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                          <p className="bg-white p-2 rounded border text-gray-900 font-medium">{detailedData.data_diri.nama_lengkap}</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.email_pendaftar || detailedData.data_diri.email}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.nomor_handphone || detailedData.data_diri.nomor_telepon || detailedData.data_diri.no_telp}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.tempat_lahir || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.tanggal_lahir ? formatDateSimple(detailedData.data_diri.tanggal_lahir) : 'Tidak ada data'}</p>
+                          </div>
+                        </div>
+                        {detailedData.data_diri.alamat_lengkap && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.alamat_lengkap}</p>
+                          </div>
+                        )}
+                        {/* Social Media Links - Always show for PKL */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.instagram || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">TikTok</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.tiktok || 'N/A'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Background Pendidikan */}
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Latar Belakang Pendidikan</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Institusi Asal</label>
+                          <p className="bg-white p-2 rounded border text-gray-900 font-medium">{detailedData.background_pendidikan?.institusi_asal || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Nama Sekolah/Universitas</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.asal_sekolah || detailedData.background_pendidikan?.jenis_institusi || 'N/A'}</p>
+                        </div>
+                        {detailedData.background_pendidikan?.institusi_asal === 'Sekolah' ? (
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Jurusan</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.jurusan || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.kelas || 'N/A'}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Program Studi</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.program_studi || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.semester || 'N/A'}</p>
+                            </div>
+                          </div>
+                        )}
+                        {/* Period PKL for both school and university */}
+                        {detailedData && detailedData.posisi_pkl && detailedData.background_pendidikan && (
+                          <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                            <h4 className="font-medium text-blue-800 mb-2">Periode PKL</h4>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <span className="text-gray-600">Periode Awal:</span>
+                                <p className="font-medium text-gray-900">{detailedData.background_pendidikan?.awal_pkl ? formatDateSimple(detailedData.background_pendidikan.awal_pkl) : 'Tidak ada data'}</p>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Periode Akhir:</span>
+                                <p className="font-medium text-gray-900">{detailedData.background_pendidikan?.akhir_pkl ? formatDateSimple(detailedData.background_pendidikan.akhir_pkl) : 'Tidak ada data'}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-6">
+                    {/* Skill & Minat for PKL */}
+                    {detailedData && (
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Skill & Minat</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Skill/Kelebihan</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat?.skill_kelebihan || 'Tidak ada data'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Kemampuan yang Ingin Ditingkatkan</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat?.kemampuan_ditingkatkan || 'Tidak ada data'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Pernah Membuat Video</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat?.pernah_membuat_video || 'Tidak ada data'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    )}
+
+                    {/* Motivasi PKL */}
+                    {detailedData && detailedData.posisi_pkl && (
+                      <div className="bg-indigo-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Motivasi PKL</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tingkat Motivasi</label>
+                            <div className="bg-white p-2 rounded border">
+                              <span className="text-lg font-bold text-indigo-600">{detailedData.motivasi_pkl?.tingkat_motivasi || 'Tidak ada data'}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Nilai Diri</label>
+                            <p className="bg-white p-2 rounded border text-gray-900 whitespace-pre-wrap">{detailedData.motivasi_pkl?.nilai_diri || 'Tidak ada data'}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Motivasi</label>
+                            <p className="bg-white p-2 rounded border text-gray-900 whitespace-pre-wrap">{detailedData.motivasi_pkl?.motivasi || 'Tidak ada data'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Persyaratan Khusus PKL */}
+                    {detailedData && (
+                    <div className="bg-teal-50 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Persyaratan Khusus</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Memiliki Laptop</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.memiliki_laptop || 'Tidak ada data'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Memiliki Kamera DSLR</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.memiliki_kamera_dslr || 'Tidak ada data'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Transportasi Operasional</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.transportasi_operasional || 'Tidak ada data'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Apakah Merokok</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.apakah_merokok || 'Tidak ada data'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Bersedia Ditempatkan</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.bersedia_ditempatkan || 'Tidak ada data'}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Bersedia Masuk 2x Seminggu</label>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.bersedia_masuk_2_kali || 'Tidak ada data'}</p>
+                        </div>
+                      </div>
+                    </div>
+                    )}
+
+                    {/* Berkas PKL */}
+                    {detailedData.posisi_pkl && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Berkas yang Diunggah</h3>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">CV</label>
+                            {(detailedData.berkas?.cv_file_name || detailedData.cv_file_name) ? (
+                              <div className="bg-white p-2 rounded border flex items-center space-x-2">
+                                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span className="text-sm text-gray-900 flex-1 truncate">{detailedData.berkas?.cv_file_name || detailedData.cv_file_name}</span>
+                                <button className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                                  Download
+                                </button>
+                              </div>
+                            ) : (
+                              <p className="bg-white p-2 rounded border text-gray-500 text-sm">Tidak ada file CV</p>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Portfolio</label>
+                            {(detailedData.berkas?.portfolio_file_name || detailedData.portfolio_file_name) ? (
+                              <div className="bg-white p-2 rounded border flex items-center space-x-2">
+                                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span className="text-sm text-gray-900 flex-1 truncate">{detailedData.berkas?.portfolio_file_name || detailedData.portfolio_file_name}</span>
+                                <button className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">
+                                  Download
+                                </button>
+                              </div>
+                            ) : (
+                              <p className="bg-white p-2 rounded border text-gray-500 text-sm">Tidak ada file portfolio</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Berkas Persyaratan for Sertifikasi */}
+                    {detailedData.berkas_persyaratan && detailedData.jenis_pengajuan.toLowerCase().includes('sertifikasi') && (
+                      <div className="bg-orange-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Berkas Persyaratan</h3>
+                        <div className="bg-white p-3 rounded border text-gray-900">
+                          {Array.isArray(detailedData.berkas_persyaratan) 
+                            ? detailedData.berkas_persyaratan.length + ' file(s) uploaded'
+                            : 'Berkas telah diunggah'
+                          }
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Catatan Admin */}
+                    {detailedData.catatan_admin && (
+                      <div className="bg-red-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                          {pengajuanData.status === 'Disetujui' ? 'Catatan Persetujuan' : 
+                           pengajuanData.status === 'Ditolak' ? 'Catatan Penolakan' : 'Catatan Admin'}
+                        </h3>
+                        <div className="bg-white p-4 rounded-lg border-l-4 border-red-400">
+                          <p className="text-gray-900 whitespace-pre-wrap">{detailedData.catatan_admin}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Basic Data Display (fallback) */
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Pengajuan</label>
+                    <p className="bg-gray-50 p-3 rounded-lg text-gray-900">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        {pengajuanData.jenis_pengajuan}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nama Program</label>
+                    <p className="bg-gray-50 p-3 rounded-lg text-gray-900">{pengajuanData.nama}</p>
+                  </div>
+
+                  {pengajuanData.deskripsi && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                      <p className="bg-gray-50 p-3 rounded-lg text-gray-900">{pengajuanData.deskripsi}</p>
+                    </div>
+                  )}
+
+                  {pengajuanData.institusi && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Institusi</label>
+                      <p className="bg-gray-50 p-3 rounded-lg text-gray-900">{pengajuanData.institusi}</p>
+                    </div>
+                  )}
+
+                  {pengajuanData.periode && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Periode Program</label>
+                      <p className="bg-gray-50 p-3 rounded-lg text-gray-900">{pengajuanData.periode}</p>
+                    </div>
+                  )}
+
+                  {/* Catatan Section */}
+                  {pengajuanData.catatan && (
+                    <div className="border-t pt-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        {pengajuanData.status === 'Disetujui' ? 'Catatan Persetujuan' : pengajuanData.status === 'Ditolak' ? 'Catatan Penolakan' : 'Catatan Verifikasi'}
+                      </h3>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-gray-900">{pengajuanData.catatan}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

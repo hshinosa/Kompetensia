@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { usePage } from '@inertiajs/react';
+import LoginModal from '../auth/LoginModal';
 
 interface SertifikasiItem {
   readonly id: number;
@@ -16,9 +18,30 @@ interface SertifikasiItem {
 interface Props {
   readonly sertifikasi: SertifikasiItem;
   readonly onDetailClick?: (sertifikasi: SertifikasiItem) => void;
+  readonly onRegisterClick?: (sertifikasi: SertifikasiItem) => void;
 }
 
-export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
+interface User {
+  id: number;
+  nama: string;
+  nama_lengkap?: string;
+  email: string;
+  role: string;
+}
+
+interface PageProps extends Record<string, any> {
+  auth?: {
+    user?: User;
+    client?: User;
+  };
+}
+
+export default function SertifikasiCard({ sertifikasi, onDetailClick, onRegisterClick }: Props) {
+  const { auth } = usePage<PageProps>().props;
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  
+  const user = auth?.client;
+  const isAuthenticated = !!user;
   // Placeholder images berdasarkan kategori
   const getPlaceholderImage = (kategori: string) => {
     const placeholders = {
@@ -37,7 +60,16 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
   const imageUrl = sertifikasi.img || getPlaceholderImage(sertifikasi.kategori);
 
   const handleAmbilKelas = () => {
-    if (sertifikasi.slug && sertifikasi.slug !== '#') {
+    if (!isAuthenticated) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+    
+    // Jika ada callback untuk register, gunakan itu untuk membuka modal pendaftaran
+    if (onRegisterClick) {
+      onRegisterClick(sertifikasi);
+    } else if (sertifikasi.slug && sertifikasi.slug !== '#') {
+      // Fallback ke halaman detail jika tidak ada callback register
       window.location.href = `/detailsertifikasi/${sertifikasi.slug}`;
     }
   };
@@ -51,6 +83,7 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
   };
 
   return (
+    <>
     <article className="border-2 border-purple-400 rounded-xl overflow-hidden bg-white flex flex-col hover:shadow-lg hover:border-purple-600 transition-all duration-300 h-[420px]">
       <div className="relative">
         <img 
@@ -104,5 +137,14 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
         </div>
       </div>
     </article>
+    
+    {/* Login Modal */}
+    {isLoginModalOpen && (
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
+    )}
+    </>
   );
 }

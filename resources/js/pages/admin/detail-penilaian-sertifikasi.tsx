@@ -19,6 +19,17 @@ interface PenilaianDetailPageProps {
     tanggal_pendaftaran:string;
     motivasi?:string | null;
     penilaian?: { id:number; status_kelulusan:string; catatan_asesor?:string | null; tanggal_penilaian?:string|null } | null;
+    upload_tugas?: Array<{
+      id: number;
+      judul_tugas: string;
+      link_url?: string;
+      nama_file?: string;
+      path_file?: string;
+      status: string;
+      tanggal_upload: string;
+      feedback?: string;
+      dinilai_oleh?: string;
+    }>;
   };
   [key:string]: any;
 }
@@ -114,6 +125,98 @@ export default function DetailPenilaianSertifikasi() {
             </Card>
           </div>
         </div>
+        
+        {/* Uploaded Documents Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Dokumen yang Diunggah ({pendaftaran.upload_tugas?.length || 0})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pendaftaran.upload_tugas && pendaftaran.upload_tugas.length > 0 ? (
+              <div className="space-y-4">
+                {pendaftaran.upload_tugas.map((upload, index) => (
+                  <div key={upload.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-gray-900">{upload.judul_tugas}</h4>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span>Tanggal Upload: {new Date(upload.tanggal_upload).toLocaleDateString('id-ID')}</span>
+                          <Badge variant={upload.status === 'approved' ? 'default' : upload.status === 'rejected' ? 'destructive' : 'secondary'}>
+                            {upload.status === 'approved' ? 'Disetujui' : upload.status === 'rejected' ? 'Ditolak' : 'Pending'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {upload.link_url && (
+                        <div>
+                          <Label className="text-muted-foreground">Link URL</Label>
+                          <div className="flex items-center gap-2 mt-1">
+                            <a 
+                              href={upload.link_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 underline text-sm break-all"
+                            >
+                              {upload.link_url}
+                            </a>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(upload.link_url, '_blank')}
+                            >
+                              Buka
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {upload.nama_file && (
+                        <div>
+                          <Label className="text-muted-foreground">File</Label>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-sm text-gray-900">{upload.nama_file}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                // Handle file download
+                                window.open(`/storage/${upload.path_file}`, '_blank');
+                              }}
+                            >
+                              Download
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {upload.feedback && (
+                      <div>
+                        <Label className="text-muted-foreground">Feedback</Label>
+                        <p className="text-sm text-gray-700 mt-1 bg-gray-50 p-2 rounded">{upload.feedback}</p>
+                        {upload.dinilai_oleh && (
+                          <p className="text-xs text-gray-500 mt-1">Dinilai oleh: {upload.dinilai_oleh}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada dokumen yang diunggah</h3>
+                <p className="text-gray-600">Peserta belum mengunggah tugas untuk sertifikasi ini</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
         <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
           <DialogContent className="sm:max-w-[420px]">
             <DialogHeader>

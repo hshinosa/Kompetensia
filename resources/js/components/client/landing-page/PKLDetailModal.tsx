@@ -170,20 +170,6 @@ export default function PKLDetailModal({ program, isOpen, onClose }: Props) {
               </div>
             </div>
           </div>
-
-          {/* Additional Info */}
-          <div className="mt-8 bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600 mb-2">
-              💡 <strong>Yang akan Anda dapatkan:</strong>
-            </p>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Pengalaman kerja nyata di bidang {program.title}</li>
-              <li>• Mentoring dari praktisi berpengalaman</li>
-              <li>• Portfolio project untuk mendukung karir Anda</li>
-              <li>• Sertifikat completion yang diakui industri</li>
-              <li>• Networking dengan profesional di bidang ini</li>
-            </ul>
-          </div>
         </div>
 
         {/* Footer */}

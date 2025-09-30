@@ -10,9 +10,14 @@ class Asesor extends Model
 {
     protected $fillable = [
         'nama_asesor',
-        'jabatan_asesor',
-        'instansi_asesor',
-        'foto_asesor',
+        'jabatan',
+        'instansi',
+        'bio',
+        'foto',
+        'email',
+        'phone',
+        'keahlian',
+        'sertifikat',
         'status',
         'created_by',
         'updated_by'

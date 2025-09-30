@@ -118,8 +118,10 @@ class DashboardController extends Controller
                     
                 \Log::info("Found sertifikasi pendaftaran: {$pendaftaran->id}");
                     
-                // Add batch information if approved
+                // Add batch information if approved and no batch assigned yet
                 if ($pendaftaran->status === 'Disetujui' && !$pendaftaran->batch_id) {
+                    // Hanya assign batch jika belum ada batch_id
+                    // Ini untuk pendaftaran lama yang mungkin belum punya batch
                     $activeBatch = $this->findOrCreateActiveBatch($pendaftaran->sertifikasi_id);
                     $pendaftaran->batch_id = $activeBatch->id;
                     $pendaftaran->save();
@@ -264,10 +266,23 @@ class DashboardController extends Controller
                     'id' => $pendaftaran->id
                 ]);
                 
-                // Jika disetujui, cari atau buat batch aktif untuk sertifikasi
+                // Jika disetujui, pastikan batch_id tetap sesuai pilihan user
+                // Jangan override batch yang sudah dipilih user saat pendaftaran
                 if ($validated['status'] === 'Disetujui') {
-                    $activeBatch = $this->findOrCreateActiveBatch($pendaftaran->sertifikasi_id);
-                    $pendaftaran->batch_id = $activeBatch->id;
+                    // Cek apakah batch yang dipilih user masih valid
+                    if ($pendaftaran->batch_id) {
+                        $selectedBatch = BatchSertifikasi::find($pendaftaran->batch_id);
+                        if (!$selectedBatch || $selectedBatch->status !== 'Aktif') {
+                            // Jika batch tidak valid, baru cari atau buat batch aktif
+                            $activeBatch = $this->findOrCreateActiveBatch($pendaftaran->sertifikasi_id);
+                            $pendaftaran->batch_id = $activeBatch->id;
+                        }
+                        // Jika batch valid, biarkan batch_id tetap seperti pilihan user
+                    } else {
+                        // Jika belum ada batch_id (pendaftaran lama), baru assign batch aktif
+                        $activeBatch = $this->findOrCreateActiveBatch($pendaftaran->sertifikasi_id);
+                        $pendaftaran->batch_id = $activeBatch->id;
+                    }
                 }
                 
                 $pendaftaran->update([

@@ -15,6 +15,7 @@ export default function Footer() {
             <ul className="space-y-2 text-purple-100">
               <li><a href="#tentang" className="hover:underline">Tentang Kami</a></li>
               <li><a href="#kontak" className="hover:underline">Kontak Kami</a></li>
+              <li><a href="#testimoni" className="hover:underline">Testimoni</a></li>
             </ul>
           </div>
           <div>

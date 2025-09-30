@@ -66,6 +66,9 @@ return new class extends Migration {
             $table->foreignId('batch_id')->constrained('batch_sertifikasi')->cascadeOnDelete();
             $table->enum('status', ['Pengajuan', 'Disetujui', 'Ditolak', 'Dibatalkan'])->default('Pengajuan');
             $table->date('tanggal_pendaftaran');
+            $table->string('nama_lengkap');
+            $table->string('email');
+            $table->string('no_telp');
             $table->text('motivasi')->nullable();
             $table->json('berkas_persyaratan')->nullable();
             $table->text('catatan_admin')->nullable();
@@ -86,10 +89,31 @@ return new class extends Migration {
             $table->date('tanggal_penilaian')->nullable();
             $table->timestamps();
         });
+
+        // Tabel untuk upload tugas sertifikasi
+        Schema::create('upload_tugas_sertifikasi', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('sertifikasi_id')->constrained('sertifikasi')->cascadeOnDelete();
+            $table->foreignId('pendaftaran_id')->constrained('pendaftaran_sertifikasi')->cascadeOnDelete();
+            $table->string('judul_tugas');
+            $table->string('link_url')->nullable();
+            $table->string('nama_file')->nullable();
+            $table->string('path_file')->nullable();
+            $table->bigInteger('ukuran_file')->nullable();
+            $table->string('tipe_mime')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->text('feedback')->nullable();
+            $table->foreignId('dinilai_oleh')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('tanggal_upload')->useCurrent();
+            $table->timestamp('tanggal_penilaian')->nullable();
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('upload_tugas_sertifikasi');
         Schema::dropIfExists('penilaian_sertifikasi');
         Schema::dropIfExists('pendaftaran_sertifikasi');
         Schema::dropIfExists('batch_sertifikasi');

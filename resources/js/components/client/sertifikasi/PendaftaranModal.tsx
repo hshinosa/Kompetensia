@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
+import { pendaftaranApi, PendaftaranSertifikasiData } from '@/lib/pendaftaran-api';
 
 interface User {
   id: number;
@@ -8,6 +9,25 @@ interface User {
   email: string;
   no_telp?: string;
   role: string;
+}
+
+interface Batch {
+  id: number;
+  nama_batch: string;
+  tanggal_mulai: string;
+  tanggal_selesai: string;
+  status: string;
+  kapasitas_peserta?: number;
+  peserta_terdaftar?: number;
+}
+
+interface Sertifikasi {
+  id: number;
+  nama_sertifikasi: string;
+  jenis_sertifikasi: string;
+  deskripsi?: string;
+  status: string;
+  batch?: Batch[];
 }
 
 interface PageProps extends Record<string, any> {
@@ -19,24 +39,28 @@ interface PageProps extends Record<string, any> {
 
 interface Props {
   onClose: () => void;
-  selectedBatch?: {id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string} | null;
+  sertifikasi: Sertifikasi;
+  selectedBatch?: Batch | null;
+  onSuccess?: () => void;
 }
 
-export default function PendaftaranModal({ onClose, selectedBatch }: Props) {
+export default function PendaftaranModal({ onClose, sertifikasi, selectedBatch, onSuccess }: Props) {
   const { auth } = usePage<PageProps>().props;
   const user = auth?.client; // Menggunakan client auth
   
   const [isClosing, setIsClosing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [successMessage, setSuccessMessage] = useState('');
+  
   const [nama, setNama] = useState(user?.nama_lengkap || user?.nama || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.no_telp || '');
   
-  // Set default batch based on selectedBatch or fallback to first option
-  const defaultBatchOption = selectedBatch 
-    ? `${selectedBatch.nama_batch} | ${new Date(selectedBatch.tanggal_mulai).toLocaleDateString('id-ID')} - ${new Date(selectedBatch.tanggal_selesai).toLocaleDateString('id-ID')}`
-    : 'Batch 1 | 10 Mei 2025 - 10 Juni 2025';
-  
-  const [batch, setBatch] = useState(defaultBatchOption);
+  // Set default batch - always start with "Pilih Batch" unless a specific batch is passed
+  const [selectedBatchId, setSelectedBatchId] = useState<number>(
+    selectedBatch?.id || 0
+  );
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -48,11 +72,10 @@ export default function PendaftaranModal({ onClose, selectedBatch }: Props) {
     };
   }, []);
 
-  // Update batch when selectedBatch changes
+  // Update selectedBatchId when selectedBatch changes
   useEffect(() => {
     if (selectedBatch) {
-      const batchText = `${selectedBatch.nama_batch} | ${new Date(selectedBatch.tanggal_mulai).toLocaleDateString('id-ID')} - ${new Date(selectedBatch.tanggal_selesai).toLocaleDateString('id-ID')}`;
-      setBatch(batchText);
+      setSelectedBatchId(selectedBatch.id);
     }
   }, [selectedBatch]);
 
@@ -86,18 +109,58 @@ export default function PendaftaranModal({ onClose, selectedBatch }: Props) {
     }
   };
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    // Include selected batch ID in the submission
-    const formData = {
-      nama,
-      email,
-      phone,
-      batch,
-      batch_id: selectedBatch?.id || null
-    };
-    console.log('Form submission data:', formData);
-    handleClose();
+    
+    if (isSubmitting) return;
+    
+    // Clear previous errors
+    setErrors({});
+    setSuccessMessage('');
+    
+    // Basic validation
+    if (!nama.trim()) {
+      setErrors(prev => ({ ...prev, nama: 'Nama lengkap wajib diisi' }));
+      return;
+    }
+    if (!email.trim()) {
+      setErrors(prev => ({ ...prev, email: 'Email wajib diisi' }));
+      return;
+    }
+    if (!phone.trim()) {
+      setErrors(prev => ({ ...prev, phone: 'Nomor telepon wajib diisi' }));
+      return;
+    }
+    if (!selectedBatchId) {
+      setErrors(prev => ({ ...prev, batch: 'Batch wajib dipilih' }));
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const formData: PendaftaranSertifikasiData = {
+        sertifikasi_id: sertifikasi.id,
+        batch_id: selectedBatchId,
+        nama_lengkap: nama.trim(),
+        email: email.trim(),
+        no_telp: phone.trim(),
+      };
+      
+      const response = await pendaftaranApi.createPendaftaranSertifikasi(formData);
+      
+      if (response.success) {
+        setSuccessMessage('Pendaftaran sertifikasi berhasil dikirim!');
+        setTimeout(() => {
+          onSuccess?.();
+          handleClose();
+        }, 2000);
+      }
+    } catch (error: any) {
+      setErrors({ general: error.message || 'Terjadi kesalahan saat mengirim pendaftaran' });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -127,16 +190,34 @@ export default function PendaftaranModal({ onClose, selectedBatch }: Props) {
 
         {/* Form Content */}
         <form onSubmit={submit} className="p-6">
+          {/* Error message */}
+          {errors.general && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              {errors.general}
+            </div>
+          )}
+          
+          {/* Success message */}
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+              {successMessage}
+            </div>
+          )}
+
           <div className="space-y-6 mb-6">
             <label className="block">
               <div className="text-sm font-medium mb-2 text-gray-700">Nama Lengkap *</div>
               <input 
                 value={nama} 
                 onChange={(e) => setNama(e.target.value)} 
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900" 
+                className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900 ${
+                  errors.nama ? 'border-red-300' : 'border-gray-300'
+                }`}
                 placeholder="Masukkan nama lengkap"
+                disabled={isSubmitting}
                 required
               />
+              {errors.nama && <p className="text-red-600 text-sm mt-1">{errors.nama}</p>}
             </label>
 
             <label className="block">
@@ -145,10 +226,14 @@ export default function PendaftaranModal({ onClose, selectedBatch }: Props) {
                 type="email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900" 
+                className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900 ${
+                  errors.email ? 'border-red-300' : 'border-gray-300'
+                }`}
                 placeholder="email@domain.com"
+                disabled={isSubmitting}
                 required
               />
+              {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
             </label>
 
             <label className="block">
@@ -161,30 +246,35 @@ export default function PendaftaranModal({ onClose, selectedBatch }: Props) {
                   const value = e.target.value.replace(/[^0-9]/g, '');
                   setPhone(value);
                 }} 
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900" 
+                className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors placeholder:text-gray-500 text-gray-900 ${
+                  errors.phone ? 'border-red-300' : 'border-gray-300'
+                }`}
                 placeholder="08xxxxxxxxxx"
+                disabled={isSubmitting}
                 required
               />
+              {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone}</p>}
             </label>
 
             <label className="block">
               <div className="text-sm font-medium mb-2 text-gray-700">Batch Sertifikasi *</div>
               <select 
-                value={batch} 
-                onChange={(e) => setBatch(e.target.value)} 
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-700"
+                value={selectedBatchId} 
+                onChange={(e) => setSelectedBatchId(Number(e.target.value))} 
+                className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-700 ${
+                  errors.batch ? 'border-red-300' : 'border-gray-300'
+                }`}
+                disabled={isSubmitting}
                 required
               >
-                {selectedBatch ? (
-                  <option value={defaultBatchOption}>{defaultBatchOption}</option>
-                ) : (
-                  <>
-                    <option value="Batch 1 | 10 Mei 2025 - 10 Juni 2025">Batch 1 | 10 Mei 2025 - 10 Juni 2025</option>
-                    <option value="Batch 2 | 25 Agustus 2025">Batch 2 | 25 Agustus 2025</option>
-                    <option value="Batch 3 | 25 Desember 2025">Batch 3 | 25 Desember 2025</option>
-                  </>
-                )}
+                <option value="">Pilih Batch</option>
+                {sertifikasi.batch?.map((batch) => (
+                  <option key={batch.id} value={batch.id}>
+                    {batch.nama_batch} | {new Date(batch.tanggal_mulai).toLocaleDateString('id-ID')} - {new Date(batch.tanggal_selesai).toLocaleDateString('id-ID')}
+                  </option>
+                ))}
               </select>
+              {errors.batch && <p className="text-red-600 text-sm mt-1">{errors.batch}</p>}
             </label>
           </div>
 
@@ -203,14 +293,16 @@ export default function PendaftaranModal({ onClose, selectedBatch }: Props) {
                 type="button" 
                 onClick={() => alert('Ubah profile')} 
                 className="px-6 py-3 rounded-lg border border-orange-400 text-orange-600 font-semibold hover:bg-orange-50 transition-colors"
+                disabled={isSubmitting}
               >
                 Ubah Profile
               </button>
               <button 
                 type="submit" 
-                className="px-8 py-3 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-colors"
+                className="px-8 py-3 rounded-lg bg-purple-600 text-white font-semibold hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSubmitting}
               >
-                Daftar Sekarang
+                {isSubmitting ? 'Mengirim...' : 'Daftar Sekarang'}
               </button>
             </div>
           </div>

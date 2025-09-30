@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\PKLController;
 use App\Http\Controllers\Admin\AsesorController;
 use App\Http\Controllers\Admin\PenilaianSertifikasiController;
 use App\Http\Controllers\Admin\PenggunaController;
+use App\Http\Controllers\Admin\UploadTugasController;
+use App\Http\Controllers\Admin\UploadDokumenPKLController;
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use Illuminate\Support\Facades\Route;
 
@@ -97,9 +99,20 @@ Route::middleware(['admin'])->group(function () {
 
     Route::get('/penilaian-sertifikasi', [PenilaianSertifikasiController::class, 'index'])->name('penilaian-sertifikasi');
     Route::get('/penilaian-sertifikasi/{id}', [PenilaianSertifikasiController::class, 'show'])->name('detail-penilaian-sertifikasi');
+
+    // Upload Tugas Sertifikasi routes
+    Route::prefix('upload-tugas')->name('upload-tugas.')->group(function(){
+        Route::get('/', [UploadTugasController::class, 'index'])->name('index');
+        Route::get('/{id}', [UploadTugasController::class, 'show'])->name('show');
+        Route::post('/{id}/approve', [UploadTugasController::class, 'approve'])->name('approve');
+        Route::post('/{id}/reject', [UploadTugasController::class, 'reject'])->name('reject');
+        Route::post('/bulk-action', [UploadTugasController::class, 'bulkAction'])->name('bulk-action');
+        Route::get('/{id}/download', [UploadTugasController::class, 'downloadFile'])->name('download');
+    });
     Route::post('/penilaian-sertifikasi/{pendaftaranId}', [PenilaianSertifikasiController::class, 'store'])->name('penilaian-sertifikasi.store');
     Route::get('/penilaian-sertifikasi/{sertifikasiId}/batch/{batchId}', [PenilaianSertifikasiController::class, 'batchPenilaian'])->name('batch-penilaian-sertifikasi');
     Route::post('/penilaian-sertifikasi/{sertifikasiId}/batch/{batchId}', [PenilaianSertifikasiController::class, 'batchStore'])->name('batch-penilaian-sertifikasi.store');
+    Route::post('/update-tugas-status/{tugasId}', [PenilaianSertifikasiController::class, 'updateTugasStatus'])->name('update-tugas-status');
 
     // User Management routes - Using PenggunaController
     Route::prefix('users')->name('users.')->group(function(){
@@ -130,5 +143,39 @@ Route::middleware(['admin'])->group(function () {
         Route::get('/{pengguna}/activities', [PenggunaController::class, 'getUserActivities'])->name('activities');
         Route::get('/{pengguna}/aktivitas', [PenggunaController::class, 'aktivitas'])->name('aktivitas');
         Route::get('/{pengguna}/dokumen', [PenggunaController::class, 'dokumen'])->name('dokumen');
+    });
+
+    // Pendaftaran Sertifikasi management routes
+    Route::prefix('pendaftaran-sertifikasi')->name('pendaftaran-sertifikasi.')->group(function(){
+        Route::get('/', [DashboardController::class, 'pendaftaranSertifikasi'])->name('index');
+        Route::get('/{id}', [DashboardController::class, 'pendaftaranSertifikasiDetail'])->name('show');
+        Route::patch('/{id}/status', [DashboardController::class, 'updateStatusSertifikasi'])->name('update-status');
+        Route::get('/{id}/download-berkas', [DashboardController::class, 'downloadBerkasSertifikasi'])->name('download-berkas');
+    });
+
+    // Pendaftaran PKL management routes
+    Route::prefix('pendaftaran-pkl')->name('pendaftaran-pkl.')->group(function(){
+        Route::get('/', [DashboardController::class, 'pendaftaranPKL'])->name('index');
+        Route::get('/{id}', [DashboardController::class, 'pendaftaranPKLDetail'])->name('show');
+        Route::patch('/{id}/status', [DashboardController::class, 'updateStatusPKL'])->name('update-status');
+        Route::get('/{id}/download-berkas', [DashboardController::class, 'downloadBerkasPKL'])->name('download-berkas');
+    });
+
+    // Upload Tugas Sertifikasi management routes
+    Route::prefix('upload-tugas')->name('upload-tugas.')->group(function(){
+        Route::get('/', [UploadTugasController::class, 'index'])->name('index');
+        Route::get('/{id}', [UploadTugasController::class, 'show'])->name('show');
+        Route::patch('/{id}/status', [UploadTugasController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{id}/download', [UploadTugasController::class, 'downloadFile'])->name('download');
+        Route::get('/stats/data', [UploadTugasController::class, 'getStats'])->name('stats');
+    });
+
+    // Upload Dokumen PKL management routes
+    Route::prefix('upload-dokumen-pkl')->name('upload-dokumen-pkl.')->group(function(){
+        Route::get('/', [UploadDokumenPKLController::class, 'index'])->name('index');
+        Route::get('/{id}', [UploadDokumenPKLController::class, 'show'])->name('show');
+        Route::patch('/{id}/status', [UploadDokumenPKLController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{id}/download', [UploadDokumenPKLController::class, 'downloadFile'])->name('download');
+        Route::get('/stats/data', [UploadDokumenPKLController::class, 'getStats'])->name('stats');
     });
 });

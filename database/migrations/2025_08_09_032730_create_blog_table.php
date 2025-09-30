@@ -28,12 +28,14 @@ return new class extends Migration {
             $table->id();
             $table->string('nama_video');
             $table->text('deskripsi');
+            $table->string('thumbnail')->nullable();
             $table->string('video_url');
-            $table->integer('durasi');
+            $table->integer('durasi')->default(0); // dalam detik
             $table->integer('views')->default(0);
             $table->boolean('featured')->default(false);
-            $table->enum('status', ['Draft', 'Publish', 'Archived'])->default('Draft');
+            $table->enum('status', ['Draft', 'Publish'])->default('Draft');
             $table->string('uploader');
+            $table->string('slug')->unique();
             $table->timestamps();
         });
     }

@@ -11,8 +11,15 @@ use Illuminate\Http\Request;
 
 class VideoController extends Controller
 {
+    /**
+     * @param VideoService $service
+     * Constructor to inject VideoService
+     */
     public function __construct(private readonly VideoService $service) {}
 
+    /**
+     * Display a listing of videos with filters and pagination
+     */
     public function index(Request $request)
     {
     // Collect filters and pagination parameters
@@ -23,11 +30,21 @@ class VideoController extends Controller
         return Inertia::render('admin/manajemen-video', ['videos' => $videos, 'filters' => $filters]);
     }
 
+    /**
+     * Show the form for creating a new video
+     */
     public function create()
     {
         return Inertia::render('admin/form-video');
     }
 
+    /**
+     * Store a newly created video in storage
+     * @param  \App\Http\Requests\Admin\StoreVideoRequest  $request
+     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(StoreVideoRequest $request)
     {
     $data = $request->validated();

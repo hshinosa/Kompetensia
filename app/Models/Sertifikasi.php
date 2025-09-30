@@ -47,6 +47,11 @@ class Sertifikasi extends Model
         return $this->hasMany(PendaftaranSertifikasi::class);
     }
 
+    public function uploadTugas()
+    {
+        return $this->hasMany(UploadTugasSertifikasi::class);
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

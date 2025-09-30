@@ -1,130 +1,78 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import ClientAuthenticatedLayout from '@/layouts/ClientAuthenticatedLayout';
-import SertifikasiCard from '@/components/client/landing-page/SertifikasiCard';
+import SertifikasiTerdaftarCard from '@/components/client/sertifikasi/SertifikasiTerdaftarCard';
 
-interface SertifikasiProgram {
+interface SertifikasiTerdaftar {
     id: number;
-    title: string;
+    nama_sertifikasi: string;
+    jenis_sertifikasi: string;
+    deskripsi?: string;
     batch: string;
-    date: string;
-    rating: string;
-    peserta: number;
-    kategori: string;
-    img?: string;
-    mentor: string;
-    slug?: string;
-    progress?: number;
+    tanggal_mulai?: string;
+    status_pendaftaran: string;
+    can_upload: boolean;
 }
 
-export default function ClientSertifikasi() {
-    // Sample data sementara - sesuai dengan format landing page
-    const sampleSertifikasi: SertifikasiProgram[] = [
-        {
-            id: 1,
-            title: 'Digital Marketing',
-            batch: 'Batch 1',
-            date: '24 Juli 2025',
-            rating: '4.7',
-            peserta: 25,
-            kategori: 'Marketing',
-            mentor: 'Alyssa Rahman',
-            slug: 'digital-marketing',
-            progress: 0
-        },
-        {
-            id: 2,
-            title: 'Junior Programmer',
-            batch: 'Batch 2',
-            date: '15 Agustus 2025',
-            rating: '4.8',
-            peserta: 30,
-            kategori: 'Programming',
-            mentor: 'Budi Santoso',
-            slug: 'junior-programmer',
-            progress: 45
-        },
-        {
-            id: 3,
-            title: 'UI/UX Designer',
-            batch: 'Batch 3',
-            date: '10 September 2025',
-            rating: '4.6',
-            peserta: 20,
-            kategori: 'Design',
-            mentor: 'Sarah Wijaya',
-            slug: 'ui-ux-designer',
-            progress: 80
-        },
-        {
-            id: 4,
-            title: 'Data Science',
-            batch: 'Batch 4',
-            date: '05 Oktober 2025',
-            rating: '4.9',
-            peserta: 28,
-            kategori: 'Data Science',
-            mentor: 'Dr. Ahmad Surya',
-            slug: 'data-science',
-            progress: 0
-        },
-        {
-            id: 5,
-            title: 'Content Creator',
-            batch: 'Batch 5',
-            date: '20 Oktober 2025',
-            rating: '4.5',
-            peserta: 35,
-            kategori: 'Marketing',
-            mentor: 'Maya Sari',
-            slug: 'content-creator',
-            progress: 25
-        },
-        {
-            id: 6,
-            title: 'Cyber Security',
-            batch: 'Batch 6',
-            date: '15 November 2025',
-            rating: '4.8',
-            peserta: 22,
-            kategori: 'Technology',
-            mentor: 'Rizki Pratama',
-            slug: 'cyber-security',
-            progress: 0
+interface ClientSertifikasiProps {
+    sertifikasiTerdaftar: SertifikasiTerdaftar[];
+}
+
+export default function ClientSertifikasi({ sertifikasiTerdaftar = [] }: ClientSertifikasiProps) {
+    const handleDetailClick = (sertifikasi: SertifikasiTerdaftar) => {
+        // Navigate to detail page for the selected certification with fallbacks
+        try {
+            router.visit(`/client/sertifikasi/${sertifikasi.id}`);
+        } catch (error) {
+            console.error('Router visit failed:', error);
+            // Fallback to window.location
+            window.location.href = `/client/sertifikasi/${sertifikasi.id}`;
         }
-    ];
+    };
 
     return (
         <ClientAuthenticatedLayout>
-            <Head title="Sertifikasi" />
+            <Head title="Kelas Sertifikasi Saya" />
             
-            <div className="container mx-auto px-4 py-10">
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Sertifikasi</h1>
-                            <p className="text-gray-600 mt-1">Kelola program sertifikasi Anda</p>
-                        </div>
-                        <a 
-                            href="/sertifikasi" 
-                            className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold"
-                        >
-                            Lihat Program Tersedia
-                        </a>
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Kelas Sertifikasi Saya</h1>
+                        <p className="text-gray-600 mt-1">Kelola program sertifikasi yang telah Anda daftarkan dan disetujui</p>
                     </div>
+                    <a 
+                        href="/sertifikasi" 
+                        className="px-8 py-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold text-lg"
+                    >
+                        Lihat Program Tersedia
+                    </a>
+                </div>
 
-                    {/* Sertifikasi Cards Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {sampleSertifikasi.map((sertifikasi) => (
-                            <SertifikasiCard
+                {/* Sertifikasi Cards Grid */}
+                {sertifikasiTerdaftar.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {sertifikasiTerdaftar.map((sertifikasi) => (
+                            <SertifikasiTerdaftarCard
                                 key={sertifikasi.id}
                                 sertifikasi={sertifikasi}
-                                onDetailClick={(sertifikasi) => {
-                                    window.location.href = `/client/sertifikasi/${sertifikasi.id}`;
-                                }}
+                                onDetailClick={handleDetailClick}
                             />
                         ))}
                     </div>
-                </div>
+                ) : (
+                    <div className="text-center py-12">
+                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada kelas sertifikasi yang disetujui</h3>
+                        <p className="text-gray-500 mb-4">Daftar ke program sertifikasi terlebih dahulu dan tunggu persetujuan admin</p>
+                        <a 
+                            href="/sertifikasi" 
+                            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                            Lihat Program Sertifikasi
+                        </a>
+                    </div>
+                )}
             </div>
         </ClientAuthenticatedLayout>
     );

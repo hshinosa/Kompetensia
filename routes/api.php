@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\SertifikasiController;
 use App\Http\Controllers\Admin\PKLController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\VideoController;
+use App\Http\Controllers\Api\PendaftaranSertifikasiController;
+use App\Http\Controllers\Api\PendaftaranPKLController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,4 +53,36 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('video')->group(function () {
         Route::get('/', [VideoController::class, 'apiIndex'])->name('api.video.index');
     });
+
+    // Pendaftaran Sertifikasi API routes
+    Route::prefix('pendaftaran-sertifikasi')->group(function () {
+        Route::get('/', [PendaftaranSertifikasiController::class, 'index'])->name('api.pendaftaran-sertifikasi.index');
+        Route::post('/', [PendaftaranSertifikasiController::class, 'store'])->name('api.pendaftaran-sertifikasi.store');
+        Route::get('/{id}', [PendaftaranSertifikasiController::class, 'show'])->name('api.pendaftaran-sertifikasi.show');
+        Route::put('/{id}', [PendaftaranSertifikasiController::class, 'update'])->name('api.pendaftaran-sertifikasi.update');
+        Route::delete('/{id}', [PendaftaranSertifikasiController::class, 'destroy'])->name('api.pendaftaran-sertifikasi.destroy');
+        Route::patch('/{id}/status', [PendaftaranSertifikasiController::class, 'updateStatus'])->name('api.pendaftaran-sertifikasi.update-status');
+        Route::get('/user/{userId}', [PendaftaranSertifikasiController::class, 'getByUser'])->name('api.pendaftaran-sertifikasi.by-user');
+        Route::get('/sertifikasi/{sertifikasiId}', [PendaftaranSertifikasiController::class, 'getBySertifikasi'])->name('api.pendaftaran-sertifikasi.by-sertifikasi');
+    });
+
+    // Pendaftaran PKL API routes
+    Route::prefix('pendaftaran-pkl')->group(function () {
+        Route::get('/', [PendaftaranPKLController::class, 'index'])->name('api.pendaftaran-pkl.index');
+        Route::post('/', [PendaftaranPKLController::class, 'store'])->name('api.pendaftaran-pkl.store');
+        Route::get('/statistics', [PendaftaranPKLController::class, 'getStatistics'])->name('api.pendaftaran-pkl.statistics');
+        Route::get('/{id}', [PendaftaranPKLController::class, 'show'])->name('api.pendaftaran-pkl.show');
+        Route::put('/{id}', [PendaftaranPKLController::class, 'update'])->name('api.pendaftaran-pkl.update');
+        Route::delete('/{id}', [PendaftaranPKLController::class, 'destroy'])->name('api.pendaftaran-pkl.destroy');
+        Route::patch('/{id}/status', [PendaftaranPKLController::class, 'updateStatus'])->name('api.pendaftaran-pkl.update-status');
+        Route::get('/user/{userId}', [PendaftaranPKLController::class, 'getByUser'])->name('api.pendaftaran-pkl.by-user');
+        Route::get('/posisi/{posisiId}', [PendaftaranPKLController::class, 'getByPosisi'])->name('api.pendaftaran-pkl.by-posisi');
+        Route::get('/{id}/download/{type}', [PendaftaranPKLController::class, 'downloadBerkas'])->name('api.pendaftaran-pkl.download-berkas');
+    });
+});
+
+// Document upload and download for PKL registration (client routes)  
+Route::middleware(['web'])->group(function () {
+    Route::post('/upload-document', [PendaftaranPKLController::class, 'uploadDocument'])->name('api.upload-document');
+    Route::get('/pendaftaran-pkl/{id}/download/{type}', [PendaftaranPKLController::class, 'downloadBerkas'])->name('api.pendaftaran-pkl.download-berkas-public');
 });

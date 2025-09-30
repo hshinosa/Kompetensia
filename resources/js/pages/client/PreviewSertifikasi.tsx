@@ -6,6 +6,23 @@ import LeftNavSertifikasi from '@/components/client/sertifikasi/LeftNavSertifika
 import DetailSertifikasi from '@/components/client/sertifikasi/DetailSertifikasi';
 import RekomendasiSertifikasi from '@/components/client/sertifikasi/RekomendasiSertifikasi';
 import PendaftaranModal from '@/components/client/sertifikasi/PendaftaranModal';
+import LoginModal from '@/components/client/auth/LoginModal';
+import { usePage } from '@inertiajs/react';
+
+interface User {
+  id: number;
+  nama: string;
+  nama_lengkap?: string;
+  email: string;
+  role: string;
+}
+
+interface PageProps extends Record<string, any> {
+  auth?: {
+    user?: User;
+    client?: User;
+  };
+}
 
 interface SertifikasiData {
   id: number;
@@ -61,7 +78,12 @@ interface PreviewSertifikasiProps {
 
 export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi }: PreviewSertifikasiProps) {
   const [open, setOpen] = useState(false);
-  const [selectedBatch, setSelectedBatch] = useState<{id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string} | null>(null);
+  const [selectedBatch, setSelectedBatch] = useState<{id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string; status: string} | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [pendingBatch, setPendingBatch] = useState<{id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string} | null>(null);
+  
+  const { auth } = usePage<PageProps>().props;
+  const isAuthenticated = auth?.client;
 
   // Function to scroll to batch section
   const scrollToBatchSection = () => {
@@ -76,14 +98,35 @@ export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi
 
   // Function to handle batch selection and open modal
   const handleBatchSelect = (batch: {id: number; nama_batch: string; tanggal_mulai: string; tanggal_selesai: string}) => {
-    setSelectedBatch(batch);
-    setOpen(true);
+    if (!isAuthenticated) {
+      // If not authenticated, store the batch and show login modal
+      setPendingBatch(batch);
+      setIsLoginModalOpen(true);
+    } else {
+      // If authenticated, proceed with registration modal
+      setSelectedBatch({ ...batch, status: 'aktif' });
+      setOpen(true);
+    }
   };
 
   // Function to close modal and reset selected batch
   const handleCloseModal = () => {
     setOpen(false);
     setSelectedBatch(null);
+  };
+
+  // Function to handle login success and close login modal
+  const handleLoginModalClose = () => {
+    setIsLoginModalOpen(false);
+    // After successful login (when modal closes due to success), proceed with the pending batch registration
+    if (pendingBatch && auth?.client) {
+      setSelectedBatch({ ...pendingBatch, status: 'aktif' });
+      setOpen(true);
+      setPendingBatch(null);
+    } else {
+      // If modal closed without successful login, just clear pending batch
+      setPendingBatch(null);
+    }
   };
 
   // Log data untuk debugging
@@ -119,7 +162,23 @@ export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi
 
       <Footer />
 
-      {open && <PendaftaranModal onClose={handleCloseModal} selectedBatch={selectedBatch} />}
+      {open && sertifikasi && (
+        <PendaftaranModal 
+          onClose={handleCloseModal} 
+          sertifikasi={{
+            ...sertifikasi,
+            batch: sertifikasi.batch ? [sertifikasi.batch] : []
+          }} 
+          selectedBatch={selectedBatch} 
+        />
+      )}
+
+      {isLoginModalOpen && (
+        <LoginModal 
+          isOpen={isLoginModalOpen}
+          onClose={handleLoginModalClose} 
+        />
+      )}
     </div>
   );
 }

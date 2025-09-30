@@ -24,6 +24,7 @@ class BlogRepository implements BlogRepositoryInterface
         if (!empty($filters['jenis_konten'])) { $query->where('jenis_konten', $filters['jenis_konten']); }
         if (!empty($filters['status'])) { $query->where('status', $filters['status']); }
         if (isset($filters['featured'])) { $query->where('featured', (bool)$filters['featured']); }
+        if (!empty($filters['exclude_id'])) { $query->where('id', '!=', $filters['exclude_id']); }
         $sortBy = $filters['sort_by'] ?? 'created_at';
         $sortDirection = $filters['sort_direction'] ?? 'desc';
         $query->orderBy($sortBy, $sortDirection);
@@ -33,6 +34,11 @@ class BlogRepository implements BlogRepositoryInterface
     public function find(int $id): Blog
     {
         return Blog::findOrFail($id);
+    }
+
+    public function findBySlug(string $slug): ?Blog
+    {
+        return Blog::where('slug', $slug)->first();
     }
 
     public function create(array $data): Blog

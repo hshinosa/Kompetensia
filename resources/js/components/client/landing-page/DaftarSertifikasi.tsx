@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import SertifikasiCard from './SertifikasiCard';
+import PendaftaranModal from '../sertifikasi/PendaftaranModal';
 
 interface SertifikasiItem {
   readonly id: number;
@@ -12,6 +13,23 @@ interface SertifikasiItem {
   readonly img?: string;
   readonly mentor: string;
   readonly slug?: string;
+  readonly type?: string;
+  readonly sertifikasi_data?: {
+    readonly id: number;
+    readonly nama_sertifikasi: string;
+    readonly jenis_sertifikasi: string;
+    readonly deskripsi?: string;
+    readonly status: string;
+    readonly batch?: Array<{
+      readonly id: number;
+      readonly nama_batch: string;
+      readonly tanggal_mulai: string;
+      readonly tanggal_selesai: string;
+      readonly status: string;
+      readonly kapasitas_peserta?: number;
+      readonly peserta_terdaftar?: number;
+    }>;
+  };
 }
 
 interface Props {
@@ -35,11 +53,13 @@ export default function DaftarSertifikasi({ sertifikasiList = [] }: Props) {
   const [page, setPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Unggulan');
+  const [isPendaftaranModalOpen, setIsPendaftaranModalOpen] = useState(false);
+  const [selectedSertifikasiForModal, setSelectedSertifikasiForModal] = useState<any>(null);
   
   const pageSize = 8;
 
-  // Gunakan data dari props atau fallback ke default
-  const items = sertifikasiList.length > 0 ? sertifikasiList : defaultItems;
+  // Gunakan data dari props, tidak ada fallback ke default dummy data
+  const items = sertifikasiList;
 
   // Filter items berdasarkan search dan category
   const filteredItems = useMemo(() => {
@@ -56,8 +76,10 @@ export default function DaftarSertifikasi({ sertifikasiList = [] }: Props) {
     
     // Filter berdasarkan category (jika bukan "Unggulan")
     if (selectedCategory !== 'Unggulan') {
-      // Implementasi filter berdasarkan kategori bisa disesuaikan
-      // Untuk sekarang, "BNSP" dan "Industri" menampilkan semua
+      filtered = filtered.filter(item => {
+        const itemType = item.type || item.kategori;
+        return itemType?.toLowerCase() === selectedCategory.toLowerCase();
+      });
     }
     
     return filtered;
@@ -90,6 +112,30 @@ export default function DaftarSertifikasi({ sertifikasiList = [] }: Props) {
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
     setPage(1); // Reset ke halaman pertama
+  };
+  
+  const handleRegisterClick = (sertifikasiCard: SertifikasiItem) => {
+    // Use complete sertifikasi data from backend if available
+    if (sertifikasiCard.sertifikasi_data) {
+      setSelectedSertifikasiForModal(sertifikasiCard.sertifikasi_data);
+    } else {
+      // Fallback to converted format for backwards compatibility
+      const sertifikasiForModal = {
+        id: sertifikasiCard.id,
+        nama_sertifikasi: sertifikasiCard.title,
+        jenis_sertifikasi: sertifikasiCard.kategori,
+        deskripsi: `Program sertifikasi ${sertifikasiCard.title}`,
+        status: 'Aktif',
+        batch: []
+      };
+      setSelectedSertifikasiForModal(sertifikasiForModal);
+    }
+    setIsPendaftaranModalOpen(true);
+  };
+  
+  const handleClosePendaftaran = () => {
+    setIsPendaftaranModalOpen(false);
+    setSelectedSertifikasiForModal(null);
   };
 
   return (
@@ -135,6 +181,7 @@ export default function DaftarSertifikasi({ sertifikasiList = [] }: Props) {
           <SertifikasiCard 
             key={item.id} 
             sertifikasi={item}
+            onRegisterClick={handleRegisterClick}
           />
         ))}
       </div>
@@ -188,6 +235,14 @@ export default function DaftarSertifikasi({ sertifikasiList = [] }: Props) {
             </svg>
           </button>
         </div>
+      )}
+      
+      {/* Registration Modal */}
+      {isPendaftaranModalOpen && selectedSertifikasiForModal && (
+        <PendaftaranModal
+          onClose={handleClosePendaftaran}
+          sertifikasi={selectedSertifikasiForModal}
+        />
       )}
     </section>
   );

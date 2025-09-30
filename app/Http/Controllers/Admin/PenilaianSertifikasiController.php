@@ -85,7 +85,16 @@ class PenilaianSertifikasiController extends Controller
 
     public function show($id)
     {
-        $pendaftaran = PendaftaranSertifikasi::with(['user', 'sertifikasi', 'batch', 'penilaian'])->findOrFail($id);
+        $pendaftaran = PendaftaranSertifikasi::with([
+            'user', 
+            'sertifikasi', 
+            'batch', 
+            'penilaian',
+            'uploadTugas' => function($query) {
+                $query->orderBy('tanggal_upload', 'desc');
+            }
+        ])->findOrFail($id);
+        
         return Inertia::render('admin/detail-penilaian-sertifikasi', ['pendaftaran' => $pendaftaran]);
     }
 
@@ -97,7 +106,10 @@ class PenilaianSertifikasiController extends Controller
                 $query->where('status', 'Disetujui'); // Only approved registrations
             },
             'pendaftaran.user',
-            'pendaftaran.penilaian'
+            'pendaftaran.penilaian',
+            'pendaftaran.uploadTugas' => function($query) {
+                $query->orderBy('tanggal_upload', 'desc');
+            }
         ])
             ->where('sertifikasi_id', $sertifikasiId)
             ->findOrFail($batchId);
@@ -123,6 +135,18 @@ class PenilaianSertifikasiController extends Controller
                             'email' => $pendaftaran->user->email,
                         ],
                         'berkas_persyaratan' => $pendaftaran->berkas_persyaratan, // Add berkas field
+                        'upload_tugas' => $pendaftaran->uploadTugas->map(function ($upload) {
+                            return [
+                                'id' => $upload->id,
+                                'judul_tugas' => $upload->judul_tugas,
+                                'link_url' => $upload->link_url,
+                                'nama_file' => $upload->nama_file,
+                                'path_file' => $upload->path_file,
+                                'status' => $upload->status,
+                                'tanggal_upload' => $upload->tanggal_upload->format('Y-m-d H:i:s'),
+                                'feedback' => $upload->feedback,
+                            ];
+                        }),
                         'tanggal_pendaftaran' => $pendaftaran->tanggal_pendaftaran?->format('Y-m-d'),
                         'status' => $pendaftaran->status,
                         'penilaian' => $pendaftaran->penilaian ? [
@@ -140,6 +164,27 @@ class PenilaianSertifikasiController extends Controller
             'sertifikasi_id' => $sertifikasiId,
             'batch_id' => $batchId
         ]);
+    }
+
+    public function updateTugasStatus(Request $request, $tugasId)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'feedback' => 'nullable|string|max:1000'
+        ]);
+        
+        $asesorId = auth()->id();
+        if (!$asesorId) {
+            return redirect()->back()->withErrors(['error' => 'User tidak terautentikasi']);
+        }
+        
+        $upload = \App\Models\UploadTugasSertifikasi::findOrFail($tugasId);
+        $upload->update([
+            'status' => $request->status,
+            'feedback' => $request->feedback
+        ]);
+        
+        return redirect()->back()->with('success', 'Penilaian tugas berhasil disimpan');
     }
 
     public function store(StorePenilaianSertifikasiRequest $request, $pendaftaranId)

@@ -23,88 +23,48 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        $firstName = fake('id_ID')->firstName();
+        $gender = fake()->randomElement(['Laki-laki', 'Perempuan']);
+        $firstName = fake('id_ID')->firstName($gender === 'Laki-laki' ? 'male' : 'female');
         $lastName = fake('id_ID')->lastName();
         $fullName = $firstName . ' ' . $lastName;
+        
+        // Generate realistic student email
+        $emailPrefix = strtolower(str_replace(' ', '.', $firstName . '.' . $lastName));
+        $emailPrefix = preg_replace('/[^a-z.]/', '', $emailPrefix);
+        $domains = ['student.ac.id', 'mahasiswa.univ.ac.id', 'student.edu', 'gmail.com'];
+        $email = $emailPrefix . '@' . fake()->randomElement($domains);
+        
+        // Generate realistic phone number (Indonesian format)
+        $phoneProviders = ['0812', '0813', '0821', '0822', '0851', '0852', '0853'];
+        $phone = fake()->randomElement($phoneProviders) . fake()->numerify('########');
+        
+        // Realistic birth year for students (18-22 years old)
+        $birthYear = fake()->numberBetween(2002, 2006);
+        $birthDate = fake()->dateTimeBetween($birthYear.'-01-01', $birthYear.'-12-31')->format('Y-m-d');
+        
+        // Indonesian cities for birth place
+        $cities = [
+            'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Bekasi', 'Tangerang', 
+            'Depok', 'Semarang', 'Palembang', 'Makassar', 'Batam', 'Bogor',
+            'Pekanbaru', 'Bandar Lampung', 'Yogyakarta', 'Solo', 'Malang',
+            'Denpasar', 'Balikpapan', 'Samarinda', 'Pontianak', 'Jambi'
+        ];
         
         return [
             'nama' => $fullName,
             'nama_lengkap' => $fullName,
-            'email' => fake()->unique()->safeEmail(),
-            'telepon' => '08' . fake()->randomNumber(9, true),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'alamat' => fake('id_ID')->address(),
-            'tanggal_lahir' => fake()->dateTimeBetween('1999-01-01', '2003-12-31')->format('Y-m-d'),
-            'tempat_lahir' => fake('id_ID')->city(),
-            'institusi' => fake()->randomElement([
-                'Universitas Indonesia',
-                'Institut Teknologi Bandung',
-                'Universitas Gadjah Mada',
-                'Universitas Airlangga',
-                'Universitas Padjadjaran',
-                'Institut Pertanian Bogor',
-                'SMKN 1 Majalaya',
-                'SMK Negeri 2 Depok',
-                'SMK Negeri 1 Jakarta',
-                'SMK Negeri 1 Bandung',
-                'SMK Negeri 1 Cibinong'
-            ]),
-            'jurusan' => function (array $attributes) {
-                // Check if institution is SMK
-                if (str_contains($attributes['institusi'], 'SMK')) {
-                    return fake()->randomElement([
-                        'Teknik Komputer dan Jaringan',
-                        'Rekayasa Perangkat Lunak',
-                        'Multimedia',
-                        'Sistem Informasi Jaringan dan Aplikasi',
-                        'Teknik Elektronika Industri',
-                        'Desain Komunikasi Visual',
-                        'Broadcasting dan Perfilman',
-                        'Animasi',
-                        'Teknik Audio Video',
-                        'Otomatisasi dan Tata Kelola Perkantoran'
-                    ]);
-                }
-                // For universities, use university majors
-                return fake()->randomElement([
-                    'Teknik Informatika',
-                    'Sistem Informasi',
-                    'Teknik Komputer',
-                    'Ilmu Komputer',
-                    'Teknologi Informasi',
-                    'Rekayasa Perangkat Lunak',
-                    'Teknik Elektro',
-                    'Manajemen Informatika',
-                    'Desain Komunikasi Visual',
-                    'Teknik Industri'
-                ]);
-            },
-            'semester' => function (array $attributes) {
-                // Check if institution is SMK - untuk SMK, semester dibiarkan null
-                if (str_contains($attributes['institusi'], 'SMK')) {
-                    return null;
-                }
-                // For universities, use semester numbers
-                return fake()->numberBetween(4, 8);
-            },
-            'class_semester' => function (array $attributes) {
-                // Check if institution is SMK - untuk SMK, assign class level (X, XI, XII)
-                if (str_contains($attributes['institusi'], 'SMK')) {
-                    return fake()->randomElement(['X', 'XI', 'XII']);
-                }
-                // For universities, this field is not used
-                return null;
-            },
+            'email' => $email,
+            'telepon' => $phone,
+            'email_verified_at' => fake()->randomElement([now(), now()->subDays(rand(1, 30)), null]),
+            'password' => static::$password ??= Hash::make('student123'),
+            'alamat' => 'Jl. ' . fake('id_ID')->streetName() . ' No. ' . fake()->numberBetween(1, 999) . ', ' . fake('id_ID')->city(),
+            'tanggal_lahir' => $birthDate,
+            'tempat_lahir' => fake()->randomElement($cities),
             'role' => 'mahasiswa',
-            'aktif' => true,
-            'status_akun' => 'aktif',
-            'tipe_pengguna' => 'mahasiswa',
+            'status_akun' => fake()->randomElement(['aktif', 'aktif', 'aktif', 'pending']), // Most are active
+            'aktif' => fake()->randomElement([true, true, true, false]), // Most are active
             'foto_profil' => null,
-            // Gender dan Social Media
-            'gender' => fake()->randomElement(['Laki-laki', 'Perempuan']),
-            'instagram_handle' => fake()->optional(0.7)->userName(),
-            'tiktok_handle' => fake()->optional(0.5)->userName(),
+            'gender' => $gender,
             'remember_token' => Str::random(10),
         ];
     }
@@ -116,7 +76,6 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'mahasiswa',
-            'tipe_pengguna' => 'mahasiswa',
         ]);
     }
 
@@ -127,29 +86,6 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'admin',
-            'tipe_pengguna' => 'admin',
-        ]);
-    }
-
-    /**
-     * Create an asesor user
-     */
-    public function asesor(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'mahasiswa',
-            'tipe_pengguna' => 'asesor',
-        ]);
-    }
-
-    /**
-     * Create an instruktur user
-     */
-    public function instruktur(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'mahasiswa',
-            'tipe_pengguna' => 'instruktur',
         ]);
     }
 

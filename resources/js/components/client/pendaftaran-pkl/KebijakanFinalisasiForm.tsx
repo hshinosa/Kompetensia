@@ -1,28 +1,51 @@
 import React from 'react';
 
+interface PosisiPKL {
+  id: number;
+  nama_posisi: string;
+  kategori: string;
+  deskripsi: string;
+  persyaratan: string[] | string;
+  benefits: string[] | string;
+  tipe: string;
+  durasi_bulan: number;
+  jumlah_pendaftar: number;
+  status: string;
+  created_by?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 interface Props {
   readonly formData: any;
   readonly onFormDataChange: (field: string, value: any) => void;
   readonly onBack: () => void;
-  readonly programId?: number;
+  readonly posisiPKL?: PosisiPKL;
+  readonly onSubmit?: () => void;
+  readonly isLoading?: boolean;
+  readonly errors?: { [key: string]: string };
 }
 
-export default function KebijakanFinalisasiForm({ formData, onFormDataChange, onBack, programId }: Props) {
+export default function KebijakanFinalisasiForm({ formData, onFormDataChange, onBack, posisiPKL, onSubmit, isLoading = false, errors = {} }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle final submission with programId
-    console.log('Form submitted:', { ...formData, programId });
+    if (onSubmit) {
+      onSubmit();
+    } else {
+      // Handle final submission with posisiPKL ID
+      console.log('Form submitted:', { ...formData, program_id: posisiPKL?.id });
+    }
   };
 
   return (
     <div className="bg-white rounded-2xl p-8 border-2 border-purple-200 max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Hidden field for program ID */}
-        {programId && (
+        {posisiPKL && (
           <input
             type="hidden"
             name="program_id"
-            value={programId}
+            value={posisiPKL.id}
           />
         )}
         
@@ -36,8 +59,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
               <input
                 type="radio"
                 name="sudahMelihatProfil"
-                value="sudah"
-                checked={formData.sudahMelihatProfil === 'sudah'}
+                value="ya"
+                checked={formData.sudahMelihatProfil === 'ya'}
                 onChange={(e) => onFormDataChange('sudahMelihatProfil', e.target.value)}
                 className="mr-3 text-purple-600"
                 required
@@ -48,8 +71,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
               <input
                 type="radio"
                 name="sudahMelihatProfil"
-                value="belum"
-                checked={formData.sudahMelihatProfil === 'belum'}
+                value="tidak"
+                checked={formData.sudahMelihatProfil === 'tidak'}
                 onChange={(e) => onFormDataChange('sudahMelihatProfil', e.target.value)}
                 className="mr-3 text-purple-600"
               />
@@ -83,6 +106,22 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
             </div>
             <span className="text-sm text-gray-600">10</span>
           </div>
+        </div>
+
+        {/* Motivasi mengikuti PKL */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Ceritakan motivasi Anda mengikuti kegiatan PKL di PT Chlorine Digital Media
+          </label>
+          <textarea
+            value={formData.motivasi || ''}
+            onChange={(e) => onFormDataChange('motivasi', e.target.value)}
+            placeholder="Tuliskan motivasi Anda mengikuti PKL..."
+            rows={4}
+            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${errors.motivasi ? 'border-red-500' : 'border-gray-200'}`}
+            required
+          />
+          {errors.motivasi && <p className="text-red-500 text-sm mt-1">{errors.motivasi}</p>}
         </div>
 
         {/* Nilai diri berdasarkan penilaian berikut */}
@@ -180,8 +219,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="apakahMerokok"
                 value="ya"
-                checked={formData.apakahMerokok === 'ya'}
-                onChange={(e) => onFormDataChange('apakahMerokok', e.target.value)}
+                checked={formData.apakah_merokok === 'ya'}
+                onChange={(e) => onFormDataChange('apakah_merokok', e.target.value)}
                 className="mr-3 text-purple-600"
                 required
               />
@@ -192,8 +231,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="apakahMerokok"
                 value="tidak"
-                checked={formData.apakahMerokok === 'tidak'}
-                onChange={(e) => onFormDataChange('apakahMerokok', e.target.value)}
+                checked={formData.apakah_merokok === 'tidak'}
+                onChange={(e) => onFormDataChange('apakah_merokok', e.target.value)}
                 className="mr-3 text-purple-600"
               />
               <span className="text-gray-700">Tidak</span>
@@ -212,8 +251,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="bersediaDitempatkan"
                 value="ya"
-                checked={formData.bersediaDitempatkan === 'ya'}
-                onChange={(e) => onFormDataChange('bersediaDitempatkan', e.target.value)}
+                checked={formData.bersedia_ditempatkan === 'ya'}
+                onChange={(e) => onFormDataChange('bersedia_ditempatkan', e.target.value)}
                 className="mr-3 text-purple-600"
                 required
               />
@@ -224,8 +263,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="bersediaDitempatkan"
                 value="tidak"
-                checked={formData.bersediaDitempatkan === 'tidak'}
-                onChange={(e) => onFormDataChange('bersediaDitempatkan', e.target.value)}
+                checked={formData.bersedia_ditempatkan === 'tidak'}
+                onChange={(e) => onFormDataChange('bersedia_ditempatkan', e.target.value)}
                 className="mr-3 text-purple-600"
               />
               <span className="text-gray-700">Tidak</span>
@@ -244,8 +283,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="bersediaMasuk2Kali"
                 value="ya"
-                checked={formData.bersediaMasuk2Kali === 'ya'}
-                onChange={(e) => onFormDataChange('bersediaMasuk2Kali', e.target.value)}
+                checked={formData.bersedia_masuk_2_kali === 'ya'}
+                onChange={(e) => onFormDataChange('bersedia_masuk_2_kali', e.target.value)}
                 className="mr-3 text-purple-600"
                 required
               />
@@ -256,8 +295,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="bersediaMasuk2Kali"
                 value="tidak"
-                checked={formData.bersediaMasuk2Kali === 'tidak'}
-                onChange={(e) => onFormDataChange('bersediaMasuk2Kali', e.target.value)}
+                checked={formData.bersedia_masuk_2_kali === 'tidak'}
+                onChange={(e) => onFormDataChange('bersedia_masuk_2_kali', e.target.value)}
                 className="mr-3 text-purple-600"
               />
               <span className="text-gray-700">Tidak</span>
@@ -265,20 +304,35 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
           </div>
         </div>
 
+        {/* Error Display */}
+        {errors?.general && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {errors.general}
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="flex justify-between pt-6">
           <button
             type="button"
             onClick={onBack}
-            className="px-8 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+            disabled={isLoading}
+            className="px-8 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Kembali
           </button>
           <button
             type="submit"
-            className="px-8 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors"
+            disabled={isLoading}
+            className="px-8 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Daftar
+            {isLoading && (
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
+            {isLoading ? 'Memproses...' : 'Daftar'}
           </button>
         </div>
       </form>

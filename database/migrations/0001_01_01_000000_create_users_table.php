@@ -24,65 +24,10 @@ return new class extends Migration
             $table->text('alamat')->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->string('tempat_lahir')->nullable();
-            $table->string('institusi')->nullable();
-            $table->string('jurusan')->nullable();
-            $table->unsignedInteger('semester')->nullable();
             $table->enum('role', ['mahasiswa', 'admin'])->default('mahasiswa');
             $table->boolean('aktif')->default(true);
-            $table->enum('status_akun', ['aktif', 'ditangguhkan', 'pending', 'diblokir'])->default('aktif');
-            $table->enum('tipe_pengguna', ['mahasiswa', 'instruktur', 'asesor', 'admin'])->default('mahasiswa');
             $table->string('foto_profil')->nullable();
-            
-            // Contact & personal info
             $table->enum('gender', ['Laki-laki', 'Perempuan'])->nullable();
-            $table->string('place_of_birth')->nullable();
-            $table->date('date_of_birth')->nullable();
-            
-            // Education (from PKL migration fields)
-            $table->string('school_university')->nullable();
-            $table->string('major_concentration')->nullable();
-            $table->string('class_semester')->nullable();
-            $table->decimal('gpa', 3, 2)->nullable();
-            
-            // Social Media
-            $table->string('instagram_handle')->nullable();
-            $table->string('tiktok_handle')->nullable();
-            
-            // Equipment & Skills
-            $table->boolean('has_laptop')->default(false);
-            $table->boolean('has_dslr')->default(false);
-            $table->boolean('has_video_review_experience')->default(false);
-            $table->boolean('interested_in_content_creation')->default(false);
-            $table->string('transportation')->nullable();
-            
-            // Skills & Experience
-            $table->text('skills_to_improve')->nullable();
-            $table->text('skills_to_contribute')->nullable();
-            
-            // Preferences & Goals
-            $table->string('preferred_field')->nullable();
-            $table->string('preferred_field_type')->nullable();
-            $table->unsignedTinyInteger('motivation_level')->nullable();
-            $table->unsignedTinyInteger('self_rating')->nullable();
-            
-            // Compliance & Agreement
-            $table->boolean('is_smoker')->default(false);
-            $table->boolean('agrees_to_school_return_if_violation')->default(false);
-            $table->boolean('agrees_to_return_if_absent_twice')->default(false);
-            
-            // Internship Period
-            $table->date('internship_start_period')->nullable();
-            $table->date('internship_end_period')->nullable();
-            
-            // Documents
-            $table->string('cv_path')->nullable();
-            $table->string('portfolio_path')->nullable();
-            
-            // System fields
-            $table->timestamp('last_login_at')->nullable();
-            $table->string('last_login_ip')->nullable();
-            $table->unsignedTinyInteger('profile_completion_percentage')->nullable();
-            $table->boolean('has_viewed_company_profile')->default(false);
             
             $table->rememberToken();
             $table->timestamps();

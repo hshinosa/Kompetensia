@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import SertifikasiCard from './SertifikasiCard';
+import PendaftaranModal from './PendaftaranModal';
 
 interface SertifikasiItem {
   readonly id: number;
@@ -39,6 +40,8 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
   const [page, setPage] = useState<number>(searchParams.page || 1);
   const [searchTerm, setSearchTerm] = useState<string>(searchParams.search || '');
   const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.jenis || 'Unggulan');
+  const [isPendaftaranModalOpen, setIsPendaftaranModalOpen] = useState(false);
+  const [selectedSertifikasiForModal, setSelectedSertifikasiForModal] = useState<SertifikasiItem | null>(null);
   
   const pageSize = 8;
 
@@ -148,6 +151,20 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
     
     return () => clearTimeout(timeoutId);
   };
+  
+  const handleRegisterClick = (sertifikasiCard: any) => {
+    // Find the original sertifikasi data based on the card id
+    const originalSertifikasi = sertifikasiList.find(item => item.id === sertifikasiCard.id);
+    if (originalSertifikasi) {
+      setSelectedSertifikasiForModal(originalSertifikasi);
+      setIsPendaftaranModalOpen(true);
+    }
+  };
+  
+  const handleClosePendaftaran = () => {
+    setIsPendaftaranModalOpen(false);
+    setSelectedSertifikasiForModal(null);
+  };
 
   return (
     <article>
@@ -196,6 +213,7 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
           <SertifikasiCard 
             key={item.id} 
             sertifikasi={item}
+            onRegisterClick={handleRegisterClick}
           />
         ))}
       </div>
@@ -258,6 +276,14 @@ export default function DaftarSertifikasi({ sertifikasiList = [], searchParams =
             </svg>
           </button>
         </div>
+      )}
+      
+      {/* Registration Modal */}
+      {isPendaftaranModalOpen && selectedSertifikasiForModal && (
+        <PendaftaranModal
+          onClose={handleClosePendaftaran}
+          sertifikasi={selectedSertifikasiForModal}
+        />
       )}
     </article>
   );

@@ -12,7 +12,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ArrowLeft, Link as LinkIcon, Globe, File as FileIcon, FileText, FileArchive, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, Download } from 'lucide-react';
 
 interface PenilaianEntry { id:number; status_kelulusan?:string | null; catatan_asesor?:string | null }
-interface PendaftaranEntry { id:number; user?:{ name?:string; email?:string }; berkas_persyaratan?: Record<string,string> | string[] | null; penilaian?: PenilaianEntry | null }
+interface PendaftaranEntry { 
+  id:number; 
+  user?:{ name?:string; email?:string }; 
+  berkas_persyaratan?: Record<string,string> | string[] | null; 
+  penilaian?: PenilaianEntry | null;
+  upload_tugas?: Array<{
+    id: number;
+    judul_tugas: string;
+    link_url?: string;
+    nama_file?: string;
+    path_file?: string;
+    status: string;
+    tanggal_upload: string;
+    feedback?: string;
+    dinilai_oleh?: string;
+  }>;
+}
 interface BatchPageProps {
   batch: {
     id:number;
@@ -34,41 +50,198 @@ const StatusBadge: React.FC<{ status?: string | null }> = ({ status }) => {
   return <Badge variant={variant}>{status || 'Belum Dinilai'}</Badge>;
 };
 
+interface TugasAssessmentCardProps {
+  upload: {
+    id: number;
+    judul_tugas: string;
+    link_url?: string;
+    nama_file?: string;
+    path_file?: string;
+    status: string;
+    tanggal_upload: string;
+    feedback?: string;
+    dinilai_oleh?: string;
+  };
+}
+
+const TugasAssessmentCard: React.FC<TugasAssessmentCardProps> = ({ upload }) => {
+  const [status, setStatus] = React.useState(upload.status);
+  const [feedback, setFeedback] = React.useState(upload.feedback || '');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleSaveAssessment = () => {
+    setIsSubmitting(true);
+    router.post(route('admin.update-tugas-status', upload.id), {
+      status,
+      feedback
+    }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setIsSubmitting(false);
+        // Optionally show success message
+      },
+      onError: (errors) => {
+        setIsSubmitting(false);
+        console.error('Error saving assessment:', errors);
+      }
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 border-green-200 text-green-800';
+      case 'rejected': return 'bg-red-100 border-red-200 text-red-800';
+      default: return 'bg-gray-100 border-gray-200 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'approved': return '✓ Disetujui';
+      case 'rejected': return '✗ Ditolak';
+      default: return 'Belum Dinilai';
+    }
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+      {/* Judul Tugas */}
+      <div>
+        <span className="block text-sm font-medium text-gray-700 mb-2">Judul Tugas</span>
+        <div className="bg-gray-50 p-3 rounded-lg">
+          <p className="text-gray-900 font-medium">{upload.judul_tugas}</p>
+        </div>
+      </div>
+      
+      {/* Upload Date and Current Status */}
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-600">
+          Tanggal Upload: {new Date(upload.tanggal_upload).toLocaleDateString('id-ID')}
+        </span>
+        <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(upload.status)}`}>
+          {getStatusText(upload.status)}
+        </div>
+      </div>
+
+      {/* Link URL */}
+      {upload.link_url && (
+        <div>
+          <span className="block text-sm font-medium text-gray-700 mb-2">Link URL</span>
+          <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
+            <LinkIcon className="h-4 w-4 text-blue-600" />
+            <a 
+              href={upload.link_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline break-all flex-1"
+            >
+              {upload.link_url}
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* File Tugas */}
+      {upload.nama_file && (
+        <div>
+          <span className="block text-sm font-medium text-gray-700 mb-2">File Tugas</span>
+          <div className="p-3 bg-gray-50 border rounded">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-8 w-8 text-gray-500" />
+                <div>
+                  <p className="font-medium">{upload.nama_file}</p>
+                  <p className="text-sm text-gray-500">Tugas Sertifikasi</p>
+                </div>
+              </div>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.open(`/storage/${upload.path_file}`, '_blank')}
+              >
+                <Download className="h-4 w-4 mr-1" />
+                Download
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assessment Form */}
+      <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
+        <h4 className="font-medium text-gray-900">Penilaian Tugas</h4>
+        
+        {/* Status Selection */}
+        <div className="space-y-2">
+          <Label>Status Penilaian</Label>
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              size="sm" 
+              variant={status === 'approved' ? 'default' : 'outline'} 
+              onClick={() => setStatus('approved')}
+            >
+              Setujui
+            </Button>
+            <Button 
+              size="sm" 
+              variant={status === 'rejected' ? 'destructive' : 'outline'} 
+              onClick={() => setStatus('rejected')}
+            >
+              Tolak
+            </Button>
+          </div>
+        </div>
+
+        {/* Feedback */}
+        <div className="space-y-1">
+          <Label>Feedback untuk Klien</Label>
+          <Textarea 
+            rows={3} 
+            value={feedback} 
+            onChange={e => setFeedback(e.target.value)} 
+            placeholder="Berikan feedback yang akan dilihat klien..."
+          />
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <Button 
+            size="sm" 
+            onClick={handleSaveAssessment}
+            disabled={isSubmitting || status === upload.status && feedback === (upload.feedback || '')}
+          >
+            {isSubmitting ? 'Menyimpan...' : 'Simpan Penilaian'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Admin Feedback (if exists) */}
+      {upload.feedback && (
+        <div>
+          <span className="block text-sm font-medium text-gray-700 mb-2">Feedback Admin Sebelumnya</span>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{upload.feedback}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const BatchPenilaianSertifikasiPage: React.FC = () => {
   const { props } = usePage<BatchPageProps>();
   const { batch } = props;
   const [openModal, setOpenModal] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
-  const [statusKelulusan, setStatusKelulusan] = React.useState<string>('Belum Dinilai');
-  const [catatan, setCatatan] = React.useState<string>('');
   const selected = React.useMemo(()=> batch.pendaftaran.find(p=>p.id===selectedId), [selectedId, batch.pendaftaran]);
 
   const openPenilaian = (id:number) => {
     const row = batch.pendaftaran.find(p=>p.id===id);
+    console.log('Selected pendaftaran data:', row); // Debug log
+    console.log('Upload tugas data:', row?.upload_tugas); // Debug log
     setSelectedId(id);
-    setStatusKelulusan(row?.penilaian?.status_kelulusan || 'Belum Dinilai');
-    setCatatan(row?.penilaian?.catatan_asesor || '');
     setOpenModal(true);
-  };
-
-  const savePenilaian = () => {
-    if(!selected) return;
-    
-    router.post(route('admin.penilaian-sertifikasi.store', selected.id), {
-      pendaftaran_id: selected.id,
-      status_kelulusan: statusKelulusan,
-      catatan_asesor: catatan
-    }, {
-      preserveScroll: true,
-      onSuccess: () => {
-        setOpenModal(false);
-        // Refresh current batch page to reflect updated status
-        router.get(route('admin.batch-penilaian-sertifikasi', { sertifikasiId: props.sertifikasi_id, batchId: props.batch_id }), { preserveScroll: true, replace: true });
-      },
-      onError: (errors) => {
-        console.error('Error saving penilaian:', errors);
-      }
-    });
   };
   const breadcrumbs: BreadcrumbItem[] = [
     { title:'Dashboard', href:'/admin/dashboard' },
@@ -164,157 +337,45 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
               {/* Berkas Persyaratan - Format sesuai dengan PKL Modal */}
               <div className="space-y-4">
                 <Label>Berkas / Link Peserta</Label>
+                
                 {(() => {
-                  const files = selected?.berkas_persyaratan;
-                  if(!files || (Array.isArray(files) && files.length===0)) {
+                  const uploads = selected?.upload_tugas;
+                  if(!uploads || uploads.length === 0) {
                     return <p className="text-xs text-muted-foreground">Tidak ada berkas</p>;
                   }
 
-                  // Pastikan files adalah object
-                  const berkas = Array.isArray(files) ? {} : files;
-                  
                   return (
                     <div className="space-y-4">
-                      {/* Judul Tugas - Wajib ditampilkan */}
-                      {berkas.judul_tugas && (
-                        <div>
-                          <span className="block text-sm font-medium text-gray-700 mb-2">Judul Tugas</span>
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <p className="text-gray-900 font-medium">{berkas.judul_tugas}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Link URL */}
-                      {berkas.link_url && (
-                        <div>
-                          <span className="block text-sm font-medium text-gray-700 mb-2">Link URL</span>
-                          <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
-                            <LinkIcon className="h-4 w-4 text-blue-600" />
-                            <a 
-                              href={berkas.link_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 underline break-all flex-1"
-                            >
-                              {berkas.link_url}
-                            </a>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* File Tugas */}
-                      {berkas.file && (
-                        <div>
-                          <span className="block text-sm font-medium text-gray-700 mb-2">File Tugas</span>
-                          <div className="p-3 bg-gray-50 border rounded">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <FileText className="h-8 w-8 text-gray-500" />
-                                <div>
-                                  <p className="font-medium">File Tugas</p>
-                                  <p className="text-sm text-gray-500">{berkas.file.split('/').pop()}</p>
-                                </div>
-                              </div>
-                              <Button 
-                                type="button" 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => window.open(`/storage/${berkas.file}`, '_blank')}
-                              >
-                                <Download className="h-4 w-4 mr-1" />
-                                Lihat
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      {uploads.map((upload, index) => (
+                        <TugasAssessmentCard key={upload.id} upload={upload} />
+                      ))}
                     </div>
                   );
                 })()}
               </div>
 
-              {/* Kondisi 1: Belum Dinilai - Tampilkan form penilaian */}
-              {(!selected.penilaian || !selected.penilaian.status_kelulusan) && (
-                <>
-                  <div className="space-y-2">
-                    <Label>Penentuan Kelulusan</Label>
-                    <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant={statusKelulusan==='Diterima' ? 'default':'outline'} onClick={()=>setStatusKelulusan('Diterima')}>Terima</Button>
-                      <Button size="sm" variant={statusKelulusan==='Ditolak' ? 'destructive':'outline'} onClick={()=>setStatusKelulusan('Ditolak')}>Tolak</Button>
-                    </div>
+              {/* Informational note */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
                   </div>
-                  <div className="space-y-1">
-                    <Label>Catatan Asesor</Label>
-                    <Textarea rows={4} value={catatan} onChange={e=>setCatatan(e.target.value)} placeholder="Tambahkan catatan untuk peserta" />
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-800">Penilaian Per Tugas</h3>
+                    <p className="mt-1 text-sm text-blue-700">
+                      Berikan penilaian untuk setiap tugas yang diupload peserta. Status akan otomatis terupdate di halaman peserta.
+                    </p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground">Status saat ini: <span className="font-medium text-orange-600">Belum Dinilai</span></div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={()=>setOpenModal(false)}>Batal</Button>
-                      <Button size="sm" disabled={!['Diterima','Ditolak'].includes(statusKelulusan)} onClick={savePenilaian}>Simpan Penilaian</Button>
-                    </div>
-                  </div>
-                </>
-              )}
+                </div>
+              </div>
 
-              {/* Kondisi 2: Diterima - Tampilkan hasil penilaian dengan badge hijau */}
-              {selected.penilaian?.status_kelulusan === 'Diterima' && (
-                <>
-                  <div className="space-y-3 bg-green-50 p-4 rounded-lg border border-green-200">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                      <Label className="text-green-700 font-medium">Status Kelulusan</Label>
-                    </div>
-                    <div className="text-green-600 font-semibold">✓ DITERIMA</div>
-                    {selected.penilaian.catatan_asesor && (
-                      <div className="space-y-1">
-                        <Label className="text-green-700">Catatan Asesor</Label>
-                        <p className="text-sm text-green-600 bg-white p-3 rounded border border-green-200">{selected.penilaian.catatan_asesor}</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground">Status: <span className="font-medium text-green-600">Sudah Dinilai</span></div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={()=>setOpenModal(false)}>Tutup</Button>
-                      <Button size="sm" variant="default" onClick={() => {
-                        setStatusKelulusan('Belum Dinilai');
-                        setCatatan(selected.penilaian?.catatan_asesor || '');
-                      }}>Edit Penilaian</Button>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Kondisi 3: Ditolak - Tampilkan hasil penilaian dengan badge merah */}
-              {selected.penilaian?.status_kelulusan === 'Ditolak' && (
-                <>
-                  <div className="space-y-3 bg-red-50 p-4 rounded-lg border border-red-200">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                      <Label className="text-red-700 font-medium">Status Kelulusan</Label>
-                    </div>
-                    <div className="text-red-600 font-semibold">✗ DITOLAK</div>
-                    {selected.penilaian.catatan_asesor && (
-                      <div className="space-y-1">
-                        <Label className="text-red-700">Catatan Asesor</Label>
-                        <p className="text-sm text-red-600 bg-white p-3 rounded border border-red-200">{selected.penilaian.catatan_asesor}</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground">Status: <span className="font-medium text-red-600">Sudah Dinilai</span></div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={()=>setOpenModal(false)}>Tutup</Button>
-                      <Button size="sm" variant="destructive" onClick={() => {
-                        setStatusKelulusan('Belum Dinilai');
-                        setCatatan(selected.penilaian?.catatan_asesor || '');
-                      }}>Edit Penilaian</Button>
-                    </div>
-                  </div>
-                </>
-              )}
+              <div className="flex justify-end">
+                <Button variant="outline" size="sm" onClick={() => setOpenModal(false)}>
+                  Tutup
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>

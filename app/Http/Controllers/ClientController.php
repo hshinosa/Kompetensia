@@ -17,8 +17,8 @@ class ClientController extends Controller
         $featuredBlogs = Blog::published()
             ->featured()
             ->latest()
-            ->limit(2)
-            ->select('id', 'nama_artikel', 'deskripsi', 'thumbnail', 'penulis', 'created_at', 'slug')
+            ->limit(6)
+            ->select('id', 'nama_artikel', 'deskripsi', 'konten', 'thumbnail', 'penulis', 'created_at', 'slug')
             ->get()
             ->map(function ($blog) {
                 return [
@@ -28,17 +28,17 @@ class ClientController extends Controller
                     'author' => $blog->penulis,
                     'date' => $blog->created_at->locale('id')->isoFormat('D MMMM YYYY'),
                     'img' => $blog->thumbnail_url ?: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
-                    'desc' => $blog->excerpt ?: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+                    'desc' => $blog->excerpt ?: ($blog->deskripsi ? (strlen($blog->deskripsi) > 100 ? substr($blog->deskripsi, 0, 100) . '...' : $blog->deskripsi) : 'Artikel menarik tentang ' . $blog->nama_artikel),
                     'slug' => $blog->slug,
                 ];
             });
 
-        // Ambil video featured dan published (maksimal 2)
+        // Ambil video featured dan published (maksimal 6)
         $featuredVideos = Video::published()
             ->featured()
             ->latest()
-            ->limit(2)
-            ->select('id', 'nama_video', 'deskripsi', 'uploader', 'created_at', 'durasi', 'video_url')
+            ->limit(6)
+            ->select('id', 'nama_video', 'deskripsi', 'uploader', 'created_at', 'durasi', 'video_url', 'slug', 'views')
             ->get()
             ->map(function ($video) {
                 // Extract YouTube video ID from URL
@@ -55,17 +55,30 @@ class ClientController extends Controller
                     'date' => $video->created_at->locale('id')->isoFormat('D MMMM YYYY'),
                     'img' => $videoId ? "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg" : 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=400&q=80',
                     'desc' => $video->deskripsi ?: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
-                    'slug' => '#', // Nanti bisa ditambahkan route untuk video
+                    'slug' => $video->slug ?? '#',
                     'durasi' => $video->durasi ?? null,
+                    // Add video data for modal
+                    'video_data' => [
+                        'id' => $video->id,
+                        'nama_video' => $video->nama_video,
+                        'slug' => $video->slug ?? '#',
+                        'deskripsi' => $video->deskripsi,
+                        'video_url' => $video->video_url,
+                        'thumbnail' => $videoId ? "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg" : null,
+                        'uploader' => $video->uploader,
+                        'durasi' => $video->durasi ?? 0,
+                        'views' => $video->views ?? 0,
+                        'created_at' => $video->created_at->toISOString(),
+                    ]
                 ];
             });
 
         // Gabungkan blog dan video
         $featuredContent = $featuredBlogs->concat($featuredVideos);
 
-        // Jika konten kurang dari 4, ambil konten published terbaru
-        if ($featuredContent->count() < 4) {
-            $remainingCount = 4 - $featuredContent->count();
+        // Jika konten kurang dari 8, ambil konten published terbaru
+        if ($featuredContent->count() < 8) {
+            $remainingCount = 8 - $featuredContent->count();
             $halfRemaining = ceil($remainingCount / 2);
             
             // Ambil blog tambahan
@@ -73,7 +86,7 @@ class ClientController extends Controller
                 ->latest()
                 ->whereNotIn('id', $featuredBlogs->pluck('id'))
                 ->limit($halfRemaining)
-                ->select('id', 'nama_artikel', 'deskripsi', 'thumbnail', 'penulis', 'created_at', 'slug')
+                ->select('id', 'nama_artikel', 'deskripsi', 'konten', 'thumbnail', 'penulis', 'created_at', 'slug')
                 ->get()
                 ->map(function ($blog) {
                     return [
@@ -83,7 +96,7 @@ class ClientController extends Controller
                         'author' => $blog->penulis,
                         'date' => $blog->created_at->locale('id')->isoFormat('D MMMM YYYY'),
                         'img' => $blog->thumbnail_url ?: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
-                        'desc' => $blog->excerpt ?: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+                        'desc' => $blog->excerpt ?: ($blog->deskripsi ? (strlen($blog->deskripsi) > 100 ? substr($blog->deskripsi, 0, 100) . '...' : $blog->deskripsi) : 'Artikel menarik tentang ' . $blog->nama_artikel),
                         'slug' => $blog->slug,
                     ];
                 });
@@ -93,7 +106,7 @@ class ClientController extends Controller
                 ->latest()
                 ->whereNotIn('id', $featuredVideos->pluck('id'))
                 ->limit($remainingCount - $halfRemaining)
-                ->select('id', 'nama_video', 'deskripsi', 'uploader', 'created_at', 'durasi', 'video_url')
+                ->select('id', 'nama_video', 'deskripsi', 'uploader', 'created_at', 'durasi', 'video_url', 'slug', 'views')
                 ->get()
                 ->map(function ($video) {
                     // Extract YouTube video ID from URL
@@ -110,26 +123,55 @@ class ClientController extends Controller
                         'date' => $video->created_at->locale('id')->isoFormat('D MMMM YYYY'),
                         'img' => $videoId ? "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg" : 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=400&q=80',
                         'desc' => $video->deskripsi ?: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
-                        'slug' => '#',
+                        'slug' => $video->slug ?? '#',
                         'durasi' => $video->durasi ?? null,
+                        // Add video data for modal
+                        'video_data' => [
+                            'id' => $video->id,
+                            'nama_video' => $video->nama_video,
+                            'slug' => $video->slug ?? '#',
+                            'deskripsi' => $video->deskripsi,
+                            'video_url' => $video->video_url,
+                            'thumbnail' => $videoId ? "https://img.youtube.com/vi/{$videoId}/maxresdefault.jpg" : null,
+                            'uploader' => $video->uploader,
+                            'durasi' => $video->durasi ?? 0,
+                            'views' => $video->views ?? 0,
+                            'created_at' => $video->created_at->toISOString(),
+                        ]
                     ];
                 });
             
             $featuredContent = $featuredContent->concat($additionalBlogs)->concat($additionalVideos);
         }
 
-        // Acak urutan dan ambil 4 teratas
-        $featuredContent = $featuredContent->shuffle()->take(4);
+        // Acak urutan dan ambil 8 teratas
+        $featuredContent = $featuredContent->shuffle()->take(8);
 
-        // Ambil sertifikasi populer (maksimal 4)
-        $popularSertifikasi = Sertifikasi::with(['batch' => function($query) {
+        // Ambil sertifikasi populer untuk setiap jenis (maksimal 6 per jenis = 12 total)
+        $bnspSertifikasi = Sertifikasi::with(['batch' => function($query) {
                 $query->where('status', 'Aktif')->latest();
             }])
             ->where('status', 'Aktif')
+            ->where('jenis_sertifikasi', 'BNSP')
             ->withCount(['pendaftaran as peserta_count'])
             ->orderByDesc('peserta_count')
-            ->limit(4)
-            ->get()
+            ->limit(6)
+            ->get();
+
+        $industriSertifikasi = Sertifikasi::with(['batch' => function($query) {
+                $query->where('status', 'Aktif')->latest();
+            }])
+            ->where('status', 'Aktif')
+            ->where('jenis_sertifikasi', 'Industri')
+            ->withCount(['pendaftaran as peserta_count'])
+            ->orderByDesc('peserta_count')
+            ->limit(6)
+            ->get();
+
+        // Gabungkan kedua jenis sertifikasi
+        $allSertifikasi = $bnspSertifikasi->concat($industriSertifikasi);
+        
+        $popularSertifikasi = $allSertifikasi
             ->map(function ($sertifikasi) {
                 $activeBatch = $sertifikasi->batch->first();
                 $thumbnail = $sertifikasi->thumbnail ? asset('storage/' . $sertifikasi->thumbnail) : 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80';
@@ -145,6 +187,26 @@ class ClientController extends Controller
                     'img' => $thumbnail,
                     'mentor' => $activeBatch ? $activeBatch->instruktur : 'Instruktur Profesional',
                     'slug' => $sertifikasi->slug,
+                    'type' => $sertifikasi->jenis_sertifikasi,
+                    // Add complete sertifikasi data for modal
+                    'sertifikasi_data' => [
+                        'id' => $sertifikasi->id,
+                        'nama_sertifikasi' => $sertifikasi->nama_sertifikasi,
+                        'jenis_sertifikasi' => $sertifikasi->jenis_sertifikasi,
+                        'deskripsi' => $sertifikasi->deskripsi,
+                        'status' => $sertifikasi->status,
+                        'batch' => $sertifikasi->batch->map(function($batch) {
+                            return [
+                                'id' => $batch->id,
+                                'nama_batch' => $batch->nama_batch,
+                                'tanggal_mulai' => $batch->tanggal_mulai->toISOString(),
+                                'tanggal_selesai' => $batch->tanggal_selesai->toISOString(),
+                                'status' => $batch->status,
+                                'kapasitas_peserta' => $batch->kapasitas_peserta,
+                                'peserta_terdaftar' => $batch->peserta_terdaftar ?? 0,
+                            ];
+                        })->toArray()
+                    ]
                 ];
             });
 
@@ -174,6 +236,8 @@ class ClientController extends Controller
 
         return Inertia::render('client/LandingPage', [
             'featuredBlogs' => $featuredContent,
+            'featuredArticles' => $featuredBlogs->concat($additionalBlogs ?? collect()),
+            'featuredVideos' => $featuredVideos->concat($additionalVideos ?? collect()),
             'popularSertifikasi' => $popularSertifikasi,
             'pklPrograms' => $pklPrograms,
         ]);
@@ -362,6 +426,48 @@ class ClientController extends Controller
 
     public function pendaftaranPklPage()
     {
-        return Inertia::render('client/PendaftaranPKLPage');
+        try {
+            // Ambil semua posisi PKL yang tersedia untuk dropdown di step 3
+            $allPosisiPKL = PosisiPKL::where('status', 'Aktif')
+                ->select('id', 'nama_posisi', 'kategori', 'tipe', 'durasi_bulan', 'status')
+                ->orderBy('nama_posisi', 'asc')
+                ->get();
+
+            \Log::info('PendaftaranPKL - Total posisi found: ' . $allPosisiPKL->count());
+            \Log::info('PendaftaranPKL - Raw data: ', $allPosisiPKL->toArray());
+            
+            // Transform data untuk frontend
+            $posisiPKLData = $allPosisiPKL->map(function ($posisi) {
+                return [
+                    'id' => (int) $posisi->id,
+                    'nama_posisi' => (string) $posisi->nama_posisi,
+                    'kategori' => (string) $posisi->kategori,
+                    'tipe' => (string) $posisi->tipe,
+                    'durasi_bulan' => (int) $posisi->durasi_bulan,
+                    'label' => $posisi->nama_posisi . ' (' . $posisi->kategori . ' - ' . $posisi->tipe . ')'
+                ];
+            })->values()->toArray(); // values() untuk reset array keys
+
+            \Log::info('PendaftaranPKL - Transformed data: ', $posisiPKLData);
+
+            return Inertia::render('client/PendaftaranPKLPage', [
+                'allPosisiPKL' => $posisiPKLData,
+                'totalPosisi' => count($posisiPKLData),
+                'debug' => [
+                    'raw_count' => $allPosisiPKL->count(),
+                    'transformed_count' => count($posisiPKLData)
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in pendaftaranPklPage: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return Inertia::render('client/PendaftaranPKLPage', [
+                'allPosisiPKL' => [],
+                'totalPosisi' => 0,
+                'error' => 'Gagal memuat data posisi PKL: ' . $e->getMessage()
+            ]);
+        }
     }
 }

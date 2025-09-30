@@ -107,10 +107,10 @@ class SertifikasiController extends Controller
             'asesor' => $sertifikasi->asesor ? [
                 'id' => $sertifikasi->asesor->id,
                 'nama_asesor' => $sertifikasi->asesor->nama_asesor,
-                'jabatan_asesor' => $sertifikasi->asesor->jabatan_asesor,
-                'instansi_asesor' => $sertifikasi->asesor->instansi_asesor,
-                'pengalaman_asesor' => $sertifikasi->asesor->pengalaman_asesor,
-                'foto_asesor' => $sertifikasi->asesor->foto_asesor ? asset('storage/' . $sertifikasi->asesor->foto_asesor) : null,
+                'jabatan' => $sertifikasi->asesor->jabatan,
+                'instansi' => $sertifikasi->asesor->instansi,
+                'bio' => $sertifikasi->asesor->bio,
+                'foto' => $sertifikasi->asesor->foto ? asset('storage/' . $sertifikasi->asesor->foto) : null,
             ] : null,
             'tipe_sertifikat' => $sertifikasi->tipe_sertifikat,
             'thumbnail_url' => $sertifikasi->thumbnail_url,
@@ -143,15 +143,15 @@ class SertifikasiController extends Controller
     {
         // Pass active asesors for dropdown/autocomplete
         $asesors = Asesor::where('status', 'Aktif')
-            ->select('id', 'nama_asesor', 'jabatan_asesor', 'instansi_asesor')
+            ->select('id', 'nama_asesor', 'jabatan', 'instansi')
             ->get()
             ->map(function($asesor) {
                 return [
                     'id' => $asesor->id,
                     'name' => $asesor->nama_asesor,
-                    'label' => $asesor->nama_asesor . ' - ' . $asesor->jabatan_asesor . ' (' . $asesor->instansi_asesor . ')',
-                    'jabatan' => $asesor->jabatan_asesor,
-                    'instansi' => $asesor->instansi_asesor
+                    'label' => $asesor->nama_asesor . ' - ' . $asesor->jabatan . ' (' . $asesor->instansi . ')',
+                    'jabatan' => $asesor->jabatan,
+                    'instansi' => $asesor->instansi
                 ];
             });
 
@@ -170,13 +170,13 @@ class SertifikasiController extends Controller
             // Buat asesor baru
             $asesorData = [
                 'nama_asesor' => $validated['nama_asesor'],
-                'jabatan_asesor' => $validated['jabatan_asesor'],
-                'instansi_asesor' => $validated['instansi_asesor'],
+                'jabatan' => $validated['jabatan'] ?? '',
+                'instansi' => $validated['instansi'] ?? '',
                 'status' => 'Aktif'
             ];
             
             if ($request->hasFile('foto_asesor')) {
-                $asesorData['foto_asesor'] = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
+                $asesorData['foto'] = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
             }
             
             $asesor = \App\Models\Asesor::create($asesorData);
@@ -234,15 +234,15 @@ class SertifikasiController extends Controller
 
         // Pass active asesors for dropdown/autocomplete
         $asesors = Asesor::where('status', 'Aktif')
-            ->select('id', 'nama_asesor', 'jabatan_asesor', 'instansi_asesor')
+            ->select('id', 'nama_asesor', 'jabatan', 'instansi')
             ->get()
             ->map(function($asesor) {
                 return [
                     'id' => $asesor->id,
                     'name' => $asesor->nama_asesor,
-                    'label' => $asesor->nama_asesor . ' - ' . $asesor->jabatan_asesor . ' (' . $asesor->instansi_asesor . ')',
-                    'jabatan' => $asesor->jabatan_asesor,
-                    'instansi' => $asesor->instansi_asesor
+                    'label' => $asesor->nama_asesor . ' - ' . $asesor->jabatan . ' (' . $asesor->instansi . ')',
+                    'jabatan' => $asesor->jabatan,
+                    'instansi' => $asesor->instansi
                 ];
             });
 
@@ -256,9 +256,9 @@ class SertifikasiController extends Controller
             'selectedAsesor' => $sertifikasi->asesor ? [
                 'id' => $sertifikasi->asesor->id,
                 'name' => $sertifikasi->asesor->nama_asesor,
-                'label' => $sertifikasi->asesor->nama_asesor . ' - ' . $sertifikasi->asesor->jabatan_asesor . ' (' . $sertifikasi->asesor->instansi_asesor . ')',
-                'jabatan' => $sertifikasi->asesor->jabatan_asesor,
-                'instansi' => $sertifikasi->asesor->instansi_asesor
+                'label' => $sertifikasi->asesor->nama_asesor . ' - ' . $sertifikasi->asesor->jabatan . ' (' . $sertifikasi->asesor->instansi . ')',
+                'jabatan' => $sertifikasi->asesor->jabatan,
+                'instansi' => $sertifikasi->asesor->instansi
             ] : null,
             'tipe_sertifikat' => $sertifikasi->tipe_sertifikat,
             'thumbnail_url' => $sertifikasi->thumbnail_url,
@@ -299,13 +299,13 @@ class SertifikasiController extends Controller
             // Buat asesor baru
             $asesorData = [
                 'nama_asesor' => $validated['nama_asesor'],
-                'jabatan_asesor' => $validated['jabatan_asesor'],
-                'instansi_asesor' => $validated['instansi_asesor'],
+                'jabatan' => $validated['jabatan'] ?? '',
+                'instansi' => $validated['instansi'] ?? '',
                 'status' => 'Aktif'
             ];
             
             if ($request->hasFile('foto_asesor')) {
-                $asesorData['foto_asesor'] = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
+                $asesorData['foto'] = $this->storeSertifikasiFile($request->file('foto_asesor'), $slug, 'foto-asesor');
             }
             
             $asesor = \App\Models\Asesor::create($asesorData);

@@ -8,6 +8,7 @@ use App\Models\Sertifikasi;
 interface SertifikasiRepositoryInterface
 {
     public function paginate(array $filters = [], int $perPage = 10): LengthAwarePaginator;
+    public function findById(int $id): Sertifikasi;
     public function findWithRelations(int $id): Sertifikasi;
     public function createWithRelations(array $data): Sertifikasi;
     public function updateWithRelations(Sertifikasi $sertifikasi, array $data): Sertifikasi;

@@ -5,9 +5,19 @@ interface Props {
   readonly onFormDataChange: (field: string, value: any) => void;
   readonly onNext: () => void;
   readonly onBack: () => void;
+  readonly allPosisiPKL?: Array<{
+    id: number;
+    nama_posisi: string;
+    kategori: string;
+    tipe: string;
+    durasi_bulan: number;
+    already_registered?: boolean;
+    label?: string;
+  }>;
+  readonly existingRegistrations?: number[];
 }
 
-export default function SkillMinatForm({ formData, onFormDataChange, onNext, onBack }: Props) {
+export default function SkillMinatForm({ formData, onFormDataChange, onNext, onBack, allPosisiPKL = [], existingRegistrations = [] }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onNext();
@@ -49,16 +59,35 @@ export default function SkillMinatForm({ formData, onFormDataChange, onNext, onB
         {/* Bidang yang anda sukai */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Bidang yang anda sukai
+            Bidang yang anda sukai <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
-            value={formData.bidangYangDisukai}
+          <select
+            value={formData.bidangYangDisukai || ''}
             onChange={(e) => onFormDataChange('bidangYangDisukai', e.target.value)}
-            placeholder="UI/UX Design"
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             required
-          />
+          >
+            <option value="">Pilih Posisi PKL yang Diminati</option>
+            {allPosisiPKL.map((posisi) => {
+              const isAlreadyRegistered = existingRegistrations.includes(posisi.id);
+              return (
+                <option 
+                  key={posisi.id} 
+                  value={posisi.id}
+                  disabled={isAlreadyRegistered}
+                  style={isAlreadyRegistered ? { color: '#9CA3AF', backgroundColor: '#F3F4F6' } : {}}
+                >
+                  {posisi.nama_posisi} ({posisi.kategori} - {posisi.tipe})
+                  {isAlreadyRegistered ? ' - SUDAH TERDAFTAR' : ''}
+                </option>
+              );
+            })}
+          </select>
+          {formData.bidangYangDisukai && existingRegistrations.includes(parseInt(formData.bidangYangDisukai)) && (
+            <p className="mt-2 text-sm text-red-600">
+              ⚠️ Anda sudah memiliki pendaftaran aktif untuk posisi ini. Silakan pilih posisi lain.
+            </p>
+          )}
         </div>
 
         {/* Pernah membuat video */}
@@ -67,14 +96,14 @@ export default function SkillMinatForm({ formData, onFormDataChange, onNext, onB
             Apakah Anda pernah membuat video review produk, review suatu tempat atau membuat mini vlog?
           </label>
           <select
-            value={formData.pernahMembuatVideo}
+            value={formData.pernahMembuatVideo || 'tidak'}
             onChange={(e) => onFormDataChange('pernahMembuatVideo', e.target.value)}
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             required
           >
-            <option value="">Pernah</option>
-            <option value="pernah">Pernah</option>
-            <option value="belum_pernah">Belum Pernah</option>
+            <option value="">Pilih jawaban</option>
+            <option value="ya">Pernah</option>
+            <option value="tidak">Belum Pernah</option>
           </select>
         </div>
 

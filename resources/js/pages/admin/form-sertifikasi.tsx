@@ -146,7 +146,7 @@ export default function FormSertifikasi() {
     e.preventDefault();
     
     // Client-side validation
-    let hasError = false;
+    const hasError = false;
     
     // Check basic fields
     if (!form.nama_sertifikasi.trim()) {
@@ -260,7 +260,7 @@ export default function FormSertifikasi() {
     console.log('isCreatingNewAsesor:', isCreatingNewAsesor);
     console.log('selectedAsesor:', selectedAsesor);
     console.log('Form data entries:');
-    for (let pair of fd.entries()) {
+    for (const pair of fd.entries()) {
       console.log(pair[0] + ': ' + pair[1]);
     }
     

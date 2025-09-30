@@ -20,7 +20,8 @@ class Video extends Model
         'views',
         'featured',
         'status',
-        'uploader'
+        'uploader',
+        'slug'
     ];
 
     protected $casts = [

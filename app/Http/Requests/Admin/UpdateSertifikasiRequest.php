@@ -26,8 +26,8 @@ class UpdateSertifikasiRequest extends FormRequest
             // Asesor - bisa pilih existing atau buat baru
             'asesor_id' => 'nullable|exists:asesors,id',
             'nama_asesor' => 'nullable|string|max:255',
-            'jabatan_asesor' => 'nullable|string|max:255',
-            'instansi_asesor' => 'nullable|string|max:255',
+            'jabatan' => 'nullable|string|max:255',
+            'instansi' => 'nullable|string|max:255',
             'foto_asesor' => $nullableImage,
             
             'tipe_sertifikat' => 'required|array|min:1',

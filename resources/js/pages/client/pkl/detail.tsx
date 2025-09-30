@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import ClientAuthenticatedLayout from '@/layouts/ClientAuthenticatedLayout';
 
@@ -8,6 +8,11 @@ interface PKLDetailProps {
         nama: string;
         deskripsi: string;
     };
+    readonly pendaftaran?: {
+        id: number;
+        status: string;
+    };
+    readonly uploadedDocuments?: RiwayatItem[];
 }
 
 interface RiwayatItem {
@@ -220,46 +225,16 @@ function DocumentDetailModal({ isOpen, onClose, documentData }: DocumentDetailMo
     );
 }
 
-export default function PKLDetail({ pkl }: PKLDetailProps) {
+export default function PKLDetail({ pkl, pendaftaran, uploadedDocuments = [] }: PKLDetailProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [jenisDocument, setJenisDocument] = useState<string>('');
     const [linkUrl, setLinkUrl] = useState<string>('');
     const [selectedDocument, setSelectedDocument] = useState<RiwayatItem | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     
-    // Sample data untuk riwayat dokumen
-    const sampleRiwayat: RiwayatItem[] = [
-        {
-            no: 1,
-            tanggal: '2024-08-15',
-            jenis_dokumen: 'Proposal PKL',
-            dokumen: 'proposal_pkl.pdf',
-            disetujui: true,
-            keterangan: 'Dokumen disetujui',
-            feedback: 'Proposal PKL sudah sesuai dengan format yang diminta. Rencana kegiatan dan timeline jelas.',
-            assessor: 'Dr. Budi Santoso, M.T'
-        },
-        {
-            no: 2,
-            tanggal: '2024-08-20',
-            jenis_dokumen: 'Laporan Mingguan',
-            dokumen: 'laporan_minggu_1.pdf',
-            disetujui: true,
-            keterangan: 'Laporan lengkap',
-            feedback: 'Laporan mingguan sudah detail dan sesuai dengan format. Progress kegiatan tercatat dengan baik.',
-            assessor: 'Dr. Budi Santoso, M.T'
-        },
-        {
-            no: 3,
-            tanggal: '2024-08-27',
-            jenis_dokumen: 'Laporan Mingguan',
-            dokumen: 'laporan_minggu_2.pdf',
-            disetujui: false,
-            keterangan: 'Perlu revisi format',
-            feedback: 'Format laporan perlu diperbaiki. Mohon tambahkan detail aktivitas harian dan kendala yang dihadapi.',
-            assessor: 'Dr. Budi Santoso, M.T'
-        }
-    ];
+    // Use actual uploaded documents data
+    const riwayatDocuments: RiwayatItem[] = uploadedDocuments;
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -269,22 +244,31 @@ export default function PKLDetail({ pkl }: PKLDetailProps) {
     };
 
     const handleSubmit = () => {
-        if (selectedFile && jenisDocument && linkUrl.trim()) {
+        if (selectedFile && jenisDocument && linkUrl.trim() && pkl && pendaftaran) {
+            setIsUploading(true);
+            
             const formData = new FormData();
             formData.append('file', selectedFile);
             formData.append('jenis_dokumen', jenisDocument);
             formData.append('link_url', linkUrl);
             
-            // For now, just log the data - in a real app you'd submit to the server
-            console.log('Uploading file:', selectedFile.name, 'Type:', jenisDocument, 'URL:', linkUrl);
-            
-            // Reset after upload
-            setSelectedFile(null);
-            setJenisDocument('');
-            setLinkUrl('');
-            
-            // In a real app, you would use Inertia's router.post() here
-            // router.post(`/client/pkl/${pkl?.id}/upload`, formData);
+            router.post(`/client/pkl/${pkl.id}/upload`, formData, {
+                onSuccess: () => {
+                    // Reset form
+                    setSelectedFile(null);
+                    setJenisDocument('');
+                    setLinkUrl('');
+                    setIsUploading(false);
+                    
+                    // Show success message (you might want to add a toast notification here)
+                    alert('Dokumen berhasil diunggah!');
+                },
+                onError: (errors) => {
+                    setIsUploading(false);
+                    console.error('Upload errors:', errors);
+                    alert('Gagal mengunggah dokumen. Silakan coba lagi.');
+                }
+            });
         }
     };
 
@@ -401,12 +385,21 @@ export default function PKLDetail({ pkl }: PKLDetailProps) {
                                 <div className="flex justify-end">
                                     <button
                                         type="submit"
-                                        disabled={!selectedFile || !jenisDocument || !linkUrl.trim()}
+                                        disabled={!selectedFile || !jenisDocument || !linkUrl.trim() || isUploading || !pendaftaran}
                                         className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                                     >
-                                        Unggah Dokumen
+                                        {isUploading ? 'Mengunggah...' : 'Unggah Dokumen'}
                                     </button>
                                 </div>
+
+                                {/* Show message if no approved registration */}
+                                {!pendaftaran && (
+                                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <p className="text-yellow-800 text-sm">
+                                            Anda perlu memiliki pendaftaran PKL yang disetujui untuk dapat mengunggah dokumen.
+                                        </p>
+                                    </div>
+                                )}
                             </form>
                         </div>
                     </div>
@@ -483,7 +476,7 @@ export default function PKLDetail({ pkl }: PKLDetailProps) {
                     </div>
                     
                     <div className="overflow-x-auto">
-                        {sampleRiwayat.length > 0 ? (
+                        {riwayatDocuments.length > 0 ? (
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -505,7 +498,7 @@ export default function PKLDetail({ pkl }: PKLDetailProps) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {sampleRiwayat.map((item) => (
+                                    {riwayatDocuments.map((item: RiwayatItem) => (
                                         <tr key={item.no}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                 {item.no}

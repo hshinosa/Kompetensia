@@ -49,7 +49,7 @@ class DashboardController extends Controller
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
-                    'nama' => $item->sertifikasi->nama ?? 'Sertifikasi Tidak Ditemukan',
+                    'nama' => $item->sertifikasi->nama_sertifikasi ?? 'Sertifikasi Tidak Ditemukan',
                     'jenis' => 'Sertifikasi Kompetensi',
                     'tanggal_mulai' => $item->created_at->format('d-m-Y'),
                     'tanggal_selesai' => $item->updated_at->format('d-m-Y'),
@@ -67,7 +67,7 @@ class DashboardController extends Controller
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
-                    'nama' => $item->posisiPKL->nama ?? 'PKL Tidak Ditemukan',
+                    'nama' => $item->posisiPKL->nama_posisi ?? 'PKL Tidak Ditemukan',
                     'jenis' => 'Praktik Kerja Lapangan',
                     'tanggal_mulai' => $item->created_at->format('d-m-Y'),
                     'tanggal_selesai' => $item->updated_at->format('d-m-Y'),
@@ -91,7 +91,7 @@ class DashboardController extends Controller
                     'id' => $item->id,
                     'tanggal' => $item->created_at->format('d-m-Y'),
                     'jenis_pengajuan' => 'Sertifikasi Kompetensi',
-                    'nama' => $item->sertifikasi->nama ?? 'Sertifikasi Tidak Ditemukan',
+                    'nama' => $item->sertifikasi->nama_sertifikasi ?? 'Sertifikasi Tidak Ditemukan',
                     'status' => $this->getStatusDisplay($item->status)
                 ];
             });
@@ -106,7 +106,7 @@ class DashboardController extends Controller
                     'id' => $item->id,
                     'tanggal' => $item->created_at->format('d-m-Y'),
                     'jenis_pengajuan' => 'Praktik Kerja Lapangan',
-                    'nama' => $item->posisiPKL->nama ?? 'PKL Tidak Ditemukan',
+                    'nama' => $item->posisiPKL->nama_posisi ?? 'PKL Tidak Ditemukan',
                     'status' => $this->getStatusDisplay($item->status)
                 ];
             });

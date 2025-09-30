@@ -20,6 +20,11 @@ class VideoService
         return $this->repo->find($id);
     }
 
+    public function getBySlug(string $slug): ?Video
+    {
+        return $this->repo->findBySlug($slug);
+    }
+
     public function create(array $data): Video
     {
         return $this->repo->create($data);

@@ -22,6 +22,7 @@ class VideoRepository implements VideoRepositoryInterface
         }
         if (!empty($filters['status'])) { $query->where('status', $filters['status']); }
         if (isset($filters['featured'])) { $query->where('featured', (bool)$filters['featured']); }
+        if (!empty($filters['exclude_id'])) { $query->where('id', '!=', $filters['exclude_id']); }
         $sortBy = $filters['sort_by'] ?? 'created_at';
         $sortDirection = $filters['sort_direction'] ?? 'desc';
         $query->orderBy($sortBy, $sortDirection);
@@ -31,6 +32,11 @@ class VideoRepository implements VideoRepositoryInterface
     public function find(int $id): Video
     {
         return Video::findOrFail($id);
+    }
+
+    public function findBySlug(string $slug): ?Video
+    {
+        return Video::where('slug', $slug)->first();
     }
 
     public function create(array $data): Video

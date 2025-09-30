@@ -20,6 +20,11 @@ class BlogService
         return $this->repo->find($id);
     }
 
+    public function getBySlug(string $slug): ?Blog
+    {
+        return $this->repo->findBySlug($slug);
+    }
+
     public function create(array $data): Blog
     {
         return $this->repo->create($data);

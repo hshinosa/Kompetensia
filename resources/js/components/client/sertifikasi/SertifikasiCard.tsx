@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { usePage, router } from '@inertiajs/react';
+import LoginModal from '../auth/LoginModal';
 
 interface SertifikasiItem {
   readonly id: number;
@@ -11,15 +13,36 @@ interface SertifikasiItem {
   readonly img?: string;
   readonly mentor: string;
   readonly slug?: string;
-  readonly type?: 'BNSP' | 'Industri';
+  readonly type?: string;
 }
 
 interface Props {
   readonly sertifikasi: SertifikasiItem;
   readonly onDetailClick?: (sertifikasi: SertifikasiItem) => void;
+  readonly onRegisterClick?: (sertifikasi: SertifikasiItem) => void;
 }
 
-export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
+interface User {
+  id: number;
+  nama: string;
+  nama_lengkap?: string;
+  email: string;
+  role: string;
+}
+
+interface PageProps extends Record<string, any> {
+  auth?: {
+    user?: User;
+    client?: User;
+  };
+}
+
+export default function SertifikasiCard({ sertifikasi, onDetailClick, onRegisterClick }: Props) {
+  const { auth } = usePage<PageProps>().props;
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  
+  const user = auth?.client;
+  const isAuthenticated = !!user;
   // Placeholder images berdasarkan kategori
   const getPlaceholderImage = (kategori: string) => {
     const placeholders = {
@@ -40,7 +63,16 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
   const imageUrl = sertifikasi.img || getPlaceholderImage(sertifikasi.kategori);
 
   const handleAmbilKelas = () => {
-    if (sertifikasi.slug && sertifikasi.slug !== '#') {
+    if (!isAuthenticated) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+    
+    // Jika ada callback untuk register, gunakan itu untuk membuka modal pendaftaran
+    if (onRegisterClick) {
+      onRegisterClick(sertifikasi);
+    } else if (sertifikasi.slug && sertifikasi.slug !== '#') {
+      // Fallback ke halaman detail jika tidak ada callback register
       window.location.href = `/detailsertifikasi/${sertifikasi.slug}`;
     }
   };
@@ -54,59 +86,69 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick }: Props) {
   };
 
   return (
-    <article className="bg-white border-2 border-purple-400 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-purple-600 transition-all duration-300 min-h-[450px] flex flex-col">
-      <div className="relative">
-        <img 
-          src={imageUrl} 
-          alt={sertifikasi.title} 
-          className="w-full h-40 object-cover"
-          onError={(e) => {
-            e.currentTarget.src = getPlaceholderImage('default');
-          }}
-        />
-        <span className="absolute left-3 top-3 text-xs px-3 py-1 rounded-full bg-orange-50 text-orange-700 font-semibold">
-          {sertifikasi.kategori}
-        </span>
-      </div>
-
-      <div className="p-4 flex-1 flex flex-col">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2 min-h-[3.5rem] text-gray-900">{sertifikasi.title}</h3>
-        <div className="text-sm text-gray-600 mb-3 min-h-[2.5rem] flex items-start">{sertifikasi.batch} • {sertifikasi.date}</div>
-
-        <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
-          <div className="flex items-center gap-1">
-            <span className="text-yellow-400">★</span>
-            <span className="font-medium">{sertifikasi.rating}</span>
-          </div>
-          <div className="text-xs text-gray-500">(496)</div>
-        </div>
-
-        <div className="text-sm text-gray-600 mb-4">👥 {sertifikasi.peserta} Peserta</div>
-
-        <div className="flex items-center gap-3 mb-4 mt-auto">
+    <>
+      <article className="bg-white border-2 border-purple-400 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-purple-600 transition-all duration-300 min-h-[450px] flex flex-col">
+        <div className="relative">
           <img 
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(sertifikasi.mentor)}&background=8B5CF6&color=fff`} 
-            alt="mentor" 
-            className="w-8 h-8 rounded-full border-2 border-white" 
+            src={imageUrl} 
+            alt={sertifikasi.title} 
+            className="w-full h-40 object-cover"
+            onError={(e) => {
+              e.currentTarget.src = getPlaceholderImage('default');
+            }}
           />
-          <div className="text-sm font-medium line-clamp-1 text-gray-900">{sertifikasi.mentor}</div>
+          <span className="absolute left-3 top-3 text-xs px-3 py-1 rounded-full bg-orange-50 text-orange-700 font-semibold">
+            {sertifikasi.kategori}
+          </span>
         </div>
 
-        <div className="flex gap-3">
-          <button 
-            onClick={handleAmbilKelas}
-            className="flex-1 px-3 py-2 rounded-lg bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors"
-          >
-            Ambil Kelas
-          </button>
-          <button 
-            onClick={handlePelajariKelas}
-            className="px-3 py-2 rounded-lg border border-orange-400 text-orange-700 font-semibold hover:bg-orange-50 transition-colors"
-          >
-            Pelajari Kelas
-          </button>
+        <div className="p-4 flex-1 flex flex-col">
+          <h3 className="font-semibold text-lg mb-2 line-clamp-2 min-h-[3.5rem] text-gray-900">{sertifikasi.title}</h3>
+          <div className="text-sm text-gray-600 mb-3 min-h-[2.5rem] flex items-start">{sertifikasi.batch} • {sertifikasi.date}</div>
+
+          <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
+            <div className="flex items-center gap-1">
+              <span className="text-yellow-400">★</span>
+              <span className="font-medium">{sertifikasi.rating}</span>
+            </div>
+            <div className="text-xs text-gray-500">(496)</div>
+          </div>
+
+          <div className="text-sm text-gray-600 mb-4">👥 {sertifikasi.peserta} Peserta</div>
+
+          <div className="flex items-center gap-3 mb-4 mt-auto">
+            <img 
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(sertifikasi.mentor)}&background=8B5CF6&color=fff`} 
+              alt="mentor" 
+              className="w-8 h-8 rounded-full border-2 border-white" 
+            />
+            <div className="text-sm font-medium line-clamp-1 text-gray-900">{sertifikasi.mentor}</div>
+          </div>
+
+          <div className="flex gap-3">
+            <button 
+              onClick={handleAmbilKelas}
+              className="flex-1 px-3 py-2 rounded-lg bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors"
+            >
+              Ambil Kelas
+            </button>
+            <button 
+              onClick={handlePelajariKelas}
+              className="px-3 py-2 rounded-lg border border-orange-400 text-orange-700 font-semibold hover:bg-orange-50 transition-colors"
+            >
+              Pelajari Kelas
+            </button>
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+      
+      {/* Login Modal */}
+      {isLoginModalOpen && (
+        <LoginModal 
+          isOpen={isLoginModalOpen} 
+          onClose={() => setIsLoginModalOpen(false)} 
+        />
+      )}
+    </>
   );
 }

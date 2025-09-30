@@ -29,6 +29,11 @@ class SertifikasiRepository implements SertifikasiRepositoryInterface
         return Sertifikasi::with(['modul.ordered', 'batch'])->findOrFail($id);
     }
 
+    public function findById(int $id): Sertifikasi
+    {
+        return Sertifikasi::findOrFail($id);
+    }
+
     public function createWithRelations(array $data): Sertifikasi
     {
         if (isset($data['thumbnail']) && $data['thumbnail']) {

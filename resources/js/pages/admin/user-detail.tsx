@@ -19,23 +19,14 @@ interface UserIndonesia {
     alamat?: string;
     tanggal_lahir?: string;
     tempat_lahir?: string;
-    institusi?: string;
-    jurusan?: string;
-    semester?: number;
     foto_profil?: string;
     aktif: boolean;
-    status_akun?: string;
-    tipe_pengguna?: string;
-    // Additional fields
     gender?: string;
-    instagram_handle?: string;
-    tiktok_handle?: string;
     created_at: string;
     updated_at: string;
     email_verified_at?: string;
     // Relationships
     aktivitas?: UserActivity[];
-    dokumen?: UserDocument[];
     pendaftaran_pkl?: any[];
     pendaftaran_sertifikasi?: any[];
 }
@@ -47,14 +38,7 @@ interface UserActivity {
     created_at: string;
 }
 
-interface UserDocument {
-    id: number;
-    jenis_dokumen: string;
-    nama_dokumen: string;
-    terverifikasi: boolean;
-    aktif: boolean;
-    created_at: string;
-}
+
 
 interface UserStats {
     sertifikasi_count: number;
@@ -121,18 +105,6 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
         }
     };
 
-    const getStatusBadgeColor = (status: string, aktif: boolean) => {
-        if (!aktif) return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-        switch (status) {
-            case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-            case 'aktif': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-            case 'suspended': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-            case 'pending': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-            case 'banned': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-            default: return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-        }
-    };
-
     const formatDate = (dateString: string) => {
         if (!dateString) return '-';
         try {
@@ -158,16 +130,6 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
         }
     };
 
-    const getTipePenggunaDisplayName = (tipe: string) => {
-        switch (tipe) {
-            case 'mahasiswa': return 'Mahasiswa';
-            case 'instruktur': return 'Instruktur';
-            case 'asesor': return 'Asesor';
-            case 'admin': return 'Administrator';
-            default: return tipe ? tipe.charAt(0).toUpperCase() + tipe.slice(1) : 'Tidak Diketahui';
-        }
-    };
-
     const getRoleDisplayName = (role: string) => {
         switch (role) {
             case 'admin': return 'Administrator';
@@ -179,18 +141,6 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
             case 'mahasiswa': return 'Mahasiswa';
             case 'user': return 'Pengguna';
             default: return role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Tidak Diketahui';
-        }
-    };
-
-    const getStatusDisplayName = (status: string, aktif: boolean) => {
-        if (!aktif) return 'Tidak Aktif';
-        switch (status) {
-            case 'active': return 'Aktif';
-            case 'aktif': return 'Aktif';
-            case 'suspended': return 'Suspended';
-            case 'pending': return 'Menunggu';
-            case 'banned': return 'Diblokir';
-            default: return aktif ? 'Aktif' : 'Tidak Aktif';
         }
     };
 
@@ -239,17 +189,10 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
                                 <Badge className={getRoleBadgeColor(pengguna.role)}>
                                     {getRoleDisplayName(pengguna.role)}
                                 </Badge>
-                                <Badge className={getStatusBadgeColor(pengguna.status_akun || '', pengguna.aktif)}>
-                                    {getStatusDisplayName(pengguna.status_akun || '', pengguna.aktif)}
+                                <Badge className={pengguna.aktif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                                    {pengguna.aktif ? 'Aktif' : 'Tidak Aktif'}
                                 </Badge>
                             </div>
-                            {pengguna.tipe_pengguna && (
-                                <div className="mt-2">
-                                    <Badge variant="outline">
-                                        {getTipePenggunaDisplayName(pengguna.tipe_pengguna)}
-                                    </Badge>
-                                </div>
-                            )}
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -345,39 +288,7 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
                             </CardContent>
                         </Card>
 
-                        {/* Social Media Information */}
-                        {(pengguna.instagram_handle || pengguna.tiktok_handle) && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Hash className="h-5 w-5" />
-                                        Media Sosial
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        {pengguna.instagram_handle && (
-                                            <div>
-                                                <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                                    <Hash className="h-4 w-4" />
-                                                    Instagram
-                                                </span>
-                                                <p className="mt-1 text-base font-mono text-blue-600">@{pengguna.instagram_handle}</p>
-                                            </div>
-                                        )}
-                                        {pengguna.tiktok_handle && (
-                                            <div>
-                                                <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                                    <Hash className="h-4 w-4" />
-                                                    TikTok
-                                                </span>
-                                                <p className="mt-1 text-base font-mono text-pink-600">@{pengguna.tiktok_handle}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
+
                     </div>
                 </div>
 
@@ -438,46 +349,7 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
                         </CardContent>
                     </Card>
 
-                    {/* Academic Information */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <GraduationCap className="h-5 w-5" />
-                                Informasi Akademik
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {/* Academic Info */}
-                                {(pengguna.institusi || pengguna.jurusan || pengguna.semester) ? (
-                                    <>
-                                        {pengguna.institusi && (
-                                            <div>
-                                                <span className="text-sm font-medium text-muted-foreground">Institusi</span>
-                                                <p className="mt-1 text-base">{pengguna.institusi}</p>
-                                            </div>
-                                        )}
-                                        {pengguna.jurusan && (
-                                            <div>
-                                                <span className="text-sm font-medium text-muted-foreground">Jurusan</span>
-                                                <p className="mt-1 text-base">{pengguna.jurusan}</p>
-                                            </div>
-                                        )}
-                                        {pengguna.semester && (
-                                            <div>
-                                                <span className="text-sm font-medium text-muted-foreground">Semester</span>
-                                                <p className="mt-1 text-base">Semester {pengguna.semester}</p>
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <p>Belum ada informasi akademik</p>
-                                    </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+
                 </div>
 
                 {/* System Information */}
@@ -502,15 +374,15 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
                                 <span className="text-sm font-medium text-muted-foreground">Tipe Pengguna</span>
                                 <div className="mt-1">
                                     <Badge variant="outline">
-                                        {getTipePenggunaDisplayName(pengguna.tipe_pengguna || pengguna.role)}
+                                        {pengguna.role.charAt(0).toUpperCase() + pengguna.role.slice(1)}
                                     </Badge>
                                 </div>
                             </div>
                             <div>
                                 <span className="text-sm font-medium text-muted-foreground">Status Akun</span>
                                 <div className="mt-1">
-                                    <Badge className={getStatusBadgeColor(pengguna.status_akun || '', pengguna.aktif)}>
-                                        {getStatusDisplayName(pengguna.status_akun || '', pengguna.aktif)}
+                                    <Badge className={pengguna.aktif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                                        {pengguna.aktif ? 'Aktif' : 'Tidak Aktif'}
                                     </Badge>
                                 </div>
                             </div>
@@ -567,46 +439,6 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
                                         ... dan {pengguna.aktivitas.length - 5} aktivitas lainnya
                                     </p>
                                 )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Documents */}
-                {pengguna.dokumen && pengguna.dokumen.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileText className="h-5 w-5" />
-                                Dokumen
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {pengguna.dokumen.map((dokumen) => (
-                                    <div key={dokumen.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                        <div className="flex items-center gap-3">
-                                            <FileText className="h-4 w-4 text-muted-foreground" />
-                                            <div>
-                                                <p className="font-medium text-sm">{dokumen.nama_dokumen}</p>
-                                                <p className="text-sm text-muted-foreground">{dokumen.jenis_dokumen}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Badge 
-                                                className={dokumen.terverifikasi ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
-                                            >
-                                                {dokumen.terverifikasi ? 'Terverifikasi' : 'Belum Verifikasi'}
-                                            </Badge>
-                                            <Badge 
-                                                variant="outline"
-                                                className={dokumen.aktif ? 'border-green-200 text-green-700' : 'border-red-200 text-red-700'}
-                                            >
-                                                {dokumen.aktif ? 'Aktif' : 'Tidak Aktif'}
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
                         </CardContent>
                     </Card>

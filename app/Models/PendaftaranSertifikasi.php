@@ -17,6 +17,9 @@ class PendaftaranSertifikasi extends Model
         'batch_id',
         'status',
         'tanggal_pendaftaran',
+        'nama_lengkap',
+        'email',
+        'no_telp',
         'motivasi',
         'catatan_admin',
         'tanggal_diproses',
@@ -47,6 +50,11 @@ class PendaftaranSertifikasi extends Model
     {
     // Explicit foreign key needed; default would assume 'pendaftaran_sertifikasi_id'
     return $this->hasOne(PenilaianSertifikasi::class, 'pendaftaran_id');
+    }
+
+    public function uploadTugas()
+    {
+        return $this->hasMany(UploadTugasSertifikasi::class, 'pendaftaran_id');
     }
 
     public function scopeByStatus($query, $status)

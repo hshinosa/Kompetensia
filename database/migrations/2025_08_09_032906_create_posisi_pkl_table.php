@@ -30,7 +30,7 @@ return new class extends Migration {
             $table->date('tanggal_pendaftaran');
             $table->date('tanggal_mulai')->nullable();
             $table->date('tanggal_selesai')->nullable();
-            $table->string('institusi_asal')->nullable();
+            $table->enum('institusi_asal', ['Sekolah', 'Universitas'])->nullable();
             $table->string('program_studi')->nullable();
             $table->integer('semester')->nullable();
             $table->text('motivasi')->nullable();
@@ -50,7 +50,11 @@ return new class extends Migration {
             $table->enum('memiliki_laptop', ['ya', 'tidak'])->nullable();
             $table->enum('memiliki_kamera_dslr', ['ya', 'tidak'])->nullable();
             $table->string('transportasi_operasional')->nullable();
-            
+            $table->string('cv_file_path')->nullable();
+            $table->string('cv_file_name')->nullable();
+            $table->string('portfolio_file_path')->nullable();
+            $table->string('portfolio_file_name')->nullable();
+
             // Background Pendidikan Fields
             $table->string('asal_sekolah')->nullable();
             $table->string('jurusan')->nullable();
@@ -61,13 +65,12 @@ return new class extends Migration {
             // Skill & Minat Fields
             $table->text('kemampuan_ditingkatkan')->nullable();
             $table->text('skill_kelebihan')->nullable();
-            $table->text('bidang_yang_disukai')->nullable();
             $table->enum('pernah_membuat_video', ['ya', 'tidak'])->nullable();
             
             // Kebijakan & Finalisasi Fields
             $table->enum('sudah_melihat_profil', ['ya', 'tidak'])->nullable();
             $table->integer('tingkat_motivasi')->nullable()->comment('1-10');
-            $table->text('nilai_diri')->nullable();
+            $table->enum('nilai_diri', ['A', 'B', 'C', 'D', 'E'])->nullable()->comment('Grade penilaian diri');
             $table->enum('apakah_merokok', ['ya', 'tidak'])->nullable();
             $table->enum('bersedia_ditempatkan', ['ya', 'tidak'])->nullable();
             $table->enum('bersedia_masuk_2_kali', ['ya', 'tidak'])->nullable();
@@ -108,6 +111,27 @@ return new class extends Migration {
             $table->timestamps();
         });
 
+        // Table untuk upload dokumen PKL (sesuai interface frontend)
+        Schema::create('upload_dokumen_pkl', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('pendaftaran_id')->constrained('pendaftaran_pkl')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->enum('jenis_dokumen', ['proposal', 'laporan-mingguan', 'laporan-akhir', 'evaluasi']);
+            $table->string('judul_tugas')->nullable();
+            $table->string('link_url')->nullable();
+            $table->string('file_name')->nullable();
+            $table->string('file_path')->nullable();
+            $table->string('file_size')->nullable();
+            $table->string('file_type')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->text('keterangan')->nullable();
+            $table->text('feedback')->nullable();
+            $table->string('assessor')->nullable();
+            $table->timestamp('tanggal_upload')->useCurrent();
+            $table->timestamp('tanggal_review')->nullable();
+            $table->timestamps();
+        });
+
         // Tambahkan foreign key constraint untuk dokumen_pengguna setelah tabel pendaftaran_pkl dibuat
         Schema::table('dokumen_pengguna', function (Blueprint $table) {
             $table->foreign('pendaftaran_pkl_id')->references('id')->on('pendaftaran_pkl')->onDelete('cascade');
@@ -121,6 +145,7 @@ return new class extends Migration {
             $table->dropForeign(['pendaftaran_pkl_id']);
         });
 
+        Schema::dropIfExists('upload_dokumen_pkl');
         Schema::dropIfExists('laporan_mingguan');
         Schema::dropIfExists('penilaian_pkl');
         Schema::dropIfExists('pendaftaran_pkl');

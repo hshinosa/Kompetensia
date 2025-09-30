@@ -50,8 +50,6 @@ interface PenggunaIndexProps {
     stats: {
         total: number;
         admin: number;
-        instruktur: number;
-        asesor: number;
         mahasiswa: number;
         aktif: number;
         tidak_aktif: number;
@@ -112,8 +110,6 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
     const roleOptions = [
         { value: 'all', label: 'Semua Role' },
         { value: 'admin', label: 'Admin' },
-        { value: 'instruktur', label: 'Instruktur' },
-        { value: 'asesor', label: 'Asesor' },
         { value: 'mahasiswa', label: 'Mahasiswa' }
     ];
 
@@ -127,8 +123,6 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
     const getRoleBadgeColor = (role: string) => {
         switch (role) {
             case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-            case 'instruktur': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-            case 'asesor': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
             case 'mahasiswa': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
             default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
         }
@@ -176,7 +170,7 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid gap-4 md:grid-cols-6">
+                <div className="grid gap-4 md:grid-cols-4">
                     <StatsCard 
                         label="Total Pengguna" 
                         value={stats.total} 
@@ -188,18 +182,6 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
                         value={stats.admin} 
                         icon={<Shield className="h-5 w-5" />} 
                         iconColor="text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-400/10"
-                    />
-                    <StatsCard 
-                        label="Instruktur" 
-                        value={stats.instruktur} 
-                        icon={<Building className="h-5 w-5" />} 
-                        iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10"
-                    />
-                    <StatsCard 
-                        label="Asesor" 
-                        value={stats.asesor} 
-                        icon={<UserCheck className="h-5 w-5" />} 
-                        iconColor="text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-400/10"
                     />
                     <StatsCard 
                         label="Mahasiswa" 
@@ -307,8 +289,8 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge className={getStatusBadgeColor(user.status_akun || '', user.aktif || false)}>
-                                                        {user.aktif ? (user.status_akun || 'Aktif') : 'Tidak Aktif'}
+                                                    <Badge className={user.aktif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                                                        {user.aktif ? 'Aktif' : 'Tidak Aktif'}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>{formatDate(user.created_at)}</TableCell>
@@ -330,18 +312,6 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
                                                                 <Link href={`/admin/pengguna/${user.id}/edit`} className="flex items-center gap-2">
                                                                     <Edit className="h-4 w-4" />
                                                                     Edit
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/admin/pengguna/${user.id}/aktivitas`} className="flex items-center gap-2">
-                                                                    <UserCheck className="h-4 w-4" />
-                                                                    Aktivitas
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={`/admin/pengguna/${user.id}/dokumen`} className="flex items-center gap-2">
-                                                                    <Building className="h-4 w-4" />
-                                                                    Dokumen
                                                                 </Link>
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>

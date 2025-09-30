@@ -34,40 +34,21 @@ export interface SharedData {
 
 export interface User {
     id: number;
-    // New Indonesian field names (primary)
-    nama?: string;
+    nama: string;
     nama_lengkap?: string;
     email: string;
     telepon?: string;
     alamat?: string;
     tanggal_lahir?: string;
     tempat_lahir?: string;
-    jenis_kelamin?: string;
-    institusi?: string;
-    jurusan?: string;
-    semester?: number;
+    gender?: string;
     role?: string;
     aktif?: boolean;
-    status_akun?: string;
-    tipe_pengguna?: string;
     foto_profil?: string;
     
-    // Legacy field names (for backward compatibility)
-    name?: string;
-    full_name?: string;
-    phone?: string;
-    address?: string;
-    birth_date?: string;
-    birth_place?: string;
-    gender?: string;
-    institution?: string;
-    major?: string;
-    is_active?: boolean;
-    account_status?: string;
-    user_type?: string;
-    avatar?: string;
-    
     email_verified_at: string | null;
+    created_at: string;
+    updated_at: string;
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
@@ -124,7 +105,6 @@ export interface PendaftaranPKL {
     pkl: PKL;
     posisi: PosisiPKL;
     penilaian?: PenilaianPKL;
-    laporanMingguan?: WeeklyReport[];
 }
 
 export interface PenilaianPKL {
