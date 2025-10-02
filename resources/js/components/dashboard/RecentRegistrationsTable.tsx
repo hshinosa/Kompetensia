@@ -18,6 +18,7 @@ export interface RegistrationRow {
   batch?: string | null; 
   tanggal: string; 
   status: string;
+  type: string;
 }
 
 interface RecentRegistrationsTableProps { 

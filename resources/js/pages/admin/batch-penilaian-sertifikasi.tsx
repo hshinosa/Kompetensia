@@ -317,15 +317,34 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
       tanggal_selesai: certDate,
       catatan_admin: certNote,
     }, {
-      onSuccess: () => {
+      preserveScroll: true,
+      onSuccess: (page) => {
+        // Close modal
         setOpenCertModal(false);
+        
+        // Reset form
         setCertLink('');
         setCertDate('');
         setCertNote('');
         setCertPendaftaranId(null);
         setIsSubmittingCert(false);
+        
+        // Show success message
+        const flash = page.props?.flash as { success?: string; error?: string } | undefined;
+        if (flash?.success) {
+          alert(flash.success);
+        }
       },
-      onError: () => {
+      onError: (errors) => {
+        setIsSubmittingCert(false);
+        
+        // Show error message
+        const errorMsg = typeof errors === 'object' && errors 
+          ? Object.values(errors).flat().join(', ')
+          : 'Gagal menerbitkan sertifikat';
+        alert(errorMsg);
+      },
+      onFinish: () => {
         setIsSubmittingCert(false);
       }
     });

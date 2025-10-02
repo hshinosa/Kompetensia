@@ -40,11 +40,13 @@ class SertifikatKelulusanController extends Controller
             try {
                 // Create or update penilaian with status "Lulus"
                 $penilaian = PenilaianSertifikasi::updateOrCreate(
-                    ['pendaftaran_sertifikasi_id' => $pendaftaranId],
+                    ['pendaftaran_id' => $pendaftaranId],
                     [
-                        'status_penilaian' => 'Lulus',
+                        'sertifikasi_id' => $pendaftaran->sertifikasi_id,
+                        'batch_id' => $pendaftaran->batch_id,
+                        'asesor_id' => Auth::guard('admin')->id(),
+                        'status_penilaian' => 'Diterima',
                         'tanggal_penilaian' => now(),
-                        'dinilai_oleh' => Auth::guard('admin')->id(),
                     ]
                 );
 
@@ -63,20 +65,21 @@ class SertifikatKelulusanController extends Controller
 
                 DB::commit();
 
-                return redirect()->back()->with('success', 'Sertifikat berhasil diterbitkan dan status penilaian diperbarui menjadi Lulus');
+                // For Inertia requests, return back with flash message
+                return back()->with('success', 'Sertifikat berhasil diterbitkan dan status penilaian diperbarui menjadi Lulus');
             } catch (\Exception $e) {
                 DB::rollBack();
                 throw $e;
             }
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
+            return back()
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
             Log::error('Error creating certificate: ' . $e->getMessage());
             
-            return redirect()->back()->with('error', 'Gagal menerbitkan sertifikat');
+            return back()->with('error', 'Gagal menerbitkan sertifikat: ' . $e->getMessage());
         }
     }
 

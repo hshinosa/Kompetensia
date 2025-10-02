@@ -36,6 +36,8 @@ export interface PKLInfo {
 
 export interface PendaftarData { 
   user_id?: number;
+  original_id?: number;
+  type?: string;
   nama: string; 
   full_name?: string;
   jenis_pendaftaran: 'Sertifikasi Kompetensi' | 'Praktik Kerja Lapangan';

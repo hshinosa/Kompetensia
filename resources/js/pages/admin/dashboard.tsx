@@ -47,7 +47,8 @@ export default function Dashboard() {
     program: p.program, 
     batch: p.batch, 
     tanggal: p.tanggal_pendaftaran, 
-    status: p.status 
+    status: p.status,
+    type: p.type
   }));
   
   // Modal state for approval
@@ -99,6 +100,8 @@ export default function Dashboard() {
       // Just pass the data directly as it already matches our interface
       const transformedData: PendaftarData = {
         user_id: data.user_id,
+        original_id: registrationId,
+        type: type,
         nama: data.nama,
         full_name: data.full_name,
         jenis_pendaftaran: data.jenis_pendaftaran,
@@ -124,19 +127,20 @@ export default function Dashboard() {
     if (!selectedRegistration) return;
     
     try {
-      // Find the original registration to get type and id
-      const originalRow = rows.find(r => r.nama === selectedRegistration.nama);
-      if (!originalRow) {
-        throw new Error('Pendaftaran tidak ditemukan');
-      }
+      // Use original_id and type directly from selectedRegistration
+      const id = selectedRegistration.original_id;
+      const type = selectedRegistration.type;
       
-      const type = originalRow.jenis.toLowerCase().includes('sertifikasi') ? 'sertifikasi' : 'pkl';
+      if (!id || !type) {
+        throw new Error('Data pendaftaran tidak lengkap');
+      }
       
       console.log('Sending approval request:', {
         type,
-        id: originalRow.original_id,
+        id,
         status,
-        alasan
+        alasan,
+        selectedRegistration: selectedRegistration
       });
       
       // Get CSRF token
@@ -146,7 +150,7 @@ export default function Dashboard() {
       }
       
       // Use fetch API for JSON response (not Inertia response)
-      const response = await fetch(`/admin/pendaftaran/${type}/${originalRow.original_id}/approve`, {
+      const response = await fetch(`/admin/pendaftaran/${type}/${id}/approve`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -219,7 +223,8 @@ export default function Dashboard() {
   const handleRegistrationAction = (registration: RegistrationRow) => {
     if (isLoadingDetail) return;
     
-    const type = registration.jenis.toLowerCase().includes('sertifikasi') ? 'sertifikasi' : 'pkl' as 'sertifikasi' | 'pkl';
+    // Use the type field directly from backend data
+    const type = (registration.type || (registration.jenis.toLowerCase().includes('sertifikasi') ? 'sertifikasi' : 'pkl')) as 'sertifikasi' | 'pkl';
     fetchRegistrationDetail(registration.original_id, type);
   };
 

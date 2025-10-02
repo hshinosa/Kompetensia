@@ -261,47 +261,59 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                   {detailedData.jenis_pengajuan.toLowerCase().includes('sertifikasi') ? (
                     <div className="space-y-6">
                       {/* Program Info */}
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Program</h3>
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl border border-purple-200 shadow-sm">
+                        <div className="flex items-center mb-4">
+                          <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">Informasi Program</h3>
+                        </div>
                         <div className="space-y-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Pengajuan</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.jenis_pengajuan}</p>
+                            <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.jenis_pengajuan}</p>
                           </div>
                           {detailedData.sertifikasi && (
                             <>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama Sertifikasi</label>
-                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.nama_sertifikasi}</p>
+                                <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.sertifikasi.nama_sertifikasi}</p>
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Sertifikasi</label>
-                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.jenis_sertifikasi}</p>
+                                <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.sertifikasi.jenis_sertifikasi}</p>
                               </div>
                               {detailedData.sertifikasi.deskripsi && (
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                                  <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.deskripsi}</p>
+                                  <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.sertifikasi.deskripsi}</p>
                                 </div>
                               )}
                             </>
                           )}
                           {detailedData.batch && (
-                            <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-400">
-                              <h4 className="font-medium text-purple-800 mb-2">Batch yang Dipilih</h4>
-                              <div className="grid grid-cols-1 gap-2">
+                            <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500 shadow-sm">
+                              <h4 className="font-semibold text-purple-800 mb-3 flex items-center">
+                                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+                                </svg>
+                                Batch yang Dipilih
+                              </h4>
+                              <div className="grid grid-cols-1 gap-3">
                                 <div>
-                                  <label className="block text-xs font-medium text-purple-700 mb-1">Nama Batch</label>
-                                  <p className="text-purple-900">{detailedData.batch.nama_batch}</p>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">Nama Batch</label>
+                                  <p className="text-gray-900 font-medium">{detailedData.batch.nama_batch}</p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-2 gap-3">
                                   <div>
-                                    <label className="block text-xs font-medium text-purple-700 mb-1">Tanggal Mulai</label>
-                                    <p className="text-purple-900">{detailedData.batch.tanggal_mulai}</p>
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal Mulai</label>
+                                    <p className="text-gray-900">{detailedData.batch.tanggal_mulai}</p>
                                   </div>
                                   <div>
-                                    <label className="block text-xs font-medium text-purple-700 mb-1">Tanggal Selesai</label>
-                                    <p className="text-purple-900">{detailedData.batch.tanggal_selesai}</p>
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal Selesai</label>
+                                    <p className="text-gray-900">{detailedData.batch.tanggal_selesai}</p>
                                   </div>
                                 </div>
                               </div>
@@ -311,33 +323,50 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                       </div>
 
                       {/* Data Pribadi - Simplified for Sertifikasi */}
-                      <div className="bg-green-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Data Pribadi</h3>
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200 shadow-sm">
+                        <div className="flex items-center mb-4">
+                          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">Data Pribadi</h3>
+                        </div>
                         <div className="space-y-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                            <p className="bg-white p-2 rounded border text-gray-900 font-medium">{detailedData.data_diri.nama_lengkap}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900 font-medium">{detailedData.data_diri.nama_lengkap}</p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.email_pendaftar || detailedData.data_diri.email}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.email_pendaftar || detailedData.data_diri.email}</p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.nomor_handphone || detailedData.data_diri.nomor_telepon || detailedData.data_diri.no_telp}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.nomor_handphone || detailedData.data_diri.nomor_telepon || detailedData.data_diri.no_telp}</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Catatan Admin untuk Sertifikasi */}
                       {detailedData.catatan_admin && (
-                        <div className="bg-red-50 p-4 rounded-lg">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                            {pengajuanData.status === 'Disetujui' ? 'Catatan Persetujuan' : 
-                             pengajuanData.status === 'Ditolak' ? 'Catatan Penolakan' : 'Catatan Admin'}
-                          </h3>
-                          <div className="bg-white p-4 rounded-lg border-l-4 border-red-400">
-                            <p className="text-gray-900 whitespace-pre-wrap">{detailedData.catatan_admin}</p>
+                        <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-5 rounded-xl border border-amber-200 shadow-sm">
+                          <div className="flex items-center mb-4">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
+                              pengajuanData.status === 'Disetujui' ? 'bg-green-600' : 
+                              pengajuanData.status === 'Ditolak' ? 'bg-red-600' : 'bg-amber-600'
+                            }`}>
+                              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {pengajuanData.status === 'Disetujui' ? 'Catatan Persetujuan' : 
+                               pengajuanData.status === 'Ditolak' ? 'Catatan Penolakan' : 'Catatan Admin'}
+                            </h3>
+                          </div>
+                          <div className="bg-white p-4 rounded-lg border-l-4 border-amber-500 shadow-sm">
+                            <p className="text-gray-900 whitespace-pre-wrap leading-relaxed">{detailedData.catatan_admin}</p>
                           </div>
                         </div>
                       )}
@@ -348,32 +377,39 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                       {/* Left Column */}
                       <div className="space-y-6">
                         {/* Program Info */}
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Program</h3>
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl border border-purple-200 shadow-sm">
+                          <div className="flex items-center mb-4">
+                            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900">Informasi Program</h3>
+                          </div>
                           <div className="space-y-3">
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Pengajuan</label>
-                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.jenis_pengajuan}</p>
+                              <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.jenis_pengajuan}</p>
                             </div>
                             {detailedData.posisi_pkl && (
                           <>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">Posisi PKL</label>
-                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.posisi_pkl.nama_posisi}</p>
+                              <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.posisi_pkl.nama_posisi}</p>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.posisi_pkl.kategori}</p>
+                                <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.posisi_pkl.kategori}</p>
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
-                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.posisi_pkl.tipe}</p>
+                                <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.posisi_pkl.tipe}</p>
                               </div>
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">Durasi (Bulan)</label>
-                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.posisi_pkl.durasi_bulan}</p>
+                              <p className="bg-white p-3 rounded-lg border border-purple-200 text-gray-900">{detailedData.posisi_pkl.durasi_bulan}</p>
                             </div>
                           </>
                         )}
@@ -396,26 +432,31 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                           </>
                         )}
                         {detailedData.batch && (
-                          <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-400">
-                            <h4 className="font-medium text-purple-800 mb-2">Batch yang Dipilih</h4>
-                            <div className="grid grid-cols-1 gap-2">
+                          <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500 shadow-sm">
+                            <h4 className="font-semibold text-purple-800 mb-3 flex items-center">
+                              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+                              </svg>
+                              Batch yang Dipilih
+                            </h4>
+                            <div className="grid grid-cols-1 gap-3">
                               <div>
-                                <label className="block text-xs font-medium text-purple-700 mb-1">Nama Batch</label>
-                                <p className="text-purple-900">{detailedData.batch.nama_batch}</p>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">Nama Batch</label>
+                                <p className="text-gray-900 font-medium">{detailedData.batch.nama_batch}</p>
                               </div>
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                  <label className="block text-xs font-medium text-purple-700 mb-1">Tanggal Mulai</label>
-                                  <p className="text-purple-900">{detailedData.batch.tanggal_mulai}</p>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal Mulai</label>
+                                  <p className="text-gray-900">{detailedData.batch.tanggal_mulai}</p>
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-medium text-purple-700 mb-1">Tanggal Selesai</label>
-                                  <p className="text-purple-900">{detailedData.batch.tanggal_selesai}</p>
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal Selesai</label>
+                                  <p className="text-gray-900">{detailedData.batch.tanggal_selesai}</p>
                                 </div>
                               </div>
                               <div>
-                                <label className="block text-xs font-medium text-purple-700 mb-1">Kapasitas Peserta</label>
-                                <p className="text-purple-900">{detailedData.batch.kapasitas_peserta} orang</p>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">Kapasitas Peserta</label>
+                                <p className="text-gray-900">{detailedData.batch.kapasitas_peserta} orang</p>
                               </div>
                             </div>
                           </div>
@@ -424,92 +465,113 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                     </div>
 
                     {/* Data Diri */}
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Data Pribadi</h3>
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border border-blue-200 shadow-sm">
+                      <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">Data Pribadi</h3>
+                      </div>
                       <div className="space-y-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                          <p className="bg-white p-2 rounded border text-gray-900 font-medium">{detailedData.data_diri.nama_lengkap}</p>
+                          <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900 font-medium">{detailedData.data_diri.nama_lengkap}</p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.email_pendaftar || detailedData.data_diri.email}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.email_pendaftar || detailedData.data_diri.email}</p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.nomor_handphone || detailedData.data_diri.nomor_telepon || detailedData.data_diri.no_telp}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.nomor_handphone || detailedData.data_diri.nomor_telepon || detailedData.data_diri.no_telp}</p>
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.tempat_lahir || 'N/A'}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.tempat_lahir || 'N/A'}</p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.tanggal_lahir ? formatDateSimple(detailedData.data_diri.tanggal_lahir) : 'Tidak ada data'}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.tanggal_lahir ? formatDateSimple(detailedData.data_diri.tanggal_lahir) : 'Tidak ada data'}</p>
                           </div>
                         </div>
                         {detailedData.data_diri.alamat_lengkap && (
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.alamat_lengkap}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.alamat_lengkap}</p>
                           </div>
                         )}
                         {/* Social Media Links - Always show for PKL */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.instagram || 'N/A'}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.instagram || 'N/A'}</p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">TikTok</label>
-                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.tiktok || 'N/A'}</p>
+                            <p className="bg-white p-3 rounded-lg border border-blue-200 text-gray-900">{detailedData.data_diri.tiktok || 'N/A'}</p>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Background Pendidikan */}
-                    <div className="bg-yellow-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Latar Belakang Pendidikan</h3>
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-xl border border-green-200 shadow-sm">
+                      <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">Latar Belakang Pendidikan</h3>
+                      </div>
                       <div className="space-y-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Institusi Asal</label>
-                          <p className="bg-white p-2 rounded border text-gray-900 font-medium">{detailedData.background_pendidikan?.institusi_asal || 'N/A'}</p>
+                          <p className="bg-white p-3 rounded-lg border border-green-200 text-gray-900 font-medium">{detailedData.background_pendidikan?.institusi_asal || 'N/A'}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Nama Sekolah/Universitas</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.asal_sekolah || detailedData.background_pendidikan?.jenis_institusi || 'N/A'}</p>
+                          <p className="bg-white p-3 rounded-lg border border-green-200 text-gray-900">{detailedData.background_pendidikan?.asal_sekolah || detailedData.background_pendidikan?.jenis_institusi || 'N/A'}</p>
                         </div>
                         {detailedData.background_pendidikan?.institusi_asal === 'Sekolah' ? (
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">Jurusan</label>
-                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.jurusan || 'N/A'}</p>
+                              <p className="bg-white p-3 rounded-lg border border-green-200 text-gray-900">{detailedData.background_pendidikan?.jurusan || 'N/A'}</p>
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
-                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.kelas || 'N/A'}</p>
+                              <p className="bg-white p-3 rounded-lg border border-green-200 text-gray-900">{detailedData.background_pendidikan?.kelas || 'N/A'}</p>
                             </div>
                           </div>
                         ) : (
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">Program Studi</label>
-                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.program_studi || 'N/A'}</p>
+                              <p className="bg-white p-3 rounded-lg border border-green-200 text-gray-900">{detailedData.background_pendidikan?.program_studi || 'N/A'}</p>
                             </div>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
-                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.background_pendidikan?.semester || 'N/A'}</p>
+                              <p className="bg-white p-3 rounded-lg border border-green-200 text-gray-900">{detailedData.background_pendidikan?.semester || 'N/A'}</p>
                             </div>
                           </div>
                         )}
                         {/* Period PKL for both school and university */}
                         {detailedData && detailedData.posisi_pkl && detailedData.background_pendidikan && (
-                          <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
-                            <h4 className="font-medium text-blue-800 mb-2">Periode PKL</h4>
+                          <div className="bg-white p-4 rounded-lg border-l-4 border-green-500 shadow-sm">
+                            <h4 className="font-semibold text-green-800 mb-3 flex items-center">
+                              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+                              </svg>
+                              Periode PKL
+                            </h4>
                             <div className="grid grid-cols-2 gap-3 text-sm">
                               <div>
                                 <span className="text-gray-600">Periode Awal:</span>
@@ -530,20 +592,27 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                   <div className="space-y-6">
                     {/* Skill & Minat for PKL */}
                     {detailedData && detailedData.posisi_pkl && detailedData.skill_minat && (
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Skill & Minat</h3>
+                    <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-5 rounded-xl border border-indigo-200 shadow-sm">
+                      <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center mr-3">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">Skill & Minat</h3>
+                      </div>
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Skill/Kelebihan</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat.skill_kelebihan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-indigo-200 text-gray-900">{detailedData.skill_minat.skill_kelebihan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Kemampuan yang Ingin Ditingkatkan</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat.kemampuan_ditingkatkan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-indigo-200 text-gray-900">{detailedData.skill_minat.kemampuan_ditingkatkan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Pernah Membuat Video</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat.pernah_membuat_video || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-indigo-200 text-gray-900">{detailedData.skill_minat.pernah_membuat_video || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                       </div>
                     </div>
@@ -551,22 +620,29 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
 
                     {/* Motivasi PKL */}
                     {detailedData && detailedData.posisi_pkl && (
-                      <div className="bg-indigo-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Motivasi PKL</h3>
+                      <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-5 rounded-xl border border-pink-200 shadow-sm">
+                        <div className="flex items-center mb-4">
+                          <div className="w-10 h-10 bg-pink-600 rounded-lg flex items-center justify-center mr-3">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">Motivasi PKL</h3>
+                        </div>
                         <div className="space-y-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Tingkat Motivasi</label>
-                            <div className="bg-white p-2 rounded border">
-                              <span className="text-lg font-bold text-indigo-600">{detailedData.motivasi_pkl?.tingkat_motivasi || 'Tidak ada data'}</span>
+                            <div className="bg-white p-3 rounded-lg border border-pink-200">
+                              <span className="text-lg font-bold text-pink-600">{detailedData.motivasi_pkl?.tingkat_motivasi || 'Tidak ada data'}</span>
                             </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Nilai Diri</label>
-                            <p className="bg-white p-2 rounded border text-gray-900 whitespace-pre-wrap">{detailedData.motivasi_pkl?.nilai_diri || 'Tidak ada data'}</p>
+                            <p className="bg-white p-3 rounded-lg border border-pink-200 text-gray-900 whitespace-pre-wrap">{detailedData.motivasi_pkl?.nilai_diri || 'Tidak ada data'}</p>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Motivasi</label>
-                            <p className="bg-white p-2 rounded border text-gray-900 whitespace-pre-wrap">{detailedData.motivasi_pkl?.motivasi || 'Tidak ada data'}</p>
+                            <p className="bg-white p-3 rounded-lg border border-pink-200 text-gray-900 whitespace-pre-wrap">{detailedData.motivasi_pkl?.motivasi || 'Tidak ada data'}</p>
                           </div>
                         </div>
                       </div>
@@ -574,32 +650,39 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
 
                     {/* Persyaratan Khusus PKL */}
                     {detailedData && detailedData.posisi_pkl && detailedData.persyaratan_khusus && (
-                    <div className="bg-teal-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Persyaratan Khusus</h3>
+                    <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-5 rounded-xl border border-teal-200 shadow-sm">
+                      <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center mr-3">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">Persyaratan Khusus</h3>
+                      </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Memiliki Laptop</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.memiliki_laptop || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-teal-200 text-gray-900">{detailedData.persyaratan_khusus.memiliki_laptop || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Memiliki Kamera DSLR</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.memiliki_kamera_dslr || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-teal-200 text-gray-900">{detailedData.persyaratan_khusus.memiliki_kamera_dslr || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Transportasi Operasional</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.transportasi_operasional || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-teal-200 text-gray-900">{detailedData.persyaratan_khusus.transportasi_operasional || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Apakah Merokok</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.apakah_merokok || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-teal-200 text-gray-900">{detailedData.persyaratan_khusus.apakah_merokok || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Bersedia Ditempatkan</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.bersedia_ditempatkan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-teal-200 text-gray-900">{detailedData.persyaratan_khusus.bersedia_ditempatkan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Bersedia Masuk 2x Seminggu</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.bersedia_masuk_2_kali || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
+                          <p className="bg-white p-3 rounded-lg border border-teal-200 text-gray-900">{detailedData.persyaratan_khusus.bersedia_masuk_2_kali || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                       </div>
                     </div>
@@ -607,40 +690,51 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
 
                     {/* Berkas PKL */}
                     {detailedData.posisi_pkl && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Berkas yang Diunggah</h3>
+                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-5 rounded-xl border border-orange-200 shadow-sm">
+                        <div className="flex items-center mb-4">
+                          <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center mr-3">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">Berkas yang Diunggah</h3>
+                        </div>
                         <div className="space-y-3">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">CV</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">CV</label>
                             {(detailedData.berkas?.cv_file_name || detailedData.cv_file_name) ? (
-                              <div className="bg-white p-2 rounded border flex items-center space-x-2">
-                                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <span className="text-sm text-gray-900 flex-1 truncate">{detailedData.berkas?.cv_file_name || detailedData.cv_file_name}</span>
-                                <button className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                              <div className="bg-white p-3 rounded-lg border border-orange-200 flex items-center space-x-3 hover:shadow-md transition-shadow">
+                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm text-gray-900 flex-1 truncate font-medium">{detailedData.berkas?.cv_file_name || detailedData.cv_file_name}</span>
+                                <button className="text-xs bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors font-medium">
                                   Download
                                 </button>
                               </div>
                             ) : (
-                              <p className="bg-white p-2 rounded border text-gray-500 text-sm">Tidak ada file CV</p>
+                              <p className="bg-white p-3 rounded-lg border border-orange-200 text-gray-500 text-sm text-center">Tidak ada file CV</p>
                             )}
                           </div>
                           
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Portfolio</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Portfolio</label>
                             {(detailedData.berkas?.portfolio_file_name || detailedData.portfolio_file_name) ? (
-                              <div className="bg-white p-2 rounded border flex items-center space-x-2">
-                                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <span className="text-sm text-gray-900 flex-1 truncate">{detailedData.berkas?.portfolio_file_name || detailedData.portfolio_file_name}</span>
-                                <button className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">
+                              <div className="bg-white p-3 rounded-lg border border-orange-200 flex items-center space-x-3 hover:shadow-md transition-shadow">
+                                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm text-gray-900 flex-1 truncate font-medium">{detailedData.berkas?.portfolio_file_name || detailedData.portfolio_file_name}</span>
+                                <button className="text-xs bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors font-medium">
                                   Download
                                 </button>
                               </div>
                             ) : (
-                              <p className="bg-white p-2 rounded border text-gray-500 text-sm">Tidak ada file portfolio</p>
+                              <p className="bg-white p-3 rounded-lg border border-orange-200 text-gray-500 text-sm text-center">Tidak ada file portfolio</p>
                             )}
                           </div>
                         </div>
@@ -649,9 +743,16 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
 
                     {/* Berkas Persyaratan for Sertifikasi */}
                     {detailedData.berkas_persyaratan && detailedData.jenis_pengajuan.toLowerCase().includes('sertifikasi') && (
-                      <div className="bg-orange-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Berkas Persyaratan</h3>
-                        <div className="bg-white p-3 rounded border text-gray-900">
+                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-5 rounded-xl border border-orange-200 shadow-sm">
+                        <div className="flex items-center mb-4">
+                          <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center mr-3">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">Berkas Persyaratan</h3>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg border border-orange-200 text-gray-900 text-center">
                           {Array.isArray(detailedData.berkas_persyaratan) 
                             ? detailedData.berkas_persyaratan.length + ' file(s) uploaded'
                             : 'Berkas telah diunggah'
@@ -662,13 +763,23 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
 
                     {/* Catatan Admin */}
                     {detailedData.catatan_admin && (
-                      <div className="bg-red-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                          {pengajuanData.status === 'Disetujui' ? 'Catatan Persetujuan' : 
-                           pengajuanData.status === 'Ditolak' ? 'Catatan Penolakan' : 'Catatan Admin'}
-                        </h3>
-                        <div className="bg-white p-4 rounded-lg border-l-4 border-red-400">
-                          <p className="text-gray-900 whitespace-pre-wrap">{detailedData.catatan_admin}</p>
+                      <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-5 rounded-xl border border-amber-200 shadow-sm">
+                        <div className="flex items-center mb-4">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
+                            pengajuanData.status === 'Disetujui' ? 'bg-green-600' : 
+                            pengajuanData.status === 'Ditolak' ? 'bg-red-600' : 'bg-amber-600'
+                          }`}>
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {pengajuanData.status === 'Disetujui' ? 'Catatan Persetujuan' : 
+                             pengajuanData.status === 'Ditolak' ? 'Catatan Penolakan' : 'Catatan Admin'}
+                          </h3>
+                        </div>
+                        <div className="bg-white p-4 rounded-lg border-l-4 border-amber-500 shadow-sm">
+                          <p className="text-gray-900 whitespace-pre-wrap leading-relaxed">{detailedData.catatan_admin}</p>
                         </div>
                       </div>
                     )}
