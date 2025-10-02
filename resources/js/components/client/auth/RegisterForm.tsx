@@ -55,7 +55,7 @@ export default function RegisterForm() {
                                     type="email"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
-                                    placeholder="admin@kompetensia.com"
+                                    placeholder="admin@ujikom.com"
                                     className={`w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-600 text-base ${
                                         errors.email ? 'border-red-400' : ''
                                     }`}

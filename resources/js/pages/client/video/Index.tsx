@@ -31,6 +31,15 @@ export default function Index({ videos, featured }: VideoIndexProps) {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Debug pagination data
+  console.log('Videos pagination data:', {
+    total: videos?.meta?.total,
+    per_page: videos?.meta?.per_page,
+    current_page: videos?.meta?.current_page,
+    last_page: videos?.meta?.last_page,
+    links_count: videos?.links?.length
+  });
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
       year: 'numeric',
@@ -79,7 +88,7 @@ export default function Index({ videos, featured }: VideoIndexProps) {
 
   return (
     <ClientLayout>
-      <Head title="Video - Kompetensia" />
+      <Head title="Video - Ujikom" />
       
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}
@@ -91,7 +100,7 @@ export default function Index({ videos, featured }: VideoIndexProps) {
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Video Unggulan</h2>
             <div className="grid md:grid-cols-3 gap-8">
               {featured.map((video) => (
-                <div key={video.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div key={video.id} className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
                   <div className="aspect-video bg-gradient-to-br from-red-500 to-purple-500 relative group cursor-pointer" onClick={() => handleVideoClick(video)}>
                     {video.thumbnail || getVideoThumbnail(video.video_url) ? (
                       <img 
@@ -159,21 +168,13 @@ export default function Index({ videos, featured }: VideoIndexProps) {
         <div className="container mx-auto px-4 py-10">
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">Semua Video</h2>
-            
-            {/* Filter buttons */}
-            <div className="flex gap-2">
-              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium">Semua</button>
-              <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">Tutorial</button>
-              <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">Webinar</button>
-              <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">Tips</button>
-            </div>
           </div>
 
           {/* Videos Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
             {videos.data && videos.data.length > 0 ? (
               videos.data.map((video) => (
-                <div key={video.id} className="bg-white rounded-xl border-2 border-purple-200 overflow-hidden hover:shadow-lg transition-all hover:border-purple-300">
+                <div key={video.id} className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
                   <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 relative group cursor-pointer" onClick={() => handleVideoClick(video)}>
                     {video.thumbnail || getVideoThumbnail(video.video_url) ? (
                       <img 
@@ -243,34 +244,39 @@ export default function Index({ videos, featured }: VideoIndexProps) {
           {videos.links && videos.meta && videos.meta.last_page > 1 && (
             <div className="flex justify-center items-center space-x-4 mt-8">
               {/* Previous Button */}
-              {videos.links.find((link: any) => link.label.includes('Previous')) && (
-                <Link
-                  href={videos.links.find((link: any) => link.label.includes('Previous'))?.url || '#'}
-                  className={`p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors ${
-                    !videos.links.find((link: any) => link.label.includes('Previous'))?.url 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : ''
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </Link>
-              )}
+              {(() => {
+                const prevLink = videos.links.find((link: any) => link.label.includes('Previous') || link.label.includes('&laquo;'));
+                return prevLink && (
+                  <Link
+                    href={prevLink.url || '#'}
+                    preserveScroll
+                    className={`p-2 rounded-lg border border-gray-300 transition-colors ${
+                      !prevLink.url 
+                        ? 'opacity-50 cursor-not-allowed' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Link>
+                );
+              })()}
               
               {/* Page Numbers */}
               <div className="flex space-x-1">
                 {videos.links
-                  .filter((link: any) => !link.label.includes('Previous') && !link.label.includes('Next'))
+                  .filter((link: any) => !link.label.includes('Previous') && !link.label.includes('Next') && !link.label.includes('&laquo;') && !link.label.includes('&raquo;'))
                   .map((link: any, index: number) => (
                     <Link
                       key={index}
                       href={link.url || '#'}
+                      preserveScroll
                       className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
                         link.active
                           ? 'bg-purple-600 text-white'
                           : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
-                      } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''} flex items-center justify-center`}
+                      } flex items-center justify-center`}
                     >
                       <span dangerouslySetInnerHTML={{ __html: link.label }} />
                     </Link>
@@ -278,20 +284,24 @@ export default function Index({ videos, featured }: VideoIndexProps) {
               </div>
               
               {/* Next Button */}
-              {videos.links.find((link: any) => link.label.includes('Next')) && (
-                <Link
-                  href={videos.links.find((link: any) => link.label.includes('Next'))?.url || '#'}
-                  className={`p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors ${
-                    !videos.links.find((link: any) => link.label.includes('Next'))?.url 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : ''
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              )}
+              {(() => {
+                const nextLink = videos.links.find((link: any) => link.label.includes('Next') || link.label.includes('&raquo;'));
+                return nextLink && (
+                  <Link
+                    href={nextLink.url || '#'}
+                    preserveScroll
+                    className={`p-2 rounded-lg border border-gray-300 transition-colors ${
+                      !nextLink.url 
+                        ? 'opacity-50 cursor-not-allowed' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                );
+              })()}
             </div>
           )}
 

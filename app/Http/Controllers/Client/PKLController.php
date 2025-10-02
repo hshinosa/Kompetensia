@@ -95,6 +95,7 @@ class PKLController extends Controller
             // Get user's PKL registration for this program
             $pendaftaran = null;
             $uploadedDocuments = [];
+            $existingReview = null;
             
             if ($user) {
                 $pendaftaran = PendaftaranPKL::where('user_id', $user->id)
@@ -109,22 +110,35 @@ class PKLController extends Controller
                         ->map(function ($doc, $index) {
                             return [
                                 'no' => $index + 1,
-                                'tanggal' => $doc->tanggal_upload->format('Y-m-d'),
+                                'tanggal' => $doc->tanggal_upload ? $doc->tanggal_upload->format('Y-m-d') : now()->format('Y-m-d'),
                                 'jenis_dokumen' => $doc->jenis_dokumen_text,
                                 'dokumen' => $doc->file_name,
-                                'disetujui' => $doc->status === 'approved',
-                                'keterangan' => $doc->keterangan,
+                                'disetujui' => $doc->status === 'approved' ? true : ($doc->status === 'rejected' ? false : null),
+                                'status' => $doc->status,
+                                'keterangan' => $doc->keterangan ?? '',
                                 'feedback' => $doc->feedback,
                                 'assessor' => $doc->assessor,
+                                'link_url' => $doc->link_url,
                             ];
                         });
                 }
+
+                // Get existing review
+                $existingReview = \App\Models\ReviewPKL::where('user_id', $user->id)
+                    ->where('posisi_pkl_id', $id)
+                    ->first();
             }
             
             return Inertia::render('client/pkl/detail', [
                 'pkl' => $pkl,
                 'pendaftaran' => $pendaftaran,
-                'uploadedDocuments' => $uploadedDocuments
+                'uploadedDocuments' => $uploadedDocuments,
+                'existingReview' => $existingReview ? [
+                    'id' => $existingReview->id,
+                    'rating' => $existingReview->rating,
+                    'review' => $existingReview->review,
+                    'created_at' => $existingReview->created_at->format('Y-m-d H:i:s')
+                ] : null
             ]);
         } catch (\Exception $e) {
             \Log::error('Error loading PKL detail: ' . $e->getMessage());
@@ -145,11 +159,16 @@ class PKLController extends Controller
             
             // Get user's existing PKL registrations to prevent duplicates
             $existingRegistrations = [];
+            $activeRegistration = null;
+            
             if ($user) {
                 $existingRegistrations = PendaftaranPKL::where('user_id', $user->id)
                     ->whereIn('status', ['Pengajuan', 'Disetujui', 'Menunggu'])
                     ->pluck('posisi_pkl_id')
                     ->toArray();
+                
+                // Check if user has any active registration
+                $activeRegistration = $this->pendaftaranPKLService->getActiveRegistration($user->id);
             }
             
             // Transform data for frontend
@@ -166,7 +185,15 @@ class PKLController extends Controller
             
             return Inertia::render('client/PendaftaranPKLPage', [
                 'allPosisiPKL' => $transformedPosisi,
-                'existingRegistrations' => $existingRegistrations
+                'existingRegistrations' => $existingRegistrations,
+                'activeRegistration' => $activeRegistration ? [
+                    'id' => $activeRegistration->id,
+                    'status' => $activeRegistration->status,
+                    'posisi_pkl_id' => $activeRegistration->posisi_pkl_id,
+                    'posisi_nama' => $activeRegistration->posisiPKL->nama_posisi ?? 'Unknown',
+                    'tanggal_selesai' => $activeRegistration->tanggal_selesai,
+                    'tanggal_pendaftaran' => $activeRegistration->tanggal_pendaftaran,
+                ] : null
             ]);
         } catch (\Exception $e) {
             \Log::error('Error loading PKL positions for registration: ' . $e->getMessage());
@@ -396,7 +423,7 @@ class PKLController extends Controller
                     'skill_minat' => [
                         'kemampuan_ditingkatkan' => $registration->kemampuan_ditingkatkan,
                         'skill_kelebihan' => $registration->skill_kelebihan,
-                        'pernah_membuat_video' => $registration->pernah_membuat_video === 'ya' ? 'Ya' : ($registration->pernah_membuat_video === 'tidak' ? 'Tidak' : null),
+                        'pernah_membuat_video' => $registration->pernah_membuat_video ? (strtolower($registration->pernah_membuat_video) === 'ya' ? 'Ya' : 'Tidak') : null,
                     ],
                     'motivasi_pkl' => [
                         'motivasi' => $registration->motivasi,
@@ -404,12 +431,12 @@ class PKLController extends Controller
                         'nilai_diri' => $registration->nilai_diri,
                     ],
                     'persyaratan_khusus' => [
-                        'memiliki_laptop' => $registration->memiliki_laptop === 'ya' ? 'Ya' : ($registration->memiliki_laptop === 'tidak' ? 'Tidak' : null),
-                        'memiliki_kamera_dslr' => $registration->memiliki_kamera_dslr === 'ya' ? 'Ya' : ($registration->memiliki_kamera_dslr === 'tidak' ? 'Tidak' : null),
+                        'memiliki_laptop' => $registration->memiliki_laptop ? (strtolower($registration->memiliki_laptop) === 'ya' ? 'Ya' : 'Tidak') : null,
+                        'memiliki_kamera_dslr' => $registration->memiliki_kamera_dslr ? (strtolower($registration->memiliki_kamera_dslr) === 'ya' ? 'Ya' : 'Tidak') : null,
                         'transportasi_operasional' => $registration->transportasi_operasional,
-                        'apakah_merokok' => $registration->apakah_merokok === 'ya' ? 'Ya' : ($registration->apakah_merokok === 'tidak' ? 'Tidak' : null),
-                        'bersedia_ditempatkan' => $registration->bersedia_ditempatkan === 'ya' ? 'Ya' : ($registration->bersedia_ditempatkan === 'tidak' ? 'Tidak' : null),
-                        'bersedia_masuk_2_kali' => $registration->bersedia_masuk_2_kali === 'ya' ? 'Ya' : ($registration->bersedia_masuk_2_kali === 'tidak' ? 'Tidak' : null),
+                        'apakah_merokok' => $registration->apakah_merokok ? (strtolower($registration->apakah_merokok) === 'ya' ? 'Ya' : 'Tidak') : null,
+                        'bersedia_ditempatkan' => $registration->bersedia_ditempatkan ? (strtolower($registration->bersedia_ditempatkan) === 'ya' ? 'Ya' : 'Tidak') : null,
+                        'bersedia_masuk_2_kali' => $registration->bersedia_masuk_2_kali ? (strtolower($registration->bersedia_masuk_2_kali) === 'ya' ? 'Ya' : 'Tidak') : null,
                     ],
                     'berkas' => [
                         'cv_file_name' => $registration->cv_file_name,
@@ -431,24 +458,26 @@ class PKLController extends Controller
     /**
      * Handle document upload for PKL program.
      */
-    public function uploadDocument(Request $request, string $id): JsonResponse
+    public function uploadDocument(Request $request, string $id)
     {
         try {
             $user = auth()->guard('client')->user();
             
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User tidak terautentikasi'
-                ], 401);
+                return redirect()->back()->with('error', 'Unauthorized');
             }
 
             // Validate request
             $request->validate([
                 'jenis_dokumen' => 'required|string|in:proposal,laporan-mingguan,laporan-akhir,evaluasi',
-                'link_url' => 'required|url',
-                'file' => 'required|file|mimes:pdf,doc,docx,zip,rar|max:10240', // 10MB max
+                'link_url' => 'nullable|url',
+                'file' => 'nullable|file|mimes:pdf,doc,docx,zip,rar|max:10240' // 10MB max
             ]);
+
+            // Validate that at least one of link_url or file is provided
+            if (!$request->link_url && !$request->hasFile('file')) {
+                return redirect()->back()->withErrors(['upload' => 'Anda harus mengisi link URL atau upload file'])->withInput();
+            }
 
             // Check if user has approved registration for this PKL
             $pendaftaran = PendaftaranPKL::where('user_id', $user->id)
@@ -457,56 +486,45 @@ class PKLController extends Controller
                 ->first();
 
             if (!$pendaftaran) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda belum memiliki pendaftaran PKL yang disetujui untuk program ini'
-                ], 403);
+                return redirect()->back()->with('error', 'Anda belum memiliki pendaftaran PKL yang disetujui untuk program ini');
             }
 
-            // Handle file upload
-            $file = $request->file('file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('pkl_documents', $fileName, 'public');
-
-            // Create upload record
-            $upload = UploadDokumenPKL::create([
+            $uploadData = [
                 'pendaftaran_id' => $pendaftaran->id,
                 'user_id' => $user->id,
                 'jenis_dokumen' => $request->jenis_dokumen,
                 'link_url' => $request->link_url,
-                'file_name' => $fileName,
-                'file_path' => $filePath,
-                'file_size' => $file->getSize(),
-                'file_type' => $file->getClientMimeType(),
                 'status' => 'pending',
                 'keterangan' => 'Dokumen berhasil diunggah, menunggu review admin',
                 'tanggal_upload' => now(),
-            ]);
+            ];
+
+            // Handle file upload if provided
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $originalName = $file->getClientOriginalName();
+                $fileName = time() . '_' . $originalName;
+                $filePath = $file->storeAs('uploads/dokumen_pkl', $fileName, 'public');
+
+                $uploadData['file_name'] = $originalName;
+                $uploadData['file_path'] = $filePath;
+                $uploadData['file_size'] = $file->getSize();
+                $uploadData['file_type'] = $file->getClientMimeType();
+            }
+
+            // Create upload record
+            $upload = UploadDokumenPKL::create($uploadData);
 
             Log::info('PKL document uploaded successfully', [
                 'upload_id' => $upload->id,
                 'user_id' => $user->id,
-                'pendaftaran_id' => $pendaftaran->id,
-                'file_name' => $fileName
+                'pendaftaran_id' => $pendaftaran->id
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Dokumen berhasil diunggah! Dokumen akan ditinjau oleh admin.',
-                'data' => [
-                    'id' => $upload->id,
-                    'status' => $upload->status,
-                    'file_name' => $upload->file_name,
-                    'tanggal_upload' => $upload->tanggal_upload->format('Y-m-d H:i:s')
-                ]
-            ], 201);
+            return redirect()->back()->with('success', 'Dokumen berhasil diunggah dan akan dikurasi oleh admin');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data yang dikirim tidak valid',
-                'errors' => $e->errors()
-            ], 422);
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error uploading PKL document: ' . $e->getMessage());
             
@@ -562,6 +580,72 @@ class PKLController extends Controller
                 'success' => false,
                 'message' => 'Gagal mengunduh dokumen'
             ], 500);
+        }
+    }
+
+    /**
+     * Submit review for PKL program
+     */
+    public function submitReview(Request $request, $id)
+    {
+        try {
+            $user = auth()->guard('client')->user();
+            
+            if (!$user) {
+                return redirect()->back()->withErrors(['error' => 'User tidak terautentikasi']);
+            }
+
+            // Validate request
+            $request->validate([
+                'rating' => 'required|integer|min:1|max:5',
+                'review' => 'required|string|max:1000'
+            ]);
+
+            // Check if user has approved "Laporan Akhir" document for this PKL
+            // PKL is considered completed when "Laporan Akhir" is approved
+            $hasApprovedLaporanAkhir = UploadDokumenPKL::whereHas('pendaftaran', function($query) use ($id) {
+                    $query->where('posisi_pkl_id', $id);
+                })
+                ->where('user_id', $user->id)
+                ->where('jenis_dokumen', 'laporan-akhir')
+                ->where('status', 'approved')
+                ->exists();
+
+            if (!$hasApprovedLaporanAkhir) {
+                return redirect()->back()->withErrors(['error' => 'Anda harus menyelesaikan dan mendapatkan persetujuan Laporan Akhir terlebih dahulu untuk memberikan ulasan']);
+            }
+
+            // Check if user already submitted a review
+            $existingReview = \App\Models\ReviewPKL::where('user_id', $user->id)
+                ->where('posisi_pkl_id', $id)
+                ->first();
+
+            if ($existingReview) {
+                // Update existing review
+                $existingReview->update([
+                    'rating' => $request->rating,
+                    'review' => $request->review,
+                    'updated_at' => now()
+                ]);
+                $message = 'Ulasan Anda berhasil diperbarui!';
+            } else {
+                // Create new review
+                \App\Models\ReviewPKL::create([
+                    'user_id' => $user->id,
+                    'posisi_pkl_id' => $id,
+                    'rating' => $request->rating,
+                    'review' => $request->review,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+                $message = 'Terima kasih! Ulasan Anda berhasil dikirim.';
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            Log::error('Error submitting PKL review: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat mengirim ulasan. Silakan coba lagi.']);
         }
     }
 }

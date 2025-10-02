@@ -43,24 +43,6 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick, onRegister
   
   const user = auth?.client;
   const isAuthenticated = !!user;
-  // Placeholder images berdasarkan kategori
-  const getPlaceholderImage = (kategori: string) => {
-    const placeholders = {
-      'Marketing': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=400&q=80',
-      'Programming': 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80',
-      'Design': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80',
-      'Data Science': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=400&q=80',
-      'Business': 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=400&q=80',
-      'Technology': 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80',
-      'BNSP': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-      'Industri': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=400&q=80',
-      'default': 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80'
-    };
-    
-    return placeholders[kategori as keyof typeof placeholders] || placeholders.default;
-  };
-
-  const imageUrl = sertifikasi.img || getPlaceholderImage(sertifikasi.kategori);
 
   const handleAmbilKelas = () => {
     if (!isAuthenticated) {
@@ -89,14 +71,19 @@ export default function SertifikasiCard({ sertifikasi, onDetailClick, onRegister
     <>
       <article className="bg-white border-2 border-purple-400 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-purple-600 transition-all duration-300 min-h-[450px] flex flex-col">
         <div className="relative">
-          <img 
-            src={imageUrl} 
-            alt={sertifikasi.title} 
-            className="w-full h-40 object-cover"
-            onError={(e) => {
-              e.currentTarget.src = getPlaceholderImage('default');
-            }}
-          />
+          {sertifikasi.img ? (
+            <img 
+              src={sertifikasi.img} 
+              alt={sertifikasi.title} 
+              className="w-full h-40 object-cover"
+            />
+          ) : (
+            <div className="w-full h-40 bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
+              <svg className="w-16 h-16 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          )}
           <span className="absolute left-3 top-3 text-xs px-3 py-1 rounded-full bg-orange-50 text-orange-700 font-semibold">
             {sertifikasi.kategori}
           </span>

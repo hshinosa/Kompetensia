@@ -114,6 +114,11 @@ class PendaftaranPKL extends Model
         return $this->hasMany(UploadDokumenPKL::class, 'pendaftaran_id');
     }
 
+    public function sertifikat()
+    {
+        return $this->hasOne(\App\Models\SertifikatKelulusan::class, 'pendaftaran_pkl_id');
+    }
+
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);

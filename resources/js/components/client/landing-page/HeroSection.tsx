@@ -1,65 +1,71 @@
 import React, { useEffect, useState } from 'react';
 
 export default function HeroSection() {
-  const [showElips, setShowElips] = useState(true);
+  const [elipsOpacity, setElipsOpacity] = useState(1);
 
   useEffect(() => {
     const handleScroll = () => {
       const heroSection = document.querySelector('[data-hero-section]');
       if (heroSection) {
         const rect = heroSection.getBoundingClientRect();
-        // Hide elips when hero section starts to go out of view (more strict)
-        setShowElips(rect.bottom > 100); // Hide when hero bottom is 100px from top
+        const heroHeight = rect.height;
+        const scrolled = -rect.top;
+        
+        // Calculate opacity based on scroll position
+        // Start fading when scroll reaches 30% of hero height
+        // Complete fade when scroll reaches 70% of hero height
+        const fadeStart = heroHeight * 0.3;
+        const fadeEnd = heroHeight * 0.7;
+        
+        if (scrolled < fadeStart) {
+          setElipsOpacity(1);
+        } else if (scrolled > fadeEnd) {
+          setElipsOpacity(0);
+        } else {
+          // Linear fade between fadeStart and fadeEnd
+          const fadeProgress = (scrolled - fadeStart) / (fadeEnd - fadeStart);
+          setElipsOpacity(1 - fadeProgress);
+        }
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Check initial state
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <>
-      {/* Elips Background - Fixed position dengan conditional visibility */}
-      {showElips && (
-        <div className="fixed top-0 right-0 w-[1200px] h-[1000px] pointer-events-none" style={{ zIndex: 0 }}>
+      {/* Elips Background - Fixed position with smooth fade on scroll */}
+      <div 
+        className="fixed top-0 right-0 pointer-events-none overflow-hidden"
+        style={{ 
+          zIndex: 0,
+          width: '100%',
+          height: '100vh',
+          opacity: elipsOpacity,
+          transition: 'opacity 0.1s ease-out'
+        }}
+      >
+        <div 
+          className="absolute"
+          style={{
+            top: '-10%',
+            right: '-15%',
+            width: '1200px',
+            height: '1000px',
+            maxWidth: '70vw',
+            maxHeight: '120vh'
+          }}
+        >
           <img 
             src="/images/elips-herobg.svg" 
             alt="" 
-            className="w-full h-full object-contain opacity-60"
-            style={{ transform: 'translate(0%, -10%)' }}
-            onLoad={() => console.log('Elips SVG loaded successfully')}
-            onError={(e) => {
-              console.log('SVG failed to load, showing fallback');
-              e.currentTarget.style.display = 'none';
-              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-              if (fallback) fallback.style.display = 'block';
-            }}
+            className="w-full h-full object-contain"
+            style={{ opacity: 0.6 }}
           />
-          {/* Fallback - inline SVG */}
-          <svg 
-            className="w-full h-full" 
-            viewBox="0 0 1200 1000" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <ellipse 
-              cx="600" 
-              cy="500" 
-              rx="500" 
-              ry="350" 
-              fill="url(#elipsGradient)" 
-            />
-            <defs>
-              <linearGradient id="elipsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#E879F9" stopOpacity="0.7" />
-                <stop offset="50%" stopColor="#C084FC" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#A855F7" stopOpacity="0.5" />
-              </linearGradient>
-            </defs>
-          </svg>
         </div>
-      )}
+      </div>
 
       <section className="relative" data-hero-section>
         <div className="container mx-auto px-4 relative z-10">

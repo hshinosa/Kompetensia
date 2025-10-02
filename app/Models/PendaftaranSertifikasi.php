@@ -57,6 +57,11 @@ class PendaftaranSertifikasi extends Model
         return $this->hasMany(UploadTugasSertifikasi::class, 'pendaftaran_id');
     }
 
+    public function sertifikatKelulusan()
+    {
+        return $this->hasOne(SertifikatKelulusan::class, 'pendaftaran_sertifikasi_id');
+    }
+
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);

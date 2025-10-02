@@ -24,19 +24,41 @@ class VideoController extends Controller
     {
         try {
             // Get published videos with pagination
-            $videosPaginated = $this->videoService->list(['status' => 'Publish'], 12);
+            $videosPaginated = $this->videoService->list(['status' => 'Publish'], 8);
             
             // Get featured videos
             $featured = $this->videoService->list(['status' => 'Publish', 'featured' => true], 3);
             
             return Inertia::render('client/video/Index', [
-                'videos' => $videosPaginated,
+                'videos' => [
+                    'data' => $videosPaginated->items(),
+                    'links' => $videosPaginated->linkCollection()->toArray(),
+                    'meta' => [
+                        'current_page' => $videosPaginated->currentPage(),
+                        'from' => $videosPaginated->firstItem(),
+                        'last_page' => $videosPaginated->lastPage(),
+                        'per_page' => $videosPaginated->perPage(),
+                        'to' => $videosPaginated->lastItem(),
+                        'total' => $videosPaginated->total(),
+                    ]
+                ],
                 'featured' => $featured->items()
             ]);
         } catch (\Exception $e) {
             \Log::error('Error loading videos: ' . $e->getMessage());
             return Inertia::render('client/video/Index', [
-                'videos' => collect([]),
+                'videos' => [
+                    'data' => [],
+                    'links' => [],
+                    'meta' => [
+                        'current_page' => 1,
+                        'from' => null,
+                        'last_page' => 1,
+                        'per_page' => 8,
+                        'to' => null,
+                        'total' => 0,
+                    ]
+                ],
                 'featured' => []
             ]);
         }

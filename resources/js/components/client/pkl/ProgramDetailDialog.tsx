@@ -126,10 +126,6 @@ export default function ProgramDetailDialog({ program, isOpen, onClose }: Props)
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-white rounded-full"></span>
-                <span className="text-sm">{program.durasi_bulan} Bulan</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-white rounded-full"></span>
                 <span className="text-sm">Unpaid</span>
               </div>
             </div>

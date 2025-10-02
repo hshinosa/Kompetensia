@@ -12,17 +12,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ArrowLeft, Link as LinkIcon, Globe, File as FileIcon, FileText, FileArchive, FileImage, FileVideo, FileAudio, FileCode, FileSpreadsheet, Download } from 'lucide-react';
 
 interface PenilaianEntry { id:number; status_kelulusan?:string | null; catatan_asesor?:string | null }
+interface SertifikatEntry { 
+  id: number; 
+  link_sertifikat: string; 
+  tanggal_selesai: string; 
+  catatan_admin?: string | null;
+}
 interface PendaftaranEntry { 
   id:number; 
   user?:{ name?:string; email?:string }; 
   berkas_persyaratan?: Record<string,string> | string[] | null; 
   penilaian?: PenilaianEntry | null;
+  sertifikat?: SertifikatEntry | null;
   upload_tugas?: Array<{
     id: number;
     judul_tugas: string;
     link_url?: string;
     nama_file?: string;
     path_file?: string;
+    download_url?: string;
     status: string;
     tanggal_upload: string;
     feedback?: string;
@@ -45,9 +53,14 @@ interface BatchPageProps {
 
 const StatusBadge: React.FC<{ status?: string | null }> = ({ status }) => {
   let variant: any = 'outline';
-  if (status === 'Diterima') variant = 'default';
-  else if (status === 'Ditolak') variant = 'destructive';
-  return <Badge variant={variant}>{status || 'Belum Dinilai'}</Badge>;
+  let className = '';
+  if (status === 'Diterima' || status === 'Lulus') {
+    variant = 'default';
+    className = 'bg-green-600 hover:bg-green-700';
+  } else if (status === 'Ditolak') {
+    variant = 'destructive';
+  }
+  return <Badge variant={variant} className={className}>{status || 'Belum Dinilai'}</Badge>;
 };
 
 interface TugasAssessmentCardProps {
@@ -57,6 +70,7 @@ interface TugasAssessmentCardProps {
     link_url?: string;
     nama_file?: string;
     path_file?: string;
+    download_url?: string;
     status: string;
     tanggal_upload: string;
     feedback?: string;
@@ -158,7 +172,12 @@ const TugasAssessmentCard: React.FC<TugasAssessmentCardProps> = ({ upload }) => 
                 type="button" 
                 variant="outline" 
                 size="sm" 
-                onClick={() => window.open(`/storage/${upload.path_file}`, '_blank')}
+                onClick={() => {
+                  if (upload.download_url) {
+                    window.location.href = upload.download_url;
+                  }
+                }}
+                disabled={!upload.download_url}
               >
                 <Download className="h-4 w-4 mr-1" />
                 Download
@@ -235,6 +254,40 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
   const [openModal, setOpenModal] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<number | null>(null);
   const selected = React.useMemo(()=> batch.pendaftaran.find(p=>p.id===selectedId), [selectedId, batch.pendaftaran]);
+  
+  // Debug: Log all status values
+  React.useEffect(() => {
+    console.log('=== DEBUG PENILAIAN STATUS ===');
+    batch.pendaftaran.forEach((p, idx) => {
+      const hasUploadedTugas = p.upload_tugas && p.upload_tugas.length > 0;
+      const allTugasApproved = hasUploadedTugas && 
+        p.upload_tugas!.every(t => t.status === 'approved');
+      const isPassed = p.penilaian?.status_kelulusan === 'Diterima' || 
+                       p.penilaian?.status_kelulusan === 'Lulus';
+      
+      console.log(`Peserta ${idx + 1} (${p.user?.name}):`, {
+        id: p.id,
+        status_kelulusan: p.penilaian?.status_kelulusan,
+        penilaian_exists: !!p.penilaian,
+        sertifikat_exists: !!p.sertifikat,
+        sertifikat_link: p.sertifikat?.link_sertifikat,
+        hasUploadedTugas,
+        allTugasApproved,
+        isPassed,
+        shouldShowButton: isPassed || allTugasApproved,
+        buttonType: p.sertifikat ? 'Lihat Sertifikat' : 'Terbitkan Sertifikat',
+        upload_tugas_statuses: p.upload_tugas?.map(t => t.status)
+      });
+    });
+  }, [batch.pendaftaran]);
+  
+  // Certificate modal state
+  const [openCertModal, setOpenCertModal] = React.useState(false);
+  const [certPendaftaranId, setCertPendaftaranId] = React.useState<number | null>(null);
+  const [certLink, setCertLink] = React.useState('');
+  const [certDate, setCertDate] = React.useState('');
+  const [certNote, setCertNote] = React.useState('');
+  const [isSubmittingCert, setIsSubmittingCert] = React.useState(false);
 
   const openPenilaian = (id:number) => {
     const row = batch.pendaftaran.find(p=>p.id===id);
@@ -242,6 +295,40 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
     console.log('Upload tugas data:', row?.upload_tugas); // Debug log
     setSelectedId(id);
     setOpenModal(true);
+  };
+  
+  const openCertificateModal = (pendaftaranId: number) => {
+    setCertPendaftaranId(pendaftaranId);
+    setCertLink('');
+    setCertDate(new Date().toISOString().split('T')[0]);
+    setCertNote('');
+    setOpenCertModal(true);
+  };
+  
+  const handleSubmitCertificate = () => {
+    if (!certPendaftaranId || !certLink || !certDate) {
+      alert('Link sertifikat dan tanggal selesai harus diisi');
+      return;
+    }
+    
+    setIsSubmittingCert(true);
+    router.post(`/admin/sertifikat-kelulusan/${certPendaftaranId}`, {
+      link_sertifikat: certLink,
+      tanggal_selesai: certDate,
+      catatan_admin: certNote,
+    }, {
+      onSuccess: () => {
+        setOpenCertModal(false);
+        setCertLink('');
+        setCertDate('');
+        setCertNote('');
+        setCertPendaftaranId(null);
+        setIsSubmittingCert(false);
+      },
+      onError: () => {
+        setIsSubmittingCert(false);
+      }
+    });
   };
   const breadcrumbs: BreadcrumbItem[] = [
     { title:'Dashboard', href:'/admin/dashboard' },
@@ -313,7 +400,49 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
                           <StatusBadge status={p.penilaian?.status_kelulusan} />
                       </TableCell>
                       <TableCell>
-                        <Button size="sm" variant="outline" onClick={()=>openPenilaian(p.id)}>Nilai</Button>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={()=>openPenilaian(p.id)}>Nilai</Button>
+                          {(() => {
+                            // If certificate already issued, show "Lihat Sertifikat" button
+                            if (p.sertifikat) {
+                              return (
+                                <Button 
+                                  size="sm" 
+                                  variant="default" 
+                                  onClick={() => window.open(p.sertifikat!.link_sertifikat, '_blank')}
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                  Lihat Sertifikat
+                                </Button>
+                              );
+                            }
+                            
+                            // Show "Terbitkan Sertifikat" if penilaian status is Diterima/Lulus
+                            const isPassed = p.penilaian?.status_kelulusan === 'Diterima' || 
+                                           p.penilaian?.status_kelulusan === 'diterima' ||
+                                           p.penilaian?.status_kelulusan === 'Lulus' ||
+                                           p.penilaian?.status_kelulusan === 'lulus';
+                            
+                            // OR show button if all tugas are approved
+                            const hasUploadedTugas = p.upload_tugas && p.upload_tugas.length > 0;
+                            const allTugasApproved = hasUploadedTugas && 
+                              p.upload_tugas!.every(t => t.status === 'approved');
+                            
+                            if (isPassed || allTugasApproved) {
+                              return (
+                                <Button 
+                                  size="sm" 
+                                  variant="default" 
+                                  onClick={()=>openCertificateModal(p.id)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  Terbitkan Sertifikat
+                                </Button>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
                       </TableCell>
                     </TableRow>
                   )) : (
@@ -378,6 +507,96 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Certificate Modal */}
+      <Dialog open={openCertModal} onOpenChange={setOpenCertModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Terbitkan Sertifikat Kelulusan</DialogTitle>
+            <DialogDescription>
+              Masukkan link sertifikat digital untuk peserta yang telah lulus
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Important Reminder */}
+            <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-amber-800 mb-1">⚠️ Penting!</h4>
+                  <p className="text-sm text-amber-700">
+                    Pastikan file sertifikat sudah di-<strong>share secara PUBLIC</strong> agar dapat diakses oleh peserta. 
+                    <br />
+                    <span className="text-xs">
+                      (Google Drive: Klik kanan → Bagikan → Ubah ke "Siapa saja yang memiliki link")
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cert-link">Link Sertifikat *</Label>
+              <input
+                id="cert-link"
+                type="url"
+                value={certLink}
+                onChange={(e) => setCertLink(e.target.value)}
+                placeholder="https://drive.google.com/file/d/..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                required
+              />
+              <p className="text-xs text-gray-500">
+                Masukkan link Google Drive, Dropbox, atau platform lainnya
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cert-date">Tanggal Selesai *</Label>
+              <input
+                id="cert-date"
+                type="date"
+                value={certDate}
+                onChange={(e) => setCertDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cert-note">Catatan Admin (Opsional)</Label>
+              <Textarea
+                id="cert-note"
+                value={certNote}
+                onChange={(e) => setCertNote(e.target.value)}
+                rows={3}
+                placeholder="Catatan tambahan untuk peserta..."
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setOpenCertModal(false)}
+              disabled={isSubmittingCert}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleSubmitCertificate}
+              disabled={isSubmittingCert || !certLink || !certDate}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isSubmittingCert ? 'Menerbitkan...' : 'Terbitkan Sertifikat'}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </AppLayout>

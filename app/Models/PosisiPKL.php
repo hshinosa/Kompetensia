@@ -41,6 +41,11 @@ class PosisiPKL extends Model
         return $this->hasMany(PendaftaranPKL::class, 'posisi_pkl_id');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(ReviewPKL::class, 'posisi_pkl_id');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', 'Aktif');

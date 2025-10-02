@@ -40,7 +40,15 @@ export default function RekomendasiSertifikasi({ rekomendasiSertifikasi }: Props
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {displayList.map((item) => (
           <div key={item.id} className="border-2 border-purple-400 rounded-2xl overflow-hidden bg-white flex flex-col shadow-sm hover:border-purple-600 hover:shadow-md transition-all duration-200">
-            <img src={item.img} alt={item.title} className="w-full h-36 object-cover" />
+            {item.img ? (
+              <img src={item.img} alt={item.title} className="w-full h-36 object-cover" />
+            ) : (
+              <div className="w-full h-36 bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
+                <svg className="w-12 h-12 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+            )}
             <div className="p-4 flex-1 flex flex-col">
               <span className="text-xs px-2 py-1 rounded bg-orange-50 text-orange-700 font-semibold w-fit mb-2">{item.kategori}</span>
               <h4 className="font-semibold text-lg mb-1 text-gray-900">{item.title}</h4>

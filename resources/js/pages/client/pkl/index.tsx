@@ -19,8 +19,6 @@ interface PosisiPKL {
     registration_id?: number;
     registration_status?: string;
     tanggal_pendaftaran?: string;
-    tanggal_mulai?: string;
-    tanggal_selesai?: string;
 }
 
 interface ClientPKLProps {
@@ -59,49 +57,46 @@ export default function ClientPKL({ pklPrograms = [] }: ClientPKLProps) {
                     {programsArray.map((program: PosisiPKL) => (
                         <div 
                             key={program.id}
-                            className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-purple-300 transition-all"
+                            className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                         >
-                            {/* Image Placeholder */}
-                            <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                                <div className="text-gray-400 text-center">
-                                    <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z" />
-                                    </svg>
-                                    <p className="text-sm">Image Placeholder</p>
+                            {/* Card Content */}
+                            <div className="p-4">
+                                <div className="bg-gradient-to-tl from-purple-400 to-purple-600 rounded-3xl p-6 text-white relative overflow-hidden min-h-[280px] flex flex-col">
+                                    <div className="relative z-10 flex flex-col h-full">
+                                        {/* Header */}
+                                        <div className="mb-4">
+                                            <h3 className="text-xl font-bold mb-3">{program.nama_posisi}</h3>
+                                            <p className="text-purple-100 text-sm leading-relaxed line-clamp-3">
+                                                {program.deskripsi || 'Tidak ada deskripsi tersedia.'}
+                                            </p>
+                                        </div>
+
+                                        {/* Category and Type Chips */}
+                                        <div className="flex-grow">
+                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                <span className="px-3 py-1 border border-orange-400 text-white text-xs rounded-full bg-white/10 backdrop-blur-sm">
+                                                    {program.kategori}
+                                                </span>
+                                                <span className="px-3 py-1 border border-orange-400 text-white text-xs rounded-full bg-white/10 backdrop-blur-sm">
+                                                    {program.tipe}
+                                                </span>
+                                                <span className="px-3 py-1 border border-orange-400 text-white text-xs rounded-full bg-white/10 backdrop-blur-sm">
+                                                    {program.durasi_bulan} bulan
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            {/* Content */}
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">{program.nama_posisi}</h3>
-                                <p className="text-sm text-purple-600 mb-2">{program.kategori}</p>
-                                <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                                    {program.deskripsi || 'Tidak ada deskripsi tersedia.'}
-                                </p>
-                                <div className="flex justify-between items-center text-xs text-gray-500 mb-4">
-                                    <span>Durasi: {program.durasi_bulan} bulan</span>
-                                    <span>Status: {program.registration_status}</span>
-                                </div>
-                                
-                                {/* Registration Info */}
-                                {program.tanggal_mulai && program.tanggal_selesai && (
-                                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                        <p className="text-xs text-green-800 font-medium mb-1">Periode PKL:</p>
-                                        <p className="text-xs text-green-700">
-                                            {new Date(program.tanggal_mulai).toLocaleDateString('id-ID')} - {new Date(program.tanggal_selesai).toLocaleDateString('id-ID')}
-                                        </p>
-                                    </div>
-                                )}
-                                
-                                {/* Action Buttons */}
-                                <div className="flex gap-2">
-                                    <a 
-                                        href={`/client/pkl/${program.id}`}
-                                        className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-center text-sm"
-                                    >
-                                        Kelola Dokumen
-                                    </a>
-                                </div>
+                            {/* Button Section */}
+                            <div className="px-4 pb-4">
+                                <a 
+                                    href={`/client/pkl/${program.id}`}
+                                    className="block w-full py-3 bg-purple-600 text-white font-semibold rounded-2xl hover:bg-purple-700 transition-colors text-center"
+                                >
+                                    Kelola Dokumen
+                                </a>
                             </div>
                         </div>
                     ))}

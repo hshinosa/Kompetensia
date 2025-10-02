@@ -71,6 +71,22 @@ export default function ProgramList({ posisiPKL, searchTerm, onSearchChange }: P
     <article>
       <div className="mb-6">
         <h2 className="text-2xl text-gray-900 font-semibold mb-4">Program yang tersedia</h2>
+        {/* Info Card - Fleksibilitas Periode PKL */}
+        <div className="mb-8 bg-gradient-to-r from-orange-50 to-purple-50 border-2 border-orange-200 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+               </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Informasi Periode PKL</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  Periode pelaksanaan PKL bersifat <span className="font-semibold text-orange-600">fleksibel</span> dan dapat disesuaikan dengan jadwal akademik siswa/mahasiswa.
+                </p>
+            </div>
+          </div>
+        </div>
         
         {/* Search Bar */}
         <div className="relative mb-6 max-w-md">

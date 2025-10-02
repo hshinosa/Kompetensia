@@ -149,7 +149,9 @@ class ClientController extends Controller
 
         // Ambil sertifikasi populer untuk setiap jenis (maksimal 6 per jenis = 12 total)
         $bnspSertifikasi = Sertifikasi::with(['batch' => function($query) {
-                $query->where('status', 'Aktif')->latest();
+                $query->where('status', 'Aktif')
+                      ->withCount('pendaftaran')
+                      ->latest();
             }])
             ->where('status', 'Aktif')
             ->where('jenis_sertifikasi', 'BNSP')
@@ -159,7 +161,9 @@ class ClientController extends Controller
             ->get();
 
         $industriSertifikasi = Sertifikasi::with(['batch' => function($query) {
-                $query->where('status', 'Aktif')->latest();
+                $query->where('status', 'Aktif')
+                      ->withCount('pendaftaran')
+                      ->latest();
             }])
             ->where('status', 'Aktif')
             ->where('jenis_sertifikasi', 'Industri')
@@ -174,7 +178,7 @@ class ClientController extends Controller
         $popularSertifikasi = $allSertifikasi
             ->map(function ($sertifikasi) {
                 $activeBatch = $sertifikasi->batch->first();
-                $thumbnail = $sertifikasi->thumbnail ? asset('storage/' . $sertifikasi->thumbnail) : 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80';
+                $thumbnail = $sertifikasi->thumbnail_url;
                 
                 return [
                     'id' => $sertifikasi->id,
@@ -203,7 +207,7 @@ class ClientController extends Controller
                                 'tanggal_selesai' => $batch->tanggal_selesai->toISOString(),
                                 'status' => $batch->status,
                                 'kapasitas_peserta' => $batch->kapasitas_peserta,
-                                'peserta_terdaftar' => $batch->peserta_terdaftar ?? 0,
+                                'peserta_terdaftar' => $batch->pendaftaran_count ?? 0,
                             ];
                         })->toArray()
                     ]
@@ -255,7 +259,9 @@ class ClientController extends Controller
         // Load relasi yang diperlukan
         $sertifikasi->load([
             'batch' => function($query) {
-                $query->where('status', 'Aktif')->latest();
+                $query->where('status', 'Aktif')
+                      ->withCount('pendaftaran')
+                      ->latest();
             },
             'modul' => function($query) {
                 $query->orderBy('urutan', 'asc');
@@ -279,7 +285,7 @@ class ClientController extends Controller
                 'nama_batch' => $activeBatch->nama_batch,
                 'tanggal_mulai' => $activeBatch->tanggal_mulai,
                 'tanggal_selesai' => $activeBatch->tanggal_selesai,
-                'jumlah_pendaftar' => $activeBatch->jumlah_pendaftar,
+                'jumlah_pendaftar' => $activeBatch->pendaftaran_count ?? 0,
                 'status' => $activeBatch->status,
                 'instruktur' => $activeBatch->instruktur,
                 'catatan' => $activeBatch->catatan,
@@ -321,7 +327,7 @@ class ClientController extends Controller
                     'rating' => '4.8',
                     'peserta' => $sertifikasi->peserta_count,
                     'kategori' => ucfirst($sertifikasi->jenis_sertifikasi),
-                    'img' => $sertifikasi->thumbnail_url ?: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80',
+                    'img' => $sertifikasi->thumbnail_url,
                     'mentor' => $activeBatch ? $activeBatch->instruktur : 'Instruktur Profesional',
                     'slug' => $sertifikasi->slug,
                 ];
@@ -368,7 +374,9 @@ class ClientController extends Controller
         $page = $request->get('page', 1);
 
         $query = Sertifikasi::with(['asesor', 'batch' => function($query) {
-            $query->where('status', 'Aktif')->orderBy('tanggal_mulai', 'asc');
+            $query->where('status', 'Aktif')
+                  ->withCount('pendaftaran')
+                  ->orderBy('tanggal_mulai', 'asc');
         }])->where('status', 'Aktif');
 
         // Apply search filter
@@ -408,7 +416,7 @@ class ClientController extends Controller
                         'tanggal_selesai' => $batch->tanggal_selesai,
                         'status' => $batch->status,
                         'kapasitas_peserta' => $batch->kapasitas_peserta ?? 0,
-                        'peserta_terdaftar' => $batch->jumlah_pendaftar ?? 0,
+                        'peserta_terdaftar' => $batch->pendaftaran_count ?? 0,
                     ];
                 })->toArray(),
             ];

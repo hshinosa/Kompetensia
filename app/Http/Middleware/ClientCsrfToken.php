@@ -28,7 +28,7 @@ class ClientCsrfToken extends Middleware
     {
         // Set session prefix untuk client
         if ($request->is('client/*') || $request->is('dashboard')) {
-            session()->setName('kompetensia_client_session');
+            session()->setName('ujikom_client_session');
         }
 
         return parent::handle($request, $next);

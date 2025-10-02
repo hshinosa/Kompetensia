@@ -8,8 +8,6 @@ export default function TestimonialSection() {
     {
       id: 1,
       name: 'Jane Doe',
-      role: 'UI/UX Designer',
-      company: 'Tech Solutions',
       image: 'https://ui-avatars.com/api/?name=Jane+Doe&background=8B5CF6&color=fff',
       testimonial: 'Program PKL ini benar-benar mengubah perspektif saya tentang dunia kerja. Saya mendapatkan pengalaman yang tak ternilai dan skill yang sangat dibutuhkan industri. Mentornya juga sangat supportive dan memberikan feedback konstruktif.',
       rating: 5
@@ -17,8 +15,6 @@ export default function TestimonialSection() {
     {
       id: 2,
       name: 'A-rima',
-      role: 'Frontend Developer',
-      company: 'Digital Agency',
       image: 'https://ui-avatars.com/api/?name=A-rima&background=8B5CF6&color=fff',
       testimonial: 'Pengalaman yang luar biasa! Dari tidak tahu apa-apa tentang development sampai bisa membuat aplikasi web yang kompleks. Tim mentornya sangat berpengalaman dan sabar dalam membimbing. Highly recommended!',
       rating: 5
@@ -26,8 +22,6 @@ export default function TestimonialSection() {
     {
       id: 3,
       name: 'Ronald',
-      role: 'Data Analyst',
-      company: 'Analytics Corp',
       image: 'https://ui-avatars.com/api/?name=Ronald&background=8B5CF6&color=fff',
       testimonial: 'PKL di sini memberikan exposure ke real project yang benar-benar challenging. Saya belajar tidak hanya technical skills tapi juga soft skills seperti komunikasi dan problem solving. Worth every minute!',
       rating: 5
@@ -35,8 +29,6 @@ export default function TestimonialSection() {
     {
       id: 4,
       name: 'Sarah',
-      role: 'Backend Developer',
-      company: 'Startup Inc',
       image: 'https://ui-avatars.com/api/?name=Sarah&background=8B5CF6&color=fff',
       testimonial: 'Sistem mentoring yang terstruktur dan environment yang mendukung membuat saya berkembang pesat. Project yang dikerjakan juga real-world cases, jadi portfolio saya jadi kuat untuk apply kerja.',
       rating: 5
@@ -44,8 +36,6 @@ export default function TestimonialSection() {
     {
       id: 5,
       name: 'Michael',
-      role: 'Mobile Developer',
-      company: 'Mobile Labs',
       image: 'https://ui-avatars.com/api/?name=Michael&background=8B5CF6&color=fff',
       testimonial: 'Best decision ever! Program PKL-nya comprehensive banget, dari technical sampai soft skills. Sekarang saya udah confident untuk masuk ke industri tech. Terima kasih mentornya yang sabar!',
       rating: 5
@@ -105,8 +95,6 @@ export default function TestimonialSection() {
                 />
                 <div>
                   <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                  <p className="text-sm text-gray-600">{testimonial.role}</p>
-                  <p className="text-xs text-purple-600 font-medium">{testimonial.company}</p>
                 </div>
               </div>
 

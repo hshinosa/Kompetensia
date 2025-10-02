@@ -99,7 +99,7 @@ export default function ArtikelDanVideoPilihan({ articles = [], videos = [] }: A
             {displayArticles.slice(0, 4).map((artikel, idx) => (
               <div 
                 key={artikel.id || idx} 
-                className="bg-white rounded-xl border-2 border-purple-200 overflow-hidden hover:shadow-lg transition-all hover:border-purple-300 cursor-pointer"
+                className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300 cursor-pointer"
                 onClick={() => handleArticleClick(artikel)}
               >
                 <div className="relative">
@@ -153,7 +153,7 @@ export default function ArtikelDanVideoPilihan({ articles = [], videos = [] }: A
             {displayVideos.slice(0, 4).map((video, idx) => (
               <div 
                 key={video.id || idx} 
-                className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col min-w-[270px] md:min-w-[320px] max-w-full overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                className="border-2 border-purple-400 rounded-3xl bg-white flex flex-col min-w-[270px] md:min-w-[320px] max-w-full overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300 cursor-pointer"
                 onClick={() => handleVideoClick(video)}
               >
                 <div className="relative">

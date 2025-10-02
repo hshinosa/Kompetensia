@@ -7,7 +7,7 @@ interface User {
   nama: string;
   nama_lengkap?: string;
   email: string;
-  no_telp?: string;
+  telepon?: string;
   role: string;
 }
 
@@ -53,9 +53,9 @@ export default function PendaftaranModal({ onClose, sertifikasi, selectedBatch, 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [successMessage, setSuccessMessage] = useState('');
   
-  const [nama, setNama] = useState(user?.nama_lengkap || user?.nama || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.no_telp || '');
+  const [nama, setNama] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   
   // Set default batch - always start with "Pilih Batch" unless a specific batch is passed
   const [selectedBatchId, setSelectedBatchId] = useState<number>(
@@ -71,6 +71,15 @@ export default function PendaftaranModal({ onClose, sertifikasi, selectedBatch, 
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  // Fetch user data when modal opens
+  useEffect(() => {
+    if (user) {
+      setNama(user.nama_lengkap || user.nama || '');
+      setEmail(user.email || '');
+      setPhone(user.telepon || '');
+    }
+  }, [user]);
 
   // Update selectedBatchId when selectedBatch changes
   useEffect(() => {

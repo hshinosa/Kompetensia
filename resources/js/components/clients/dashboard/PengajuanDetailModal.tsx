@@ -256,18 +256,106 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
 
               {detailedData ? (
                 /* Detailed Data Display */
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Column */}
-                  <div className="space-y-6">
-                    {/* Program Info */}
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Program</h3>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Pengajuan</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.jenis_pengajuan}</p>
+                <>
+                  {/* Check if it's Sertifikasi Kompetensi - show simplified view */}
+                  {detailedData.jenis_pengajuan.toLowerCase().includes('sertifikasi') ? (
+                    <div className="space-y-6">
+                      {/* Program Info */}
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Program</h3>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Pengajuan</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.jenis_pengajuan}</p>
+                          </div>
+                          {detailedData.sertifikasi && (
+                            <>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Sertifikasi</label>
+                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.nama_sertifikasi}</p>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Sertifikasi</label>
+                                <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.jenis_sertifikasi}</p>
+                              </div>
+                              {detailedData.sertifikasi.deskripsi && (
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                                  <p className="bg-white p-2 rounded border text-gray-900">{detailedData.sertifikasi.deskripsi}</p>
+                                </div>
+                              )}
+                            </>
+                          )}
+                          {detailedData.batch && (
+                            <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-400">
+                              <h4 className="font-medium text-purple-800 mb-2">Batch yang Dipilih</h4>
+                              <div className="grid grid-cols-1 gap-2">
+                                <div>
+                                  <label className="block text-xs font-medium text-purple-700 mb-1">Nama Batch</label>
+                                  <p className="text-purple-900">{detailedData.batch.nama_batch}</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="block text-xs font-medium text-purple-700 mb-1">Tanggal Mulai</label>
+                                    <p className="text-purple-900">{detailedData.batch.tanggal_mulai}</p>
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-purple-700 mb-1">Tanggal Selesai</label>
+                                    <p className="text-purple-900">{detailedData.batch.tanggal_selesai}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        {detailedData.posisi_pkl && (
+                      </div>
+
+                      {/* Data Pribadi - Simplified for Sertifikasi */}
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Data Pribadi</h3>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                            <p className="bg-white p-2 rounded border text-gray-900 font-medium">{detailedData.data_diri.nama_lengkap}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.email_pendaftar || detailedData.data_diri.email}</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
+                            <p className="bg-white p-2 rounded border text-gray-900">{detailedData.data_diri.nomor_handphone || detailedData.data_diri.nomor_telepon || detailedData.data_diri.no_telp}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Catatan Admin untuk Sertifikasi */}
+                      {detailedData.catatan_admin && (
+                        <div className="bg-red-50 p-4 rounded-lg">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                            {pengajuanData.status === 'Disetujui' ? 'Catatan Persetujuan' : 
+                             pengajuanData.status === 'Ditolak' ? 'Catatan Penolakan' : 'Catatan Admin'}
+                          </h3>
+                          <div className="bg-white p-4 rounded-lg border-l-4 border-red-400">
+                            <p className="text-gray-900 whitespace-pre-wrap">{detailedData.catatan_admin}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Full PKL view with all details */
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Left Column */}
+                      <div className="space-y-6">
+                        {/* Program Info */}
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-3">Informasi Program</h3>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Pengajuan</label>
+                              <p className="bg-white p-2 rounded border text-gray-900">{detailedData.jenis_pengajuan}</p>
+                            </div>
+                            {detailedData.posisi_pkl && (
                           <>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">Posisi PKL</label>
@@ -441,21 +529,21 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                   {/* Right Column */}
                   <div className="space-y-6">
                     {/* Skill & Minat for PKL */}
-                    {detailedData && (
+                    {detailedData && detailedData.posisi_pkl && detailedData.skill_minat && (
                     <div className="bg-purple-50 p-4 rounded-lg">
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">Skill & Minat</h3>
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Skill/Kelebihan</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat?.skill_kelebihan || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat.skill_kelebihan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Kemampuan yang Ingin Ditingkatkan</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat?.kemampuan_ditingkatkan || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat.kemampuan_ditingkatkan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Pernah Membuat Video</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat?.pernah_membuat_video || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.skill_minat.pernah_membuat_video || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                       </div>
                     </div>
@@ -485,33 +573,33 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                     )}
 
                     {/* Persyaratan Khusus PKL */}
-                    {detailedData && (
+                    {detailedData && detailedData.posisi_pkl && detailedData.persyaratan_khusus && (
                     <div className="bg-teal-50 p-4 rounded-lg">
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">Persyaratan Khusus</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Memiliki Laptop</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.memiliki_laptop || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.memiliki_laptop || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Memiliki Kamera DSLR</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.memiliki_kamera_dslr || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.memiliki_kamera_dslr || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Transportasi Operasional</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.transportasi_operasional || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.transportasi_operasional || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Apakah Merokok</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.apakah_merokok || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.apakah_merokok || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Bersedia Ditempatkan</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.bersedia_ditempatkan || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.bersedia_ditempatkan || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Bersedia Masuk 2x Seminggu</label>
-                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus?.bersedia_masuk_2_kali || 'Tidak ada data'}</p>
+                          <p className="bg-white p-2 rounded border text-gray-900">{detailedData.persyaratan_khusus.bersedia_masuk_2_kali || <span className="text-gray-400 italic">Tidak diisi</span>}</p>
                         </div>
                       </div>
                     </div>
@@ -586,6 +674,8 @@ export default function PengajuanDetailModal({ isOpen, onClose, pengajuanData, d
                     )}
                   </div>
                 </div>
+                  )}
+                </>
               ) : (
                 /* Basic Data Display (fallback) */
                 <div className="space-y-4">

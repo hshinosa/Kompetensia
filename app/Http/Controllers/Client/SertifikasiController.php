@@ -333,7 +333,6 @@ class SertifikasiController extends Controller
                         'nama_batch' => $registration->batch->nama_batch,
                         'tanggal_mulai' => $registration->batch->tanggal_mulai->format('d-m-Y'),
                         'tanggal_selesai' => $registration->batch->tanggal_selesai->format('d-m-Y'),
-                        'kapasitas_peserta' => $registration->batch->kapasitas_peserta,
                     ] : null,
                     'data_diri' => [
                         'nama_lengkap' => $registration->nama_lengkap,

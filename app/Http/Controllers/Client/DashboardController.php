@@ -16,23 +16,53 @@ class DashboardController extends Controller
     {
         $user = Auth::guard('client')->user();
         
+        \Log::info('Client Dashboard - User accessing', [
+            'user_id' => $user->id,
+            'user_name' => $user->nama,
+            'guard' => 'client'
+        ]);
+        
         // Get dashboard statistics
+        // Get IDs of programs that already have certificates
+        $certifiedSertifikasiIds = \App\Models\SertifikatKelulusan::where('user_id', $user->id)
+            ->where('jenis_program', 'sertifikasi')
+            ->whereNotNull('pendaftaran_sertifikasi_id')
+            ->pluck('pendaftaran_sertifikasi_id');
+        
+        $certifiedPKLIds = \App\Models\SertifikatKelulusan::where('user_id', $user->id)
+            ->where('jenis_program', 'pkl')
+            ->whereNotNull('pendaftaran_pkl_id')
+            ->pluck('pendaftaran_pkl_id');
+        
         $stats = [
-            'sertifikasi_selesai' => PendaftaranSertifikasi::where('user_id', $user->id)
-                ->where('status', 'selesai')
+            // Count issued certificates (from sertifikat_kelulusan table)
+            'sertifikasi_selesai' => \App\Models\SertifikatKelulusan::where('user_id', $user->id)
                 ->count(),
+            
+            // Count approved programs (Disetujui) that are still active (no certificate yet)
+            // For PKL, also exclude those with approved "Laporan Akhir" (considered completed)
             'program_aktif' => PendaftaranSertifikasi::where('user_id', $user->id)
-                ->whereIn('status', ['diterima', 'sedang_berlangsung'])
+                ->where('status', 'Disetujui')
+                ->whereNotIn('id', $certifiedSertifikasiIds)
                 ->count() + 
                 PendaftaranPKL::where('user_id', $user->id)
-                ->whereIn('status', ['diterima', 'sedang_berlangsung'])
+                ->where('status', 'Disetujui')
+                ->whereNotIn('id', $certifiedPKLIds)
+                ->whereDoesntHave('uploadDokumen', function($query) {
+                    $query->where('jenis_dokumen', 'laporan-akhir')
+                          ->where('status', 'approved');
+                })
                 ->count(),
+            
+            // Count pending/under review submissions
             'pengajuan_diproses' => PendaftaranSertifikasi::where('user_id', $user->id)
-                ->whereIn('status', ['pending', 'sedang_diverifikasi'])
+                ->where('status', 'Pengajuan')
                 ->count() + 
                 PendaftaranPKL::where('user_id', $user->id)
-                ->whereIn('status', ['pending', 'sedang_diverifikasi'])
+                ->where('status', 'Pengajuan')
                 ->count(),
+            
+            // Total programs registered
             'total_program' => PendaftaranSertifikasi::where('user_id', $user->id)->count() + 
                 PendaftaranPKL::where('user_id', $user->id)->count()
         ];
@@ -113,6 +143,11 @@ class DashboardController extends Controller
 
         $riwayat_pengajuan = $sertifikasi_riwayat->concat($pkl_riwayat)->sortByDesc('tanggal')->take(3)->values();
 
+        \Log::info('Client Dashboard - Stats calculated', [
+            'user_id' => $user->id,
+            'stats' => $stats
+        ]);
+
         return Inertia::render('client/dashboard', [
             'user' => [
                 'id' => $user->id,
@@ -136,6 +171,9 @@ class DashboardController extends Controller
     private function getStatusDisplay($status)
     {
         $statusMap = [
+            'Pengajuan' => 'Sedang Diverifikasi',
+            'Disetujui' => 'Disetujui',
+            'Ditolak' => 'Ditolak',
             'pending' => 'Sedang Diverifikasi',
             'sedang_diverifikasi' => 'Sedang Diverifikasi',
             'diterima' => 'Disetujui',

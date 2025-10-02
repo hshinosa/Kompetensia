@@ -107,6 +107,7 @@ class PenilaianSertifikasiController extends Controller
             },
             'pendaftaran.user',
             'pendaftaran.penilaian',
+            'pendaftaran.sertifikatKelulusan', // Load issued certificates
             'pendaftaran.uploadTugas' => function($query) {
                 $query->orderBy('tanggal_upload', 'desc');
             }
@@ -142,6 +143,7 @@ class PenilaianSertifikasiController extends Controller
                                 'link_url' => $upload->link_url,
                                 'nama_file' => $upload->nama_file,
                                 'path_file' => $upload->path_file,
+                                'download_url' => $upload->path_file ? route('admin.upload-tugas.download', ['id' => $upload->id]) : null,
                                 'status' => $upload->status,
                                 'tanggal_upload' => $upload->tanggal_upload->format('Y-m-d H:i:s'),
                                 'feedback' => $upload->feedback,
@@ -157,6 +159,12 @@ class PenilaianSertifikasiController extends Controller
                             'nilai_praktek' => $pendaftaran->penilaian->nilai_praktek,
                             'catatan_asesor' => $pendaftaran->penilaian->catatan_asesor, // Use consistent field name
                             'tanggal_penilaian' => $pendaftaran->penilaian->tanggal_penilaian?->format('Y-m-d'),
+                        ] : null,
+                        'sertifikat' => $pendaftaran->sertifikatKelulusan ? [
+                            'id' => $pendaftaran->sertifikatKelulusan->id,
+                            'link_sertifikat' => $pendaftaran->sertifikatKelulusan->link_sertifikat,
+                            'tanggal_selesai' => $pendaftaran->sertifikatKelulusan->tanggal_selesai?->format('Y-m-d'),
+                            'catatan_admin' => $pendaftaran->sertifikatKelulusan->catatan_admin,
                         ] : null,
                     ];
                 })->values(),

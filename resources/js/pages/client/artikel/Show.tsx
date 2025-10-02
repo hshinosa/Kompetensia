@@ -51,7 +51,7 @@ export default function Show({ article, relatedArticles }: ArticleShowProps) {
 
   return (
     <ClientLayout>
-      <Head title={`${article.nama_artikel} - Kompetensia`} />
+      <Head title={`${article.nama_artikel} - Ujikom`} />
       
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-10">
@@ -179,7 +179,7 @@ export default function Show({ article, relatedArticles }: ArticleShowProps) {
             <div className="lg:col-span-1">
               {/* Related Articles */}
               {relatedArticles && relatedArticles.length > 0 && (
-                <div className="bg-white rounded-xl shadow-md p-6">
+                <div className="bg-white rounded-xl shadow-md p-6 sticky top-27">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Artikel Terkait</h3>
                   <div className="space-y-4">
                     {relatedArticles.map((relatedArticle) => (

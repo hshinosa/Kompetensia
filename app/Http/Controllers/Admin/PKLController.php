@@ -191,7 +191,7 @@ class PKLController extends Controller
 
     public function penilaianShow($id)
     {
-        $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian'])->findOrFail($id);
+        $pendaftaran = PendaftaranPKL::with(['user', 'posisiPKL', 'penilaian', 'sertifikat'])->findOrFail($id);
         
         // Add dynamic status for detail view
         $now = now();
@@ -216,14 +216,22 @@ class PKLController extends Controller
             ->where('pendaftaran_id', $pendaftaran->id)
             ->orderBy('tanggal_upload', 'asc')
             ->get()
-            ->map(function($submisi) {
+            ->map(function($submisi, $index) {
+                // Determine tipe_submisi based on what's available
+                $tipeSubmisi = 'dokumen';
+                if ($submisi->link_url && $submisi->file_path) {
+                    $tipeSubmisi = 'dokumen_dan_link';
+                } elseif ($submisi->link_url && !$submisi->file_path) {
+                    $tipeSubmisi = 'link';
+                }
+                
                 return [
                     'id' => $submisi->id,
-                    'nomor_submisi' => 'DOC-' . $submisi->id,
+                    'nomor_submisi' => 'DOC-' . ($index + 1), // Number per user starting from 1
                     'tanggal_submit' => $submisi->tanggal_upload ? $submisi->tanggal_upload->format('d M Y') : null,
                     'status' => $submisi->tanggal_upload ? 'submitted' : 'pending',
                     'kategori_submisi' => $submisi->jenis_dokumen, // 'proposal' | 'laporan-mingguan' | 'laporan-akhir' | 'evaluasi'
-                    'tipe_submisi' => 'dokumen', // Always document in new system
+                    'tipe_submisi' => $tipeSubmisi,
                     'judul_tugas' => $submisi->judul_tugas,
                     'deskripsi_tugas' => $submisi->jenis_dokumen_text,
                     'link_submisi' => $submisi->link_url,
@@ -231,7 +239,7 @@ class PKLController extends Controller
                     'path_file' => $submisi->file_path,
                     'ukuran_file' => $submisi->file_size,
                     'tipe_mime' => $submisi->file_type,
-                    'url_file' => $submisi->file_path ? '/storage/' . $submisi->file_path : null,
+                    'url_file' => $submisi->file_path ? route('admin.upload-dokumen-pkl.download', ['id' => $submisi->id]) : null,
                     'ukuran_file_format' => $submisi->formatted_file_size,
                     'is_assessed' => $submisi->status !== 'pending',
                     'status_penilaian' => $this->mapStatusToPenilaian($submisi->status), // Convert to frontend format

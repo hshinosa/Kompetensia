@@ -1,5 +1,5 @@
-import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import React, { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import ClientLayout from '@/layouts/ClientLayout';
 import HeroArtikel from '@/components/client/artikel/HeroArtikel';
 
@@ -23,9 +23,34 @@ interface ArticleIndexProps {
     meta: any;
   };
   featured: Article[];
+  filters?: {
+    jenis_konten?: string;
+  };
 }
 
-export default function Index({ articles, featured }: ArticleIndexProps) {
+export default function Index({ articles, featured, filters }: ArticleIndexProps) {
+  const [activeFilter, setActiveFilter] = useState(filters?.jenis_konten || 'Semua');
+
+  // Debug pagination data
+  console.log('Articles pagination data:', {
+    total: articles?.meta?.total,
+    per_page: articles?.meta?.per_page,
+    current_page: articles?.meta?.current_page,
+    last_page: articles?.meta?.last_page,
+    links_count: articles?.links?.length
+  });
+
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    router.get('/artikel', 
+      filter === 'Semua' ? {} : { jenis_konten: filter },
+      { 
+        preserveState: true,
+        preserveScroll: true 
+      }
+    );
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
       year: 'numeric',
@@ -43,7 +68,7 @@ export default function Index({ articles, featured }: ArticleIndexProps) {
 
   return (
     <ClientLayout>
-      <Head title="Artikel - Kompetensia" />
+      <Head title="Artikel - Ujikom" />
       
       <div className="min-h-screen bg-gray-50">
         {/* Hero Section */}
@@ -55,7 +80,7 @@ export default function Index({ articles, featured }: ArticleIndexProps) {
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Artikel Unggulan</h2>
             <div className="grid md:grid-cols-3 gap-8">
               {featured.map((article) => (
-                <div key={article.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div key={article.id} className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
                   <div className="aspect-video bg-gradient-to-br from-purple-500 to-blue-500 relative">
                     {article.thumbnail ? (
                       <img 
@@ -111,11 +136,47 @@ export default function Index({ articles, featured }: ArticleIndexProps) {
             <h2 className="text-2xl font-bold text-gray-900">Semua Artikel</h2>
             
             {/* Filter buttons */}
-            <div className="flex gap-2">
-              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium">Semua</button>
-              <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">Tutorial</button>
-              <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">News</button>
-              <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50">Tips</button>
+            <div className="flex gap-2 flex-wrap">
+              <button 
+                onClick={() => handleFilterChange('Semua')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeFilter === 'Semua'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Semua
+              </button>
+              <button 
+                onClick={() => handleFilterChange('Tutorial')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeFilter === 'Tutorial'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Tutorial
+              </button>
+              <button 
+                onClick={() => handleFilterChange('News')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeFilter === 'News'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                News
+              </button>
+              <button 
+                onClick={() => handleFilterChange('Tips')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeFilter === 'Tips'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Tips
+              </button>
             </div>
           </div>
 
@@ -123,7 +184,7 @@ export default function Index({ articles, featured }: ArticleIndexProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
             {articles.data && articles.data.length > 0 ? (
               articles.data.map((article) => (
-                <div key={article.id} className="bg-white rounded-xl border-2 border-purple-200 overflow-hidden hover:shadow-lg transition-all hover:border-purple-300">
+                <div key={article.id} className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
                   <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 relative">
                     {article.thumbnail ? (
                       <img 
@@ -181,34 +242,39 @@ export default function Index({ articles, featured }: ArticleIndexProps) {
           {articles.links && articles.meta && articles.meta.last_page > 1 && (
             <div className="flex justify-center items-center space-x-4 mt-8">
               {/* Previous Button */}
-              {articles.links.find((link: any) => link.label.includes('Previous')) && (
-                <Link
-                  href={articles.links.find((link: any) => link.label.includes('Previous'))?.url || '#'}
-                  className={`p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors ${
-                    !articles.links.find((link: any) => link.label.includes('Previous'))?.url 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : ''
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </Link>
-              )}
+              {(() => {
+                const prevLink = articles.links.find((link: any) => link.label.includes('Previous') || link.label.includes('&laquo;'));
+                return prevLink && (
+                  <Link
+                    href={prevLink.url || '#'}
+                    preserveScroll
+                    className={`p-2 rounded-lg border border-gray-300 transition-colors ${
+                      !prevLink.url 
+                        ? 'opacity-50 cursor-not-allowed' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Link>
+                );
+              })()}
               
               {/* Page Numbers */}
               <div className="flex space-x-1">
                 {articles.links
-                  .filter((link: any) => !link.label.includes('Previous') && !link.label.includes('Next'))
+                  .filter((link: any) => !link.label.includes('Previous') && !link.label.includes('Next') && !link.label.includes('&laquo;') && !link.label.includes('&raquo;'))
                   .map((link: any, index: number) => (
                     <Link
                       key={index}
                       href={link.url || '#'}
+                      preserveScroll
                       className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
                         link.active
                           ? 'bg-purple-600 text-white'
                           : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
-                      } ${!link.url ? 'opacity-50 cursor-not-allowed' : ''} flex items-center justify-center`}
+                      } flex items-center justify-center`}
                     >
                       <span dangerouslySetInnerHTML={{ __html: link.label }} />
                     </Link>
@@ -216,20 +282,24 @@ export default function Index({ articles, featured }: ArticleIndexProps) {
               </div>
               
               {/* Next Button */}
-              {articles.links.find((link: any) => link.label.includes('Next')) && (
-                <Link
-                  href={articles.links.find((link: any) => link.label.includes('Next'))?.url || '#'}
-                  className={`p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors ${
-                    !articles.links.find((link: any) => link.label.includes('Next'))?.url 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : ''
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              )}
+              {(() => {
+                const nextLink = articles.links.find((link: any) => link.label.includes('Next') || link.label.includes('&raquo;'));
+                return nextLink && (
+                  <Link
+                    href={nextLink.url || '#'}
+                    preserveScroll
+                    className={`p-2 rounded-lg border border-gray-300 transition-colors ${
+                      !nextLink.url 
+                        ? 'opacity-50 cursor-not-allowed' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                );
+              })()}
             </div>
           )}
 

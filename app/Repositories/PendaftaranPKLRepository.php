@@ -119,6 +119,36 @@ class PendaftaranPKLRepository implements PendaftaranPKLRepositoryInterface
     }
 
     /**
+     * Check if user has any active PKL registration
+     * Active means: status is Pengajuan, Disetujui (and not expired), or Menunggu
+     */
+    public function hasActiveRegistration(int $userId): ?PendaftaranPKL
+    {
+        // First check for Pengajuan or Menunggu status (always blocks new registration)
+        $pendingRegistration = $this->model
+            ->where('user_id', $userId)
+            ->whereIn('status', ['Pengajuan', 'Menunggu'])
+            ->first();
+
+        if ($pendingRegistration) {
+            return $pendingRegistration;
+        }
+
+        // Then check for Disetujui status that hasn't expired yet
+        $approvedRegistration = $this->model
+            ->where('user_id', $userId)
+            ->where('status', 'Disetujui')
+            ->where(function($query) {
+                // If tanggal_selesai is null or in the future, it's still active
+                $query->whereNull('tanggal_selesai')
+                      ->orWhere('tanggal_selesai', '>=', now()->toDateString());
+            })
+            ->first();
+
+        return $approvedRegistration;
+    }
+
+    /**
      * Get pendaftaran by status
      */
     public function getByStatus(string $status): Collection

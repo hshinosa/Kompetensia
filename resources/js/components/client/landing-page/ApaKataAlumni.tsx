@@ -3,48 +3,36 @@ import React from 'react';
 const alumniList = [
   {
     name: 'Jane Doe', 
-    role: 'Digital Marketing Specialist',
-    company: 'Creative Agency',
     avatar: 'https://randomuser.me/api/portraits/women/44.jpg', 
     text: 'Sertifikasi dan PKL di sini benar-benar mengubah karir saya. Materi yang diberikan sangat praktis dan langsung bisa diaplikasikan di dunia kerja. Mentornya juga sangat berpengalaman dan supportive.',
     rating: 5
   },
   {
     name: 'Arlene McCoy', 
-    role: 'Frontend Developer',
-    company: 'Tech Solutions',
     avatar: 'https://randomuser.me/api/portraits/women/65.jpg', 
     text: 'Program yang sangat komprehensif! Dari sertifikasi hingga PKL, semuanya tersusun dengan baik. Saya sangat merekomendasikan untuk yang ingin meningkatkan skill dan pengalaman kerja.',
     rating: 5
   },
   {
     name: 'Ronald Richards', 
-    role: 'UI/UX Designer',
-    company: 'Design Studio',
     avatar: 'https://randomuser.me/api/portraits/men/32.jpg', 
     text: 'Best decision ever! Program PKL dan sertifikasinya comprehensive banget. Sekarang saya udah confident untuk masuk ke industri tech. Terima kasih mentornya yang sabar!',
     rating: 5
   },
   {
     name: 'Philip Jones', 
-    role: 'Data Analyst',
-    company: 'Analytics Corp',
     avatar: 'https://randomuser.me/api/portraits/men/54.jpg', 
     text: 'Kualitas pembelajaran yang luar biasa. Sertifikat dan pengalaman PKL yang diperoleh sangat membantu dalam meningkatkan kredibilitas profesional di industri.',
     rating: 4
   },
   {
     name: 'Victoria Smith', 
-    role: 'Content Creator',
-    company: 'Media Company',
     avatar: 'https://randomuser.me/api/portraits/women/68.jpg', 
     text: 'Program yang sangat membantu dalam mengembangkan skill dan memberikan pengalaman praktis yang valuable. Mentor dan fasilitasnya juga sangat mendukung proses pembelajaran.',
     rating: 5
   },
   {
     name: 'Shawn Williams', 
-    role: 'Web Developer',
-    company: 'IT Solutions',
     avatar: 'https://randomuser.me/api/portraits/men/41.jpg', 
     text: 'Dari segi materi, praktek, dan networking, semuanya luar biasa. Program ini benar-benar mempersiapkan kita untuk siap terjun ke dunia kerja dengan skill yang dibutuhkan industri.',
     rating: 5
@@ -71,7 +59,6 @@ export default function ApaKataAlumni() {
                 />
                 <div>
                   <h4 className="font-semibold text-gray-900">{item.name}</h4>
-                  <p className="text-xs text-purple-600 font-medium">{item.company}</p>
                 </div>
               </div>
 

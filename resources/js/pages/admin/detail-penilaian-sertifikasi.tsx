@@ -184,8 +184,8 @@ export default function DetailPenilaianSertifikasi() {
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                // Handle file download
-                                window.open(`/storage/${upload.path_file}`, '_blank');
+                                // Handle file download using proper route
+                                window.location.href = `/admin/upload-tugas/${upload.id}/download`;
                               }}
                             >
                               Download

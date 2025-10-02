@@ -33,7 +33,7 @@ export default function PendaftaranNavbar() {
     <>
       <nav className="flex items-center px-20 py-5 bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <div className="text-2xl font-semibold mr-8 text-gray-900">
-          <Link href="/">Kompetensia</Link>
+          <Link href="/">Ujikom</Link>
         </div>
         <div className="flex flex-1 justify-end items-center gap-8 text-lg text-gray-900">
           <Link 
@@ -82,7 +82,7 @@ export default function PendaftaranNavbar() {
                   </div>
                   
                   <Link
-                    href="/client/dashboard"
+                    href="/dashboard"
                     className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     onClick={() => setIsDropdownOpen(false)}
                   >

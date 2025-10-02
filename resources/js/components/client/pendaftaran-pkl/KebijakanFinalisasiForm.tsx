@@ -219,8 +219,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="apakahMerokok"
                 value="ya"
-                checked={formData.apakah_merokok === 'ya'}
-                onChange={(e) => onFormDataChange('apakah_merokok', e.target.value)}
+                checked={formData.apakahMerokok === 'ya'}
+                onChange={(e) => onFormDataChange('apakahMerokok', e.target.value)}
                 className="mr-3 text-purple-600"
                 required
               />
@@ -231,8 +231,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="apakahMerokok"
                 value="tidak"
-                checked={formData.apakah_merokok === 'tidak'}
-                onChange={(e) => onFormDataChange('apakah_merokok', e.target.value)}
+                checked={formData.apakahMerokok === 'tidak'}
+                onChange={(e) => onFormDataChange('apakahMerokok', e.target.value)}
                 className="mr-3 text-purple-600"
               />
               <span className="text-gray-700">Tidak</span>
@@ -251,8 +251,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="bersediaDitempatkan"
                 value="ya"
-                checked={formData.bersedia_ditempatkan === 'ya'}
-                onChange={(e) => onFormDataChange('bersedia_ditempatkan', e.target.value)}
+                checked={formData.bersediaDitempatkan === 'ya'}
+                onChange={(e) => onFormDataChange('bersediaDitempatkan', e.target.value)}
                 className="mr-3 text-purple-600"
                 required
               />
@@ -263,8 +263,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="bersediaDitempatkan"
                 value="tidak"
-                checked={formData.bersedia_ditempatkan === 'tidak'}
-                onChange={(e) => onFormDataChange('bersedia_ditempatkan', e.target.value)}
+                checked={formData.bersediaDitempatkan === 'tidak'}
+                onChange={(e) => onFormDataChange('bersediaDitempatkan', e.target.value)}
                 className="mr-3 text-purple-600"
               />
               <span className="text-gray-700">Tidak</span>
@@ -283,8 +283,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="bersediaMasuk2Kali"
                 value="ya"
-                checked={formData.bersedia_masuk_2_kali === 'ya'}
-                onChange={(e) => onFormDataChange('bersedia_masuk_2_kali', e.target.value)}
+                checked={formData.bersediaMasuk2Kali === 'ya'}
+                onChange={(e) => onFormDataChange('bersediaMasuk2Kali', e.target.value)}
                 className="mr-3 text-purple-600"
                 required
               />
@@ -295,8 +295,8 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
                 type="radio"
                 name="bersediaMasuk2Kali"
                 value="tidak"
-                checked={formData.bersedia_masuk_2_kali === 'tidak'}
-                onChange={(e) => onFormDataChange('bersedia_masuk_2_kali', e.target.value)}
+                checked={formData.bersediaMasuk2Kali === 'tidak'}
+                onChange={(e) => onFormDataChange('bersediaMasuk2Kali', e.target.value)}
                 className="mr-3 text-purple-600"
               />
               <span className="text-gray-700">Tidak</span>

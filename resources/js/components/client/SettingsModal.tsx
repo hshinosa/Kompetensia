@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 type ModalView = 'main' | 'change-email' | 'change-password';
 
@@ -7,24 +8,64 @@ interface Props {
     onClose: () => void;
 }
 
+interface FormData {
+    nama_lengkap: string;
+    email: string;
+    nomor_telepon: string;
+    tempat_lahir: string;
+    tanggal_lahir: string;
+    jenis_kelamin: string;
+    alamat: string;
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+    new_email: string;
+}
+
 export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
     const [currentView, setCurrentView] = useState<ModalView>('main');
     const [isClosing, setIsClosing] = useState(false);
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string>('');
+    const [success, setSuccess] = useState<string>('');
+    const [fotoProfil, setFotoProfil] = useState<string | null>(() => {
+        // Initialize from localStorage on component mount
+        const saved = localStorage.getItem('user_profile_photo');
+        console.log('Initial fotoProfil from localStorage:', saved);
+        return saved || null;
+    });
+    const [isUploadingFoto, setIsUploadingFoto] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const isUploadingRef = React.useRef(false);
 
     // Handle animated view changes
     const handleViewChange = (newView: ModalView) => {
         setIsTransitioning(true);
+        setError('');
+        setSuccess('');
         setTimeout(() => {
             setCurrentView(newView);
             setIsTransitioning(false);
+            // Reset password fields when changing view
+            if (newView !== 'change-password' && newView !== 'change-email') {
+                setFormData(prev => ({
+                    ...prev,
+                    current_password: '',
+                    new_password: '',
+                    confirm_password: '',
+                    new_email: ''
+                }));
+            }
         }, 150);
     };
-    const [formData, setFormData] = useState({
+    
+    const [formData, setFormData] = useState<FormData>({
         nama_lengkap: '',
-        username: '',
         email: '',
         nomor_telepon: '',
+        tempat_lahir: '',
         tanggal_lahir: '',
         jenis_kelamin: '',
         alamat: '',
@@ -34,12 +75,145 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
         new_email: ''
     });
 
+    // Sync fotoProfil with localStorage whenever it changes
+    useEffect(() => {
+        console.log('fotoProfil changed:', fotoProfil);
+        if (fotoProfil) {
+            localStorage.setItem('user_profile_photo', fotoProfil);
+            console.log('Saved to localStorage:', fotoProfil);
+            // Dispatch event to notify other components (like Navbar)
+            window.dispatchEvent(new Event('profile-photo-updated'));
+        }
+    }, [fotoProfil]);
+
+    // Fetch user profile data when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            console.log('Modal opened, fetching profile...');
+            fetchUserProfile();
+        }
+    }, [isOpen]);
+
+    const fetchUserProfile = async () => {
+        setIsLoading(true);
+        setError('');
+        
+        try {
+            const response = await axios.get('/api/settings/profile');
+            if (response.data.success) {
+                const userData = response.data.data;
+                setFormData(prev => ({
+                    ...prev,
+                    nama_lengkap: userData.nama_lengkap || userData.nama || '',
+                    email: userData.email || '',
+                    nomor_telepon: userData.nomor_telepon || '',
+                    tempat_lahir: userData.tempat_lahir || '',
+                    tanggal_lahir: userData.tanggal_lahir || '',
+                    jenis_kelamin: userData.jenis_kelamin || '',
+                    alamat: userData.alamat || '',
+                }));
+                
+                // CRITICAL: Only update photo if current state is null
+                // This prevents overwriting newly uploaded photos
+                if (!fotoProfil && userData.foto_profil) {
+                    setFotoProfil(userData.foto_profil);
+                }
+            }
+        } catch (err: any) {
+            console.error('Error fetching profile:', err);
+            setError(err.response?.data?.message || 'Gagal memuat data profil');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            setError('Ukuran file maksimal 2MB');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
+        // Validate file type
+        if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+            setError('Format file harus JPG, JPEG, atau PNG');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
+        setIsUploadingFoto(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            // Create FormData and upload immediately
+            const formData = new FormData();
+            formData.append('foto_profil', file);
+
+            const response = await axios.post('/api/settings/upload-foto', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.data.success) {
+                // Get server URL
+                const serverPhotoUrl = response.data.data.foto_profil;
+                
+                // Update state and localStorage atomically
+                setFotoProfil(serverPhotoUrl);
+                localStorage.setItem('user_profile_photo', serverPhotoUrl);
+                
+                setSuccess('Foto profil berhasil diupload');
+                setTimeout(() => setSuccess(''), 3000);
+            }
+        } catch (err: any) {
+            console.error('Error uploading photo:', err);
+            setError(err.response?.data?.message || 'Gagal mengupload foto profil');
+        } finally {
+            setIsUploadingFoto(false);
+            // Clear file input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleDeleteFoto = async () => {
+        if (!confirm('Apakah Anda yakin ingin menghapus foto profil?')) return;
+
+        setIsUploadingFoto(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            const response = await axios.delete('/api/settings/delete-foto');
+
+            if (response.data.success) {
+                setFotoProfil(null);
+                // Remove from localStorage
+                localStorage.removeItem('user_profile_photo');
+                setSuccess('Foto profil berhasil dihapus');
+                setTimeout(() => setSuccess(''), 3000);
+            }
+        } catch (err: any) {
+            console.error('Error deleting photo:', err);
+            setError(err.response?.data?.message || 'Gagal menghapus foto profil');
+        } finally {
+            setIsUploadingFoto(false);
+        }
+    };
+
     // Lock body scroll when dialog is open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
             setIsClosing(false);
             setCurrentView('main'); // Reset to main view when opening
+            setError('');
+            setSuccess('');
         } else {
             document.body.style.overflow = 'unset';
         }
@@ -83,32 +257,117 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({
             ...prev,
             [e.target.name]: e.target.value
         }));
     };
 
-    const handleSaveChanges = (e: React.FormEvent) => {
+    const handleSaveChanges = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle main settings save
-        console.log('Saving main settings:', formData);
-        handleClose();
+        setIsSaving(true);
+        setError('');
+        setSuccess('');
+        
+        try {
+            const response = await axios.put('/api/settings/profile', {
+                nama_lengkap: formData.nama_lengkap,
+                nomor_telepon: formData.nomor_telepon,
+                tempat_lahir: formData.tempat_lahir,
+                tanggal_lahir: formData.tanggal_lahir,
+                jenis_kelamin: formData.jenis_kelamin,
+                alamat: formData.alamat,
+            });
+            
+            if (response.data.success) {
+                setSuccess('Profil berhasil diperbarui');
+                setTimeout(() => {
+                    handleClose();
+                }, 1500);
+            }
+        } catch (err: any) {
+            console.error('Error updating profile:', err);
+            setError(err.response?.data?.message || 'Gagal memperbarui profil');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleChangeEmail = (e: React.FormEvent) => {
+    const handleChangeEmail = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle email change
-        console.log('Changing email:', formData.new_email);
-        handleViewChange('main');
+        setIsSaving(true);
+        setError('');
+        setSuccess('');
+        
+        try {
+            const response = await axios.post('/api/settings/change-email', {
+                new_email: formData.new_email,
+                current_password: formData.current_password,
+            });
+            
+            if (response.data.success) {
+                setSuccess('Email berhasil diubah');
+                setFormData(prev => ({
+                    ...prev,
+                    email: formData.new_email,
+                    new_email: '',
+                    current_password: ''
+                }));
+                setTimeout(() => {
+                    handleViewChange('main');
+                }, 1500);
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Gagal mengubah email');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleChangePassword = (e: React.FormEvent) => {
+    const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle password change
-        console.log('Changing password');
-        handleViewChange('main');
+        setIsSaving(true);
+        setError('');
+        setSuccess('');
+        
+        // Validate password match
+        if (formData.new_password !== formData.confirm_password) {
+            setError('Konfirmasi kata sandi tidak cocok');
+            setIsSaving(false);
+            return;
+        }
+        
+        if (formData.new_password.length < 8) {
+            setError('Kata sandi baru minimal 8 karakter');
+            setIsSaving(false);
+            return;
+        }
+        
+        try {
+            const response = await axios.post('/api/settings/change-password', {
+                current_password: formData.current_password,
+                new_password: formData.new_password,
+                new_password_confirmation: formData.confirm_password,
+            });
+            
+            if (response.data.success) {
+                setSuccess('Kata sandi berhasil diubah');
+                setFormData(prev => ({
+                    ...prev,
+                    current_password: '',
+                    new_password: '',
+                    confirm_password: ''
+                }));
+                setTimeout(() => {
+                    handleViewChange('main');
+                }, 1500);
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Gagal mengubah kata sandi');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -162,11 +421,90 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
 
                 {/* Content */}
                 <div className="p-6 overflow-hidden">
+                    {/* Loading State */}
+                    {isLoading && (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                        </div>
+                    )}
+
+                    {/* Error Alert */}
+                    {error && (
+                        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                            <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-red-800">{error}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Success Alert */}
+                    {success && (
+                        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+                            <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-green-800">{success}</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className={`transition-all duration-300 ease-in-out ${
                         isTransitioning ? 'opacity-0 transform translate-x-2' : 'opacity-100 transform translate-x-0'
                     }`}>
-                        {currentView === 'main' && (
+                        {!isLoading && currentView === 'main' && (
                         <form onSubmit={handleSaveChanges} className="space-y-6">
+                            {/* Profile Photo */}
+                            <div className="flex flex-col items-center pb-6 border-b border-gray-200">
+                                <div className="relative">
+                                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                                        {fotoProfil ? (
+                                            <img 
+                                                src={fotoProfil} 
+                                                alt="Profile" 
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    {isUploadingFoto && (
+                                        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="mt-4 flex gap-2">
+                                    <label className="cursor-pointer px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors">
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/jpeg,image/jpg,image/png"
+                                            onChange={handleFotoUpload}
+                                            className="hidden"
+                                            disabled={isUploadingFoto}
+                                        />
+                                        Upload Foto
+                                    </label>
+                                    {fotoProfil && (
+                                        <button
+                                            type="button"
+                                            onClick={handleDeleteFoto}
+                                            disabled={isUploadingFoto}
+                                            className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                                        >
+                                            Hapus Foto
+                                        </button>
+                                    )}
+                                </div>
+                                <p className="mt-2 text-xs text-gray-500">JPG, JPEG atau PNG. Maksimal 2MB</p>
+                            </div>
+
                             {/* Profile Information */}
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Informasi Profil</h3>
@@ -186,20 +524,6 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                                            Username
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="username"
-                                            name="username"
-                                            value={formData.username}
-                                            onChange={handleInputChange}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                            placeholder="Masukkan username"
-                                        />
-                                    </div>
-                                    <div>
                                         <label htmlFor="nomor_telepon" className="block text-sm font-medium text-gray-700 mb-2">
                                             Nomor Telepon
                                         </label>
@@ -211,6 +535,20 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                                             onChange={handleInputChange}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                             placeholder="08xxxxxxxxxx"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="tempat_lahir" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Tempat Lahir
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="tempat_lahir"
+                                            name="tempat_lahir"
+                                            value={formData.tempat_lahir}
+                                            onChange={handleInputChange}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                            placeholder="Masukkan tempat lahir"
                                         />
                                     </div>
                                     <div>
@@ -242,20 +580,20 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                                             <option value="Perempuan">Perempuan</option>
                                         </select>
                                     </div>
-                                    <div className="md:col-span-2">
-                                        <label htmlFor="alamat" className="block text-sm font-medium text-gray-700 mb-2">
-                                            Alamat Rumah
-                                        </label>
-                                        <textarea
-                                            id="alamat"
-                                            name="alamat"
-                                            value={formData.alamat}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, alamat: e.target.value }))}
-                                            rows={3}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
-                                            placeholder="Masukkan alamat lengkap"
-                                        />
-                                    </div>
+                                </div>
+                                <div className="mt-4">
+                                    <label htmlFor="alamat" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Alamat Lengkap
+                                    </label>
+                                    <textarea
+                                        id="alamat"
+                                        name="alamat"
+                                        value={formData.alamat}
+                                        onChange={handleInputChange}
+                                        rows={3}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                        placeholder="Masukkan alamat lengkap"
+                                    />
                                 </div>
                             </div>
 
@@ -285,15 +623,23 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                                 <button
                                     type="button"
                                     onClick={handleClose}
-                                    className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                    disabled={isSaving}
+                                    className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Batal
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                    disabled={isSaving}
+                                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
-                                    Simpan Perubahan
+                                    {isSaving && (
+                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    )}
+                                    {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
                                 </button>
                             </div>
                         </form>
@@ -335,15 +681,23 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                                 <button
                                     type="button"
                                     onClick={() => handleViewChange('main')}
-                                    className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                    disabled={isSaving}
+                                    className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Kembali ke Pengaturan
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                    disabled={isSaving}
+                                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
-                                    Ubah Email
+                                    {isSaving && (
+                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    )}
+                                    {isSaving ? 'Mengubah...' : 'Ubah Email'}
                                 </button>
                             </div>
                         </form>
@@ -400,15 +754,23 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                                 <button
                                     type="button"
                                     onClick={() => handleViewChange('main')}
-                                    className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                    disabled={isSaving}
+                                    className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Kembali ke Pengaturan
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                    disabled={isSaving}
+                                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
-                                    Ubah Kata Sandi
+                                    {isSaving && (
+                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    )}
+                                    {isSaving ? 'Mengubah...' : 'Ubah Kata Sandi'}
                                 </button>
                             </div>
                         </form>

@@ -31,6 +31,10 @@ class PendaftaranSertifikasiSeeder extends Seeder
             return;
         }
 
+        // Only select 60% of users to register for certifications (more realistic)
+        $selectedUsers = collect($users)->random(intval(count($users) * 0.6))->toArray();
+        $usedUsers = []; // Track used users to avoid duplicates
+
         $faker = Faker::create('id_ID');
 
         $statusOptions = ['Pengajuan', 'Disetujui', 'Ditolak'];
@@ -75,8 +79,17 @@ class PendaftaranSertifikasiSeeder extends Seeder
             'Motivasi yang disampaikan kurang spesifik dan detail.'
         ];
 
-        for ($i = 0; $i < 12; $i++) {
-            $userId = $faker->randomElement($users);
+        for ($i = 0; $i < 85; $i++) {
+            // Ensure no duplicate users in registrations
+            $availableUsers = array_diff($selectedUsers, $usedUsers);
+            if (empty($availableUsers)) {
+                // If all selected users are used, break the loop
+                break;
+            }
+            
+            $userId = $faker->randomElement($availableUsers);
+            $usedUsers[] = $userId;
+            
             $sertifikasiId = $faker->randomElement($sertifikasiIds);
             $batchId = $faker->randomElement($batchIds);
             $status = $faker->randomElement($statusOptions);

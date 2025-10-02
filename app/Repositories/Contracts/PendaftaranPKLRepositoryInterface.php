@@ -54,6 +54,11 @@ interface PendaftaranPKLRepositoryInterface
     public function isUserAlreadyRegistered(int $userId, int $posisiPklId): bool;
 
     /**
+     * Check if user has any active PKL registration
+     */
+    public function hasActiveRegistration(int $userId): ?PendaftaranPKL;
+
+    /**
      * Get pendaftaran by status
      */
     public function getByStatus(string $status): Collection;

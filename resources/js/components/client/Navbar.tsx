@@ -22,10 +22,38 @@ export default function Navbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [fotoProfil, setFotoProfil] = useState<string | null>(() => {
+    return localStorage.getItem('user_profile_photo') || null;
+  });
   
   const { auth } = usePage<PageProps>().props;
   const user = auth?.client; // Menggunakan client auth
   const isAuthenticated = !!user;
+
+  // Listen to localStorage changes from SettingsModal
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      const savedPhoto = localStorage.getItem('user_profile_photo');
+      setFotoProfil(savedPhoto);
+    };
+
+    // Listen to custom event from SettingsModal
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('profile-photo-updated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profile-photo-updated', handleStorageChange);
+    };
+  }, []);
+
+  // Load photo when modal closes (user might have updated it)
+  React.useEffect(() => {
+    if (!isSettingsModalOpen) {
+      const savedPhoto = localStorage.getItem('user_profile_photo');
+      setFotoProfil(savedPhoto);
+    }
+  }, [isSettingsModalOpen]);
 
   const handleLogout = () => {
     router.post('/client/logout');
@@ -35,7 +63,7 @@ export default function Navbar() {
     <>
       <nav className="flex items-center px-20 py-5 bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <div className="text-2xl font-semibold mr-8 text-gray-900">
-          <Link href="/">Kompetensia</Link>
+          <Link href="/">Ujikom</Link>
         </div>
         <div className="flex flex-1 justify-end items-center gap-8 text-lg mr-6 text-gray-900">
           <Link href="/sertifikasi" className="hover:underline hover:text-purple-700 transition-colors">Sertifikasi</Link>
@@ -52,8 +80,20 @@ export default function Navbar() {
               className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
             >
               {/* User Avatar */}
-              <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                {user.nama_lengkap?.charAt(0) || user.nama?.charAt(0) || 'U'}
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
+                {fotoProfil ? (
+                  <img 
+                    src={fotoProfil} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to initials if image fails to load
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <span>{user.nama_lengkap?.charAt(0) || user.nama?.charAt(0) || 'U'}</span>
+                )}
               </div>
               
               {/* User Name */}

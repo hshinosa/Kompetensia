@@ -88,7 +88,7 @@ export default function SertifikasiPopuler({ sertifikasiList = [] }: Sertifikasi
     const itemType = item.type || item.kategori; // Use type or kategori
     return itemType?.toLowerCase() === activeFilter.toLowerCase() || 
            (!itemType && activeFilter === 'BNSP'); // default ke BNSP jika tidak ada type
-  });
+  }).slice(0, 4); // Batasi hanya 4 item yang ditampilkan
   
   const handleRegisterClick = (sertifikasiCard: SertifikasiItem) => {
     // Use complete sertifikasi data from backend if available

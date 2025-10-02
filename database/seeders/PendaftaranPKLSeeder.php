@@ -23,6 +23,10 @@ class PendaftaranPKLSeeder extends Seeder
             return;
         }
 
+        // Only select 45% of users to do PKL (more realistic - not all students do PKL)
+        $selectedUsers = collect($users)->random(intval(count($users) * 0.45))->toArray();
+        $usedUsers = []; // Track used users to avoid duplicates
+
         $faker = Faker::create('id_ID');
 
         $institusiOptions = ['Sekolah', 'Universitas'];
@@ -129,8 +133,17 @@ class PendaftaranPKLSeeder extends Seeder
             '1759158447_portfolio_68daa0af10f8d.pdf'
         ];
 
-        for ($i = 0; $i < 15; $i++) {
-            $userId = $faker->randomElement($users);
+        for ($i = 0; $i < 70; $i++) {
+            // Ensure no duplicate users in PKL registrations
+            $availableUsers = array_diff($selectedUsers, $usedUsers);
+            if (empty($availableUsers)) {
+                // If all selected users are used, break the loop
+                break;
+            }
+            
+            $userId = $faker->randomElement($availableUsers);
+            $usedUsers[] = $userId;
+            
             $posisiPklId = $faker->randomElement($posisiPKLIds);
             $institusiAsal = $faker->randomElement($institusiOptions);
             $status = $faker->randomElement($statusOptions);

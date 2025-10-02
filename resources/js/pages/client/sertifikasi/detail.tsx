@@ -642,18 +642,18 @@ export default function SertifikasiDetail({ sertifikasi, pendaftaran, uploadedDo
 
                     {/* Review Card - Right Side */}
                     <div className="flex-1">
-                        <div className={`bg-white rounded-xl border border-gray-200 p-6 h-full transition-all duration-300 ${isReviewEnabled ? 'opacity-100 border-green-300' : hasExistingReview ? 'opacity-100 border-blue-300' : 'opacity-60'}`}>
+                        <div className={`bg-white rounded-xl border border-gray-200 p-6 h-full transition-all duration-300 ${isReviewEnabled ? 'opacity-100 border-green-300' : hasExistingReview ? 'opacity-100 border-orange-300' : 'opacity-60'}`}>
                             <div className="space-y-6 h-full">
                                 {/* Status Indicator */}
                                 {hasExistingReview && (
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
                                         <div className="flex items-center">
-                                            <svg className="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-5 h-5 text-orange-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            <span className="text-sm font-medium text-blue-800">Review Sudah Dikirim</span>
+                                            <span className="text-sm font-medium text-orange-800">Review Sudah Dikirim</span>
                                         </div>
-                                        <p className="text-xs text-blue-600 mt-1">Anda telah mengirim ulasan pada {existingReview?.created_at}</p>
+                                        <p className="text-xs text-orange-600 mt-1">Anda telah mengirim ulasan pada {existingReview?.created_at}</p>
                                     </div>
                                 )}
                                 
@@ -722,7 +722,7 @@ export default function SertifikasiDetail({ sertifikasi, pendaftaran, uploadedDo
                                         ))}
                                     </div>
                                     {hasExistingReview && (
-                                        <p className="text-xs text-gray-600 mt-1">Rating yang diberikan: {existingReview?.rating} dari 5 bintang</p>
+                                        <p className="text-xs text-orange-600 mt-1">Rating yang diberikan: {existingReview?.rating} dari 5 bintang</p>
                                     )}
                                     {rating > 0 && isReviewEnabled && !hasExistingReview && (
                                         <p className="text-xs text-gray-600 mt-1">Rating: {rating} dari 5 bintang</p>
@@ -748,7 +748,7 @@ export default function SertifikasiDetail({ sertifikasi, pendaftaran, uploadedDo
                                         }
                                         className={`w-full px-4 py-3 border rounded-lg resize-none transition-colors ${
                                             hasExistingReview
-                                                ? 'border-blue-300 bg-blue-50 text-gray-900 cursor-not-allowed'
+                                                ? 'border-orange-300 bg-orange-50 text-gray-900 cursor-not-allowed'
                                                 : isReviewEnabled 
                                                     ? 'border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-green-500 focus:border-transparent' 
                                                     : 'border-gray-300 bg-gray-50 text-gray-500 cursor-not-allowed'
@@ -756,14 +756,14 @@ export default function SertifikasiDetail({ sertifikasi, pendaftaran, uploadedDo
                                         disabled={!isReviewEnabled || hasExistingReview}
                                     />
                                     {hasExistingReview && (
-                                        <p className="text-xs text-blue-600 mt-1">✓ Review telah dikirim dan tidak dapat diubah</p>
+                                        <p className="text-xs text-orange-600 mt-1">✓ Review telah dikirim dan tidak dapat diubah</p>
                                     )}
                                 </div>
 
                                 {/* Row 4: Submit Button */}
                                 <div className="flex justify-end mt-auto">
                                     {hasExistingReview ? (
-                                        <div className="px-6 py-3 rounded-lg font-medium bg-blue-100 text-blue-800 border border-blue-200 flex items-center">
+                                        <div className="px-6 py-3 rounded-lg font-medium bg-orange-100 text-orange-800 border border-orange-200 flex items-center">
                                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>

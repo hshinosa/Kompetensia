@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PenilaianSertifikasiController;
 use App\Http\Controllers\Admin\PenggunaController;
 use App\Http\Controllers\Admin\UploadTugasController;
 use App\Http\Controllers\Admin\UploadDokumenPKLController;
+use App\Http\Controllers\Admin\SertifikatKelulusanController;
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use Illuminate\Support\Facades\Route;
 
@@ -177,5 +178,15 @@ Route::middleware(['admin'])->group(function () {
         Route::patch('/{id}/status', [UploadDokumenPKLController::class, 'updateStatus'])->name('update-status');
         Route::get('/{id}/download', [UploadDokumenPKLController::class, 'downloadFile'])->name('download');
         Route::get('/stats/data', [UploadDokumenPKLController::class, 'getStats'])->name('stats');
+    });
+
+    // Sertifikat Kelulusan routes
+    Route::prefix('sertifikat-kelulusan')->name('sertifikat-kelulusan.')->group(function(){
+        Route::post('/{pendaftaranId}', [SertifikatKelulusanController::class, 'store'])->name('store');
+        Route::get('/{pendaftaranId}/check', [SertifikatKelulusanController::class, 'checkCertificate'])->name('check');
+        
+        // PKL Certificate routes
+        Route::post('/pkl/{pendaftaranId}', [SertifikatKelulusanController::class, 'storePKL'])->name('store-pkl');
+        Route::get('/pkl/{pendaftaranId}/check', [SertifikatKelulusanController::class, 'checkPKLCertificate'])->name('check-pkl');
     });
 });

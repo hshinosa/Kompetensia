@@ -42,6 +42,15 @@ interface PosisiPKL {
   updated_at?: string;
 }
 
+interface ActiveRegistration {
+  id: number;
+  status: string;
+  posisi_pkl_id: number;
+  posisi_nama: string;
+  tanggal_selesai?: string;
+  tanggal_pendaftaran?: string;
+}
+
 interface PendaftaranPKLPageProps {
   readonly posisiPKL?: PosisiPKL;
   readonly allPosisiPKL?: Array<{
@@ -53,10 +62,11 @@ interface PendaftaranPKLPageProps {
     already_registered?: boolean;
   }>;
   readonly existingRegistrations?: number[];
+  readonly activeRegistration?: ActiveRegistration;
   readonly error?: string;
 }
 
-export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], existingRegistrations = [] }: PendaftaranPKLPageProps) {
+export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], existingRegistrations = [], activeRegistration }: PendaftaranPKLPageProps) {
   const { auth } = usePage<PageProps>().props;
   const user = auth?.client;
   
@@ -69,12 +79,10 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
       const date = new Date(dateString);
       // Check if date is valid and not too far in the past
       if (isNaN(date.getTime()) || date.getFullYear() < 1900) {
-        console.warn('Invalid or suspicious date:', dateString);
         return '';
       }
       return date.toISOString().split('T')[0];
     } catch (error) {
-      console.warn('Error formatting date:', dateString, error);
       return '';
     }
   };
@@ -164,40 +172,10 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
   };
 
   const handleFormDataChange = (field: string, value: any) => {
-    // Enhanced logging especially for CV and portfolio fields
-    const isBerkasField = field.includes('file');
-    const logLevel = isBerkasField ? '=== BERKAS' : 'FORM';
-    
-    console.log(`${logLevel} DATA CHANGE ===`, {
-      field: field,
-      value: value,
-      valueType: typeof value,
-      isBerkasField: isBerkasField,
-      isCVField: field.includes('cv'),
-      isPortfolioField: field.includes('portfolio'),
-      timestamp: new Date().toISOString()
-    });
-    
-    setFormData(prev => {
-      const newFormData = {
-        ...prev,
-        [field]: value
-      };
-      
-      // Log the current berkas state after update
-      if (isBerkasField) {
-        console.log('CURRENT BERKAS STATE AFTER UPDATE:', {
-          cv_file_path: newFormData.cv_file_path,
-          cv_file_name: newFormData.cv_file_name,
-          portfolio_file_path: newFormData.portfolio_file_path,
-          portfolio_file_name: newFormData.portfolio_file_name,
-          updatedField: field,
-          updatedValue: value
-        });
-      }
-      
-      return newFormData;
-    });
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
     const handleSubmit = () => {
@@ -210,39 +188,10 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
       const selectedPosisi = allPosisiPKL.find(p => p.id === selectedPosisiId);
       const posisiName = selectedPosisi?.nama_posisi || 'posisi ini';
       
-      console.warn('User attempting to register for already registered position:', {
-        selectedPosisiId,
-        posisiName,
-        existingRegistrations
-      });
-      
       setSubmitError(`Anda sudah memiliki pendaftaran aktif untuk ${posisiName}. Silakan pilih posisi PKL yang berbeda.`);
       setIsSubmitting(false);
       return;
     }
-
-    // === COMPREHENSIVE SUBMISSION LOGGING ===
-    console.log('=== PKL REGISTRATION SUBMISSION STARTED ===', {
-      timestamp: new Date().toISOString(),
-      currentStep: currentStep,
-      totalSteps: steps.length,
-      selectedPosisiId,
-      existingRegistrations
-    });
-
-    // Debug: Log current form data before submission with focus on berkas
-    console.log('=== FORM DATA BEFORE SUBMISSION ===', {
-      totalFields: Object.keys(formData).length,
-      berkasFields: {
-        cv_file_path: formData.cv_file_path,
-        cv_file_name: formData.cv_file_name,
-        portfolio_file_path: formData.portfolio_file_path,
-        portfolio_file_name: formData.portfolio_file_name
-      },
-      hasCVData: !!(formData.cv_file_path && formData.cv_file_name),
-      hasPortfolioData: !!(formData.portfolio_file_path && formData.portfolio_file_name),
-      completeFormData: formData
-    });
 
     const transformedData = {
       // Data Diri - Use bidang_yang_disukai as the main field, fallback to posisiPKL?.id
@@ -291,90 +240,35 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
       portfolio_file_name: formData.portfolio_file_name,
     };
 
-    // Debug: Log transformed data being sent with focus on berkas
-    console.log('=== TRANSFORMED DATA FOR SUBMISSION ===', {
-      berkasDataBeingSent: {
-        cv_file_path: transformedData.cv_file_path,
-        cv_file_name: transformedData.cv_file_name,
-        portfolio_file_path: transformedData.portfolio_file_path,
-        portfolio_file_name: transformedData.portfolio_file_name
-      },
-      totalTransformedFields: Object.keys(transformedData).length,
-      completeTransformedData: transformedData,
-      submissionMethod: 'router.post',
-      submissionUrl: '/client/pendaftaran-pkl'
-    });
-
     router.post('/client/pendaftaran-pkl', transformedData, {
-      onSuccess: (page) => {
-        console.log('=== SUBMISSION SUCCESS ===', {
-          response: page,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Check if there's a success message in the response
-        const successMessage = page.props?.success || page.props?.message;
-        if (successMessage) {
-          // Show success modal instead of redirect
-          setIsSubmitting(false);
-          setShowSuccessModal(true);
-        } else {
-          // If no success message, something might be wrong
-          setSubmitError('Terjadi kesalahan dalam memproses pendaftaran.');
-          setIsSubmitting(false);
-        }
+      onSuccess: () => {
+        setIsSubmitting(false);
+        setShowSuccessModal(true);
       },
       onError: (errors) => {
-        console.error('=== SUBMISSION ERROR ===', {
-          errors: errors,
-          errorType: typeof errors,
-          errorKeys: errors ? Object.keys(errors) : 'no keys',
-          errorStructure: {
-            hasError: 'error' in errors,
-            hasMessage: 'message' in errors,
-            hasValidationErrors: errors && typeof errors === 'object' && Object.keys(errors).some(key => Array.isArray(errors[key]))
-          },
-          timestamp: new Date().toISOString()
-        });
-        
-        // Handle different types of errors with detailed logging
         let errorMessage = 'Gagal membuat pendaftaran. Silakan coba lagi.';
         
         if (errors.error) {
-          console.log('Using errors.error:', errors.error);
-          // Clean up error message - remove the technical prefix if present
           errorMessage = errors.error.replace('Terjadi kesalahan dalam memproses pendaftaran: ', '');
         } else if (typeof errors === 'string') {
-          console.log('Using string error:', errors);
           errorMessage = errors;
         } else if (errors.message) {
-          console.log('Using errors.message:', errors.message);
           errorMessage = errors.message;
         } else if (errors && typeof errors === 'object') {
-          // Handle validation errors
           const validationErrors = Object.entries(errors)
             .filter(([key, value]) => Array.isArray(value))
             .map(([key, messages]) => `${key}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
             .join('\n');
           
           if (validationErrors) {
-            console.log('Using validation errors:', validationErrors);
             errorMessage = `Validation errors:\n${validationErrors}`;
           } else {
-            console.log('Using fallback for object error:', JSON.stringify(errors));
             errorMessage = `Error: ${JSON.stringify(errors)}`;
           }
         }
         
-        console.log('Final error message set:', errorMessage);
         setSubmitError(errorMessage);
         setIsSubmitting(false);
-      },
-      onFinish: () => {
-        console.log('=== SUBMISSION FINISHED ===', {
-          timestamp: new Date().toISOString()
-        });
-        // Don't set isSubmitting to false here as it's handled in onSuccess/onError
       }
     });
   };
@@ -439,6 +333,38 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
             <p className="text-gray-600">Lengkapi formulir di bawah untuk mendaftar program PKL</p>
           </div>
 
+          {/* Active Registration Warning */}
+          {activeRegistration && (
+            <div className="mb-6 bg-yellow-50 border-2 border-yellow-400 rounded-xl p-6">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="ml-4 flex-1">
+                  <h3 className="text-lg font-semibold text-yellow-900 mb-1">
+                    Anda Sudah Memiliki Pendaftaran PKL Aktif
+                  </h3>
+                  <p className="text-yellow-800 mb-2">
+                    {activeRegistration.status === 'Pengajuan' && (
+                      <>Pendaftaran Anda untuk posisi <strong>{activeRegistration.posisi_nama}</strong> sedang menunggu persetujuan admin. Anda tidak dapat mendaftar PKL baru hingga pendaftaran ini diproses.</>
+                    )}
+                    {activeRegistration.status === 'Disetujui' && (
+                      <>Anda sedang menjalani PKL di posisi <strong>{activeRegistration.posisi_nama}</strong>{activeRegistration.tanggal_selesai ? ` hingga ${new Date(activeRegistration.tanggal_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}. Anda hanya dapat mendaftar PKL baru setelah PKL saat ini selesai.</>
+                    )}
+                    {activeRegistration.status === 'Menunggu' && (
+                      <>Pendaftaran Anda untuk posisi <strong>{activeRegistration.posisi_nama}</strong> sedang dalam proses. Silakan tunggu hingga proses selesai.</>
+                    )}
+                  </p>
+                  <p className="text-sm text-yellow-700">
+                    <strong>Catatan:</strong> Form di bawah ini tidak akan dapat dikirim selama Anda masih memiliki pendaftaran aktif.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Step Indicator */}
           <StepIndicator steps={steps} />
 
@@ -453,8 +379,8 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
       
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center border-4 border-purple-600 shadow-2xl">
             <div className="mb-6">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -470,17 +396,20 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
               <button
                 onClick={() => {
                   setShowSuccessModal(false);
-                  router.visit('/client/dashboard');
+                  router.visit('/dashboard');
                 }}
                 className="flex-1 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
               >
                 Lihat Dashboard
               </button>
               <button
-                onClick={() => setShowSuccessModal(false)}
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  router.visit('/pkl');
+                }}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Tutup
+                Lihat Program PKL
               </button>
             </div>
           </div>
