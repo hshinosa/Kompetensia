@@ -104,22 +104,32 @@ class PendaftaranPKLService
             $activeRegistration = $this->pendaftaranRepository->hasActiveRegistration($user->id);
             
             if ($activeRegistration) {
+                $penilaianStatus = $activeRegistration->penilaian ? $activeRegistration->penilaian->status_penilaian : null;
+                
                 \Log::info('PKL Registration: User has active registration', [
                     'user_id' => $user->id,
                     'existing_registration_id' => $activeRegistration->id,
                     'existing_status' => $activeRegistration->status,
                     'existing_posisi' => $activeRegistration->posisiPKL->nama_posisi ?? 'Unknown',
-                    'tanggal_selesai' => $activeRegistration->tanggal_selesai
+                    'tanggal_selesai' => $activeRegistration->tanggal_selesai,
+                    'penilaian_status' => $penilaianStatus,
+                    'has_passed' => $penilaianStatus === 'Diterima'
                 ]);
                 
                 // Build user-friendly error message based on status
                 if ($activeRegistration->status === 'Pengajuan') {
                     throw new Exception('Anda sudah memiliki pendaftaran PKL yang sedang menunggu persetujuan. Silakan tunggu hingga pendaftaran Anda disetujui atau ditolak sebelum mendaftar PKL lain.');
                 } elseif ($activeRegistration->status === 'Disetujui') {
-                    $endDate = $activeRegistration->tanggal_selesai 
-                        ? \Carbon\Carbon::parse($activeRegistration->tanggal_selesai)->format('d M Y')
-                        : 'belum ditentukan';
-                    throw new Exception("Anda sedang menjalani PKL di posisi \"{$activeRegistration->posisiPKL->nama_posisi}\" hingga {$endDate}. Anda hanya dapat mendaftar PKL baru setelah PKL saat ini selesai.");
+                    // Check penilaian status first
+                    if ($penilaianStatus && $penilaianStatus !== 'Diterima') {
+                        throw new Exception("Anda sedang menjalani PKL di posisi \"{$activeRegistration->posisiPKL->nama_posisi}\". Anda hanya dapat mendaftar PKL baru setelah dinyatakan LULUS oleh asesor.");
+                    } elseif (!$penilaianStatus) {
+                        // No penilaian yet, check date
+                        $endDate = $activeRegistration->tanggal_selesai 
+                            ? \Carbon\Carbon::parse($activeRegistration->tanggal_selesai)->format('d M Y')
+                            : 'belum ditentukan';
+                        throw new Exception("Anda sedang menjalani PKL di posisi \"{$activeRegistration->posisiPKL->nama_posisi}\" hingga {$endDate}. Anda hanya dapat mendaftar PKL baru setelah dinyatakan LULUS oleh asesor atau PKL saat ini selesai.");
+                    }
                 } else {
                     throw new Exception('Anda sudah memiliki pendaftaran PKL aktif. Silakan selesaikan atau tunggu proses pendaftaran yang sedang berjalan sebelum mendaftar PKL baru.');
                 }
@@ -308,6 +318,14 @@ class PendaftaranPKLService
     public function getDetailById(int $id): ?PendaftaranPKL
     {
         return $this->pendaftaranRepository->getWithRelations($id);
+    }
+
+    /**
+     * Get pendaftaran by ID (alias for getDetailById for backward compatibility)
+     */
+    public function getPendaftaranById(int $id): ?PendaftaranPKL
+    {
+        return $this->getDetailById($id);
     }
 
     /**

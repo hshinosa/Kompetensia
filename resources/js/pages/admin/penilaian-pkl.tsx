@@ -5,6 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { StatsCard } from '@/components/dashboard/StatsCard';
 import { 
     Table, 
     TableBody, 
@@ -156,10 +157,20 @@ export default function PenilaianPKL({ pendaftaran = { data: [] } }: Readonly<Pr
     const getStatusBadgeVariant = (item: PendaftaranPKL) => {
         const status = item.status_dinamis || 'Tidak Diketahui';
         switch (status) {
-            case 'Selesai': return 'default';
-            case 'Sedang Berjalan': return 'secondary';
-            case 'Belum Dinilai': return 'destructive';
-            default: return 'outline';
+            case 'Selesai': return 'default'; // Purple
+            case 'Sedang Berjalan': return 'secondary'; // Orange will be custom styled
+            case 'Belum Dinilai': return 'outline'; // Gray
+            default: return 'outline'; // Gray for unknown status
+        }
+    };
+
+    const getStatusBadgeClass = (item: PendaftaranPKL) => {
+        const status = item.status_dinamis || 'Tidak Diketahui';
+        switch (status) {
+            case 'Selesai': return 'bg-purple-100 text-purple-800 border-purple-200';
+            case 'Sedang Berjalan': return 'bg-orange-100 text-orange-800 border-orange-200';
+            case 'Belum Dinilai': return 'bg-gray-100 text-gray-800 border-gray-200';
+            default: return 'bg-gray-100 text-gray-600 border-gray-200';
         }
     };
 
@@ -180,59 +191,31 @@ export default function PenilaianPKL({ pendaftaran = { data: [] } }: Readonly<Pr
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid auto-rows-min gap-4 md:grid-cols-4">
-                    <Card className="p-6">
-                        <CardContent className="p-0">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 rounded-lg">
-                                    <Users className="h-5 w-5 text-blue-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Total Peserta</p>
-                                    <div className="text-2xl font-bold">{totalPeserta}</div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="p-6">
-                        <CardContent className="p-0">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-yellow-100 rounded-lg">
-                                    <Clock className="h-5 w-5 text-yellow-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Sedang Berjalan</p>
-                                    <div className="text-2xl font-bold">{sedangBerjalan}</div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="p-6">
-                        <CardContent className="p-0">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-green-100 rounded-lg">
-                                    <CheckCircle className="h-5 w-5 text-green-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Selesai</p>
-                                    <div className="text-2xl font-bold">{selesai}</div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="p-6">
-                        <CardContent className="p-0">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gray-100 rounded-lg">
-                                    <AlertCircle className="h-5 w-5 text-gray-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Belum Dinilai</p>
-                                    <div className="text-2xl font-bold">{belumDinilai}</div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="grid gap-4 md:grid-cols-4">
+                    <StatsCard
+                        label="Total Peserta"
+                        value={totalPeserta}
+                        icon={<Users className="h-5 w-5" />}
+                        iconColor="text-purple-600 bg-purple-100"
+                    />
+                    <StatsCard
+                        label="Sedang Berjalan"
+                        value={sedangBerjalan}
+                        icon={<Clock className="h-5 w-5" />}
+                        iconColor="text-purple-600 bg-purple-100"
+                    />
+                    <StatsCard
+                        label="Selesai"
+                        value={selesai}
+                        icon={<CheckCircle className="h-5 w-5" />}
+                        iconColor="text-purple-600 bg-purple-100"
+                    />
+                    <StatsCard
+                        label="Belum Dinilai"
+                        value={belumDinilai}
+                        icon={<AlertCircle className="h-5 w-5" />}
+                        iconColor="text-purple-600 bg-purple-100"
+                    />
                 </div>
 
                 {/* Main Table */}
@@ -368,7 +351,7 @@ export default function PenilaianPKL({ pendaftaran = { data: [] } }: Readonly<Pr
                                                 })()}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant={getStatusBadgeVariant(item)}>
+                                                <Badge className={getStatusBadgeClass(item)}>
                                                     {getStatusText(item)}
                                                 </Badge>
                                             </TableCell>

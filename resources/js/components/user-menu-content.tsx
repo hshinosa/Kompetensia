@@ -12,9 +12,56 @@ interface UserMenuContentProps {
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
 
-    const handleLogout = () => {
+    // Determine logout route based on user role
+    const getLogoutRoute = () => {
+        if (user.role === 'admin') {
+            return route('admin.logout');
+        } else if (user.role === 'mahasiswa') {
+            return route('client.logout');
+        }
+        return route('logout');
+    };
+
+    // Determine settings route based on user role
+    const getSettingsRoute = () => {
+        if (user.role === 'admin' || user.role === 'mahasiswa') {
+            return route('settings.profile.edit');
+        }
+        return route('settings.profile.edit');
+    };
+
+    const handleLogout = async (e: React.MouseEvent) => {
+        e.preventDefault();
         cleanup();
-        router.flushAll();
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        try {
+            // Use fetch to call logout endpoint
+            const response = await fetch(getLogoutRoute(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                    'Accept': 'application/json',
+                },
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                // Force full page reload to login page
+                window.location.href = data.redirect;
+            } else {
+                // If error, still redirect to login page
+                const loginUrl = user.role === 'admin' ? '/admin/login' : '/client/login';
+                window.location.href = loginUrl;
+            }
+        } catch (error) {
+            // On any error, force redirect to login
+            const loginUrl = user.role === 'admin' ? '/admin/login' : '/client/login';
+            window.location.href = loginUrl;
+        }
     };
 
     return (
@@ -27,7 +74,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                    <Link className="block w-full" href={route('settings.profile.edit')} as="button" prefetch onClick={cleanup}>
+                    <Link className="block w-full" href={getSettingsRoute()} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
                         Settings
                     </Link>
@@ -35,10 +82,10 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
+                <button className="flex w-full items-center" onClick={handleLogout}>
                     <LogOut className="mr-2" />
                     Log out
-                </Link>
+                </button>
             </DropdownMenuItem>
         </>
     );

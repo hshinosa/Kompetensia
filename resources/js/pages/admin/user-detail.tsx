@@ -67,10 +67,10 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
                 <Head title="Detail Pengguna" />
                 <div className="flex items-center justify-center min-h-[400px]">
                     <div className="text-center">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        <h2 className="text-2xl font-bold text-gray-900">
                             Pengguna Tidak Ditemukan
                         </h2>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
+                        <p className="mt-2 text-gray-600">
                             Data pengguna yang Anda cari tidak dapat ditemukan.
                         </p>
                         <Button asChild className="mt-4">
@@ -93,15 +93,15 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
 
     const getRoleBadgeColor = (role: string) => {
         switch (role) {
-            case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-            case 'instructor': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-            case 'instruktur': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-            case 'assessor': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-            case 'asesor': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-            case 'student': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-            case 'mahasiswa': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-            case 'user': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+            case 'admin': return 'bg-red-100 text-red-800';
+            case 'instructor': return 'bg-blue-100 text-blue-800';
+            case 'instruktur': return 'bg-blue-100 text-blue-800';
+            case 'assessor': return 'bg-green-100 text-green-800';
+            case 'asesor': return 'bg-green-100 text-green-800';
+            case 'student': return 'bg-gray-100 text-gray-800';
+            case 'mahasiswa': return 'bg-gray-100 text-gray-800';
+            case 'user': return 'bg-purple-100 text-purple-800';
+            default: return 'bg-gray-100 text-gray-800';
         }
     };
 
@@ -424,7 +424,7 @@ export default function UserDetail({ pengguna, userStats }: Readonly<UserDetailP
                         <CardContent>
                             <div className="space-y-3">
                                 {pengguna.aktivitas.slice(0, 5).map((aktivitas) => (
-                                    <div key={aktivitas.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div key={aktivitas.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                         <div>
                                             <p className="font-medium text-sm">{aktivitas.jenis_aktivitas}</p>
                                             <p className="text-sm text-muted-foreground">{aktivitas.deskripsi}</p>

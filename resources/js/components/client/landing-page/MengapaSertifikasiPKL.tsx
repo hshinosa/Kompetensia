@@ -20,16 +20,16 @@ const reasons = [
 
 export default function MengapaSertifikasiPKL() {
   return (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-2 text-gray-900">Mengapa Harus Sertifikasi & PKL di Kami?</h2>
-        <p className="text-gray-700 mb-8">Biar perjalanan sertifikasi dan kompetensimu lancar, jelas, dan tanpa ribet, kami siap jadi partner terbaik dalam setiap langkah karirmu!</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <section className="py-8 sm:py-10 lg:py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 sm:mb-3 text-gray-900">Mengapa Harus Sertifikasi & PKL di Kami?</h2>
+        <p className="text-sm sm:text-base text-gray-700 mb-6 sm:mb-8">Biar perjalanan sertifikasi dan kompetensimu lancar, jelas, dan tanpa ribet, kami siap jadi partner terbaik dalam setiap langkah karirmu!</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {reasons.map((item, idx) => (
-            <div key={item.title} className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col p-8">
-              <div className="mb-4">{item.icon}</div>
-              <h3 className="text-lg font-bold mb-2 text-gray-900">{item.title}</h3>
-              <p className="text-sm text-gray-700">{item.desc}</p>
+            <div key={item.title} className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col p-5 sm:p-6 lg:p-8">
+              <div className="mb-3 sm:mb-4">{item.icon}</div>
+              <h3 className="text-base sm:text-lg font-bold mb-2 text-gray-900">{item.title}</h3>
+              <p className="text-xs sm:text-sm text-gray-700">{item.desc}</p>
             </div>
           ))}
         </div>

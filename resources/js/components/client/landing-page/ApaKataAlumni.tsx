@@ -41,29 +41,29 @@ const alumniList = [
 
 export default function ApaKataAlumni() {
   return (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900">Apa Kata Alumni</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 mb-12">
+    <section className="py-8 sm:py-10 lg:py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-gray-900">Apa Kata Alumni</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
           {alumniList.map((item) => (
             <div 
               key={item.name} 
-              className="bg-white rounded-2xl p-6 border-2 border-purple-400 hover:shadow-xl hover:border-purple-600 transition-all duration-300 transform hover:-translate-y-1"
+              className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-purple-400 hover:shadow-xl hover:border-purple-600 transition-all duration-300 transform hover:-translate-y-1"
             >
               {/* Profile */}
-              <div className="flex items-center mb-4">
+              <div className="flex items-center mb-3 sm:mb-4">
                 <img 
                   src={item.avatar} 
                   alt={item.name} 
-                  className="w-12 h-12 rounded-full mr-4 ring-2 ring-purple-100 object-cover" 
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 sm:mr-4 ring-2 ring-purple-100 object-cover" 
                 />
                 <div>
-                  <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                  <h4 className="font-semibold text-sm sm:text-base text-gray-900">{item.name}</h4>
                 </div>
               </div>
 
               {/* Rating */}
-              <div className="flex items-center mb-4">
+              <div className="flex items-center mb-3 sm:mb-4">
                 {[...Array(item.rating)].map((_, starIndex) => (
                   <svg key={`star-${item.name}-${starIndex}`} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
                     <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
@@ -72,13 +72,13 @@ export default function ApaKataAlumni() {
               </div>
 
               {/* Testimonial Text */}
-              <blockquote className="text-gray-700 text-sm leading-relaxed mb-4">
+              <blockquote className="text-gray-700 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
                 "{item.text}"
               </blockquote>
 
               {/* Quote Icon */}
               <div className="flex justify-end">
-                <svg className="w-8 h-8 text-purple-200" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-purple-200" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
                 </svg>
               </div>

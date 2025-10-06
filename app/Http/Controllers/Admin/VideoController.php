@@ -27,7 +27,15 @@ class VideoController extends Controller
     $perPage = (int)($request->get('per_page') ?? 10);
     $filters['per_page'] = $perPage;
     $videos = $this->service->list($filters, $perPage);
-        return Inertia::render('admin/manajemen-video', ['videos' => $videos, 'filters' => $filters]);
+    
+    // Calculate stats for all data (not just current page)
+    $stats = $this->service->getStats();
+    
+        return Inertia::render('admin/manajemen-video', [
+            'videos' => $videos, 
+            'filters' => $filters,
+            'stats' => $stats
+        ]);
     }
 
     /**

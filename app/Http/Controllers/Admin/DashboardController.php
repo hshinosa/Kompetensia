@@ -176,27 +176,93 @@ class DashboardController extends Controller
                     }
                 }
 
-                // Format data untuk PKL
+                // Build berkas data from actual file columns (more reliable than JSON field)
+                $berkasData = [];
+                
+                // Add CV if exists
+                if ($pendaftaran->cv_file_path && $pendaftaran->cv_file_name) {
+                    $berkasData['cv'] = $pendaftaran->cv_file_path;
+                    $berkasData['cv_name'] = $pendaftaran->cv_file_name;
+                }
+                
+                // Add Portfolio if exists
+                if ($pendaftaran->portfolio_file_path && $pendaftaran->portfolio_file_name) {
+                    $berkasData['portfolio'] = $pendaftaran->portfolio_file_path;
+                    $berkasData['portfolio_name'] = $pendaftaran->portfolio_file_name;
+                }
+                
+                // Fallback to berkas_persyaratan JSON field if file columns are empty
+                if (empty($berkasData) && $pendaftaran->berkas_persyaratan) {
+                    $berkasData = $pendaftaran->berkas_persyaratan;
+                }
+                
+                \Log::info("PKL Berkas Data", [
+                    'berkas_data' => $berkasData,
+                    'cv_file_path' => $pendaftaran->cv_file_path,
+                    'cv_file_name' => $pendaftaran->cv_file_name,
+                    'portfolio_file_path' => $pendaftaran->portfolio_file_path,
+                    'portfolio_file_name' => $pendaftaran->portfolio_file_name,
+                ]);
+                
+                // Format data untuk PKL with complete information
                 $formattedData = [
+                    'original_id' => $pendaftaran->id, // Add original ID for download links
                     'user_id' => $pendaftaran->user->id,
-                    'nama' => $pendaftaran->user->nama ?? $pendaftaran->user->name ?? 'Nama tidak tersedia',
-                    'full_name' => $pendaftaran->user->nama_lengkap ?? $pendaftaran->user->full_name ?? $pendaftaran->user->nama ?? $pendaftaran->user->name,
+                    'nama' => $pendaftaran->nama_lengkap ?? $pendaftaran->user->nama ?? $pendaftaran->user->name ?? 'Nama tidak tersedia',
+                    'full_name' => $pendaftaran->nama_lengkap ?? $pendaftaran->user->nama_lengkap ?? $pendaftaran->user->full_name ?? $pendaftaran->user->nama ?? $pendaftaran->user->name,
                     'jenis_pendaftaran' => 'Praktik Kerja Lapangan',
                     'status' => $pendaftaran->status,
                     'catatan_admin' => $pendaftaran->catatan_admin,
                     'biodata' => [
-                        'nama' => $pendaftaran->user->nama ?? $pendaftaran->user->name ?? 'Nama tidak tersedia',
-                        'full_name' => $pendaftaran->user->nama_lengkap ?? $pendaftaran->user->full_name ?? $pendaftaran->user->nama ?? $pendaftaran->user->name,
-                        'email' => $pendaftaran->user->email ?? 'Email tidak tersedia',
-                        'phone' => $pendaftaran->user->telepon ?? $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
-                        'noTelepon' => $pendaftaran->user->telepon ?? $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
-                        'address' => $pendaftaran->user->alamat ?? $pendaftaran->user->address,
-                        'alamat' => $pendaftaran->user->alamat ?? $pendaftaran->user->address,
-                        'birth_place' => $pendaftaran->user->tempat_lahir ?? $pendaftaran->user->birth_place ?? $pendaftaran->user->place_of_birth,
-                        'birth_date' => ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth) ? 
-                            ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth)->format('d-m-Y') : null,
+                        'nama' => $pendaftaran->nama_lengkap ?? $pendaftaran->user->nama ?? $pendaftaran->user->name ?? 'Nama tidak tersedia',
+                        'full_name' => $pendaftaran->nama_lengkap ?? $pendaftaran->user->nama_lengkap ?? $pendaftaran->user->full_name ?? $pendaftaran->user->nama ?? $pendaftaran->user->name,
+                        'email' => $pendaftaran->email_pendaftar ?? $pendaftaran->user->email ?? 'Email tidak tersedia',
+                        'phone' => $pendaftaran->nomor_handphone ?? $pendaftaran->user->telepon ?? $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
+                        'noTelepon' => $pendaftaran->nomor_handphone ?? $pendaftaran->user->telepon ?? $pendaftaran->user->phone ?? $pendaftaran->user->phone_number,
+                        'address' => $pendaftaran->alamat ?? $pendaftaran->user->alamat ?? $pendaftaran->user->address,
+                        'alamat' => $pendaftaran->alamat ?? $pendaftaran->user->alamat ?? $pendaftaran->user->address,
+                        'birth_place' => $pendaftaran->tempat_lahir ?? $pendaftaran->user->tempat_lahir ?? $pendaftaran->user->birth_place ?? $pendaftaran->user->place_of_birth,
+                        'birth_date' => $pendaftaran->tanggal_lahir ? $pendaftaran->tanggal_lahir->format('d-m-Y') : 
+                            (($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth) ? 
+                            ($pendaftaran->user->tanggal_lahir ?? $pendaftaran->user->birth_date ?? $pendaftaran->user->date_of_birth)->format('d-m-Y') : null),
                         'tempatTanggalLahir' => $this->formatBirthPlaceDate($pendaftaran->user),
-                        'berkas_persyaratan' => $pendaftaran->berkas_persyaratan,
+                        'berkas_persyaratan' => $berkasData,
+                        // Instagram & TikTok
+                        'instagram' => $pendaftaran->instagram,
+                        'tiktok' => $pendaftaran->tiktok,
+                        // Background Pendidikan
+                        'background_pendidikan' => [
+                            'institusi_asal' => $pendaftaran->institusi_asal,
+                            'asal_sekolah' => $pendaftaran->asal_sekolah,
+                            'jenis_institusi' => $pendaftaran->institusi_asal === 'Universitas' ? $pendaftaran->asal_sekolah : null,
+                            'jurusan' => $pendaftaran->jurusan,
+                            'kelas' => $pendaftaran->kelas,
+                            'program_studi' => $pendaftaran->program_studi,
+                            'semester' => $pendaftaran->semester,
+                            'awal_pkl' => $pendaftaran->awal_pkl ? $pendaftaran->awal_pkl->format('d-m-Y') : null,
+                            'akhir_pkl' => $pendaftaran->akhir_pkl ? $pendaftaran->akhir_pkl->format('d-m-Y') : null,
+                        ],
+                        // Skill & Minat
+                        'skill_minat' => [
+                            'skill_kelebihan' => $pendaftaran->skill_kelebihan,
+                            'kemampuan_ditingkatkan' => $pendaftaran->kemampuan_ditingkatkan,
+                            'pernah_membuat_video' => $pendaftaran->pernah_membuat_video,
+                        ],
+                        // Motivasi PKL
+                        'motivasi_pkl' => [
+                            'tingkat_motivasi' => $pendaftaran->tingkat_motivasi,
+                            'nilai_diri' => $pendaftaran->nilai_diri,
+                            'motivasi' => $pendaftaran->motivasi,
+                        ],
+                        // Persyaratan Khusus
+                        'persyaratan_khusus' => [
+                            'memiliki_laptop' => $pendaftaran->memiliki_laptop,
+                            'memiliki_kamera_dslr' => $pendaftaran->memiliki_kamera_dslr,
+                            'transportasi_operasional' => $pendaftaran->transportasi_operasional,
+                            'apakah_merokok' => $pendaftaran->apakah_merokok,
+                            'bersedia_ditempatkan' => $pendaftaran->bersedia_ditempatkan,
+                            'bersedia_masuk_2_kali' => $pendaftaran->bersedia_masuk_2_kali,
+                        ],
                     ],
                     'pkl_info' => [
                         'namaPosisi' => $pendaftaran->posisiPKL ? $pendaftaran->posisiPKL->nama_posisi : 'Belum ditentukan',
@@ -496,5 +562,68 @@ class DashboardController extends Controller
         }
         
         return '-';
+    }
+
+    /**
+     * Download berkas PKL (for admin access via web guard)
+     */
+    public function downloadBerkasPKL($id, $type)
+    {
+        \Log::info('=== ADMIN DOWNLOAD BERKAS PKL ===', [
+            'pendaftaran_id' => $id,
+            'type' => $type,
+            'admin_user' => auth()->user()->id ?? null
+        ]);
+
+        try {
+            $pendaftaran = PendaftaranPKL::findOrFail($id);
+
+            $filePath = null;
+            $fileName = null;
+
+            switch ($type) {
+                case 'cv':
+                    $filePath = $pendaftaran->cv_file_path;
+                    $fileName = $pendaftaran->cv_file_name;
+                    break;
+                case 'portfolio':
+                    $filePath = $pendaftaran->portfolio_file_path;
+                    $fileName = $pendaftaran->portfolio_file_name;
+                    break;
+                default:
+                    abort(400, 'Tipe berkas tidak valid');
+            }
+
+            if (!$filePath || !$fileName) {
+                \Log::error('File path or name is null', [
+                    'file_path' => $filePath,
+                    'file_name' => $fileName
+                ]);
+                abort(404, 'Berkas tidak ditemukan');
+            }
+
+            $fullPath = storage_path('app/public/' . $filePath);
+
+            if (!file_exists($fullPath)) {
+                \Log::error('File does not exist', [
+                    'full_path' => $fullPath
+                ]);
+                abort(404, 'File tidak ditemukan di server');
+            }
+
+            \Log::info('✓ File download successful', [
+                'file_name' => $fileName,
+                'file_size' => filesize($fullPath)
+            ]);
+
+            return response()->download($fullPath, $fileName);
+
+        } catch (\Exception $e) {
+            \Log::error('Download berkas error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            abort(500, 'Gagal mendownload berkas');
+        }
     }
 }

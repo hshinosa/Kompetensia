@@ -38,20 +38,20 @@ export function RecentRegistrationsTable({
   activeFilters, 
   onFiltersChange 
 }: RecentRegistrationsTableProps) {
-  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" => {
+  const getStatusBadgeClass = (status: string): string => {
     switch (status.toLowerCase()) {
       case 'pending':
       case 'menunggu':
       case 'pengajuan':
-        return 'secondary';
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'approved':
       case 'disetujui':
-        return 'default';
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'rejected':
       case 'ditolak':
-        return 'destructive';
+        return 'bg-orange-100 text-orange-800 border-orange-200';
       default:
-        return 'secondary';
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -112,7 +112,7 @@ export function RecentRegistrationsTable({
                   <TableCell className="hidden md:table-cell">{r.batch || '-'}</TableCell>
                   <TableCell className="hidden md:table-cell">{r.tanggal}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(r.status)}>{r.status}</Badge>
+                    <Badge className={getStatusBadgeClass(r.status)}>{r.status}</Badge>
                   </TableCell>
                   <TableCell>
                     <Button

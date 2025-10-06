@@ -49,6 +49,7 @@ interface ActiveRegistration {
   posisi_nama: string;
   tanggal_selesai?: string;
   tanggal_pendaftaran?: string;
+  penilaian_status?: string | null;
 }
 
 interface PendaftaranPKLPageProps {
@@ -325,39 +326,39 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
     <div className="min-h-screen bg-white flex flex-col">
       <PendaftaranNavbar />
 
-      <main className="flex-1 py-8">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <main className="flex-1 py-6 sm:py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Form Pendaftaran PKL</h1>
-            <p className="text-gray-600">Lengkapi formulir di bawah untuk mendaftar program PKL</p>
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Form Pendaftaran PKL</h1>
+            <p className="text-sm sm:text-base text-gray-600">Lengkapi formulir di bawah untuk mendaftar program PKL</p>
           </div>
 
           {/* Active Registration Warning */}
-          {activeRegistration && (
-            <div className="mb-6 bg-yellow-50 border-2 border-yellow-400 rounded-xl p-6">
-              <div className="flex items-start">
+          {activeRegistration && activeRegistration.penilaian_status !== 'Diterima' && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-6 mb-8 rounded-lg shadow-sm">
+              <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  <svg className="w-8 h-8 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <div className="ml-4 flex-1">
-                  <h3 className="text-lg font-semibold text-yellow-900 mb-1">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
                     Anda Sudah Memiliki Pendaftaran PKL Aktif
                   </h3>
-                  <p className="text-yellow-800 mb-2">
+                  <p className="text-gray-700 text-sm leading-relaxed">
                     {activeRegistration.status === 'Pengajuan' && (
                       <>Pendaftaran Anda untuk posisi <strong>{activeRegistration.posisi_nama}</strong> sedang menunggu persetujuan admin. Anda tidak dapat mendaftar PKL baru hingga pendaftaran ini diproses.</>
                     )}
                     {activeRegistration.status === 'Disetujui' && (
-                      <>Anda sedang menjalani PKL di posisi <strong>{activeRegistration.posisi_nama}</strong>{activeRegistration.tanggal_selesai ? ` hingga ${new Date(activeRegistration.tanggal_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}. Anda hanya dapat mendaftar PKL baru setelah PKL saat ini selesai.</>
+                      <>Anda sedang menjalani PKL di posisi <strong>{activeRegistration.posisi_nama}</strong>{activeRegistration.tanggal_selesai ? ` hingga ${new Date(activeRegistration.tanggal_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}. {activeRegistration.penilaian_status ? 'Anda hanya dapat mendaftar PKL baru setelah dinyatakan LULUS oleh asesor.' : 'Anda hanya dapat mendaftar PKL baru setelah dinyatakan LULUS oleh asesor atau PKL saat ini selesai.'}</>
                     )}
                     {activeRegistration.status === 'Menunggu' && (
                       <>Pendaftaran Anda untuk posisi <strong>{activeRegistration.posisi_nama}</strong> sedang dalam proses. Silakan tunggu hingga proses selesai.</>
                     )}
                   </p>
-                  <p className="text-sm text-yellow-700">
+                  <p className="text-gray-600 text-xs mt-3">
                     <strong>Catatan:</strong> Form di bawah ini tidak akan dapat dikirim selama Anda masih memiliki pendaftaran aktif.
                   </p>
                 </div>
@@ -369,7 +370,7 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
           <StepIndicator steps={steps} />
 
           {/* Form Content */}
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             {renderCurrentForm()}
           </div>
         </div>
@@ -379,26 +380,26 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
       
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center border-4 border-purple-600 shadow-2xl">
-            <div className="mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 max-w-md w-full text-center border-4 border-purple-600 shadow-2xl">
+            <div className="mb-4 sm:mb-6">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Pendaftaran Berhasil!</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Pendaftaran Berhasil!</h3>
+              <p className="text-sm sm:text-base text-gray-600">
                 Pendaftaran PKL Anda telah berhasil dikirim. Tim kami akan segera meninjau pendaftaran Anda dan memberikan konfirmasi melalui email.
               </p>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => {
                   setShowSuccessModal(false);
                   router.visit('/dashboard');
                 }}
-                className="flex-1 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                className="flex-1 px-4 py-2.5 sm:py-2 bg-purple-600 text-white text-sm sm:text-base font-medium rounded-lg hover:bg-purple-700 transition-colors"
               >
                 Lihat Dashboard
               </button>
@@ -407,7 +408,7 @@ export default function PendaftaranPKLPage({ posisiPKL, allPosisiPKL = [], exist
                   setShowSuccessModal(false);
                   router.visit('/pkl');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2.5 sm:py-2 border border-gray-300 text-gray-700 text-sm sm:text-base font-medium rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Lihat Program PKL
               </button>

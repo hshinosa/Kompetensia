@@ -13,4 +13,6 @@ interface BlogRepositoryInterface
     public function create(array $data): Blog;
     public function update(Blog $blog, array $data): Blog;
     public function delete(Blog $blog): void;
+    public function count(): int;
+    public function countByStatus(string $status): int;
 }

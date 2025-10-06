@@ -93,30 +93,30 @@ export default function ProgramPKL({ pklPrograms = [] }: ProgramPKLProps) {
     setSelectedProgram(null);
   };
   return (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900">Temukan Program PKL</h2>
-        <p className="text-gray-700 mb-8">Jelajahi beragam pilihan praktik kerja dan magang yang relevan dengan bidangmu</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <section className="py-8 sm:py-10 lg:py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4 text-gray-900">Temukan Program PKL</h2>
+        <p className="text-sm sm:text-base text-gray-700 mb-6 sm:mb-8">Jelajahi beragam pilihan praktik kerja dan magang yang relevan dengan bidangmu</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {displayPrograms.slice(0, 6).map((item, idx) => (
-            <div key={item.id || idx} className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col p-8 min-w-[270px] md:min-w-[320px] max-w-full">
-              <div className="flex gap-2 mb-2">
+            <div key={item.id || idx} className="border-2 border-purple-400 rounded-2xl bg-white shadow flex flex-col p-5 sm:p-6 lg:p-8">
+              <div className="flex flex-wrap gap-2 mb-2">
                 {item.tags.map((tag, i) => (
                   <span key={i} className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 font-semibold">{tag}</span>
                 ))}
               </div>
-              <h3 className="text-lg font-bold mb-2 text-gray-900">{item.title}</h3>
-              <p className="text-sm text-gray-700 mb-6">{item.desc}</p>
-              <div className="flex gap-2 mt-auto">
+              <h3 className="text-base sm:text-lg font-bold mb-2 text-gray-900">{item.title}</h3>
+              <p className="text-xs sm:text-sm text-gray-700 mb-4 sm:mb-6 line-clamp-3">{item.desc}</p>
+              <div className="flex flex-col sm:flex-row gap-2 mt-auto">
                 <button 
                   onClick={() => handleAmbilProgram(item)}
-                  className="flex-1 px-4 py-2 rounded-lg bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors"
+                  className="flex-1 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base bg-purple-700 text-white font-semibold hover:bg-purple-800 transition-colors"
                 >
                   Ambil Program
                 </button>
                 <button 
                   onClick={() => handlePelajariProgram(item)}
-                  className="flex-1 px-4 py-2 rounded-lg border border-orange-400 text-orange-700 font-semibold hover:bg-orange-50 transition-colors"
+                  className="flex-1 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base border border-orange-400 text-orange-700 font-semibold hover:bg-orange-50 transition-colors"
                 >
                   Pelajari Program
                 </button>

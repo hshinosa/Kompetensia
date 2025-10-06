@@ -29,7 +29,7 @@ export function StatusNotificationModal({
       case 'error':
         return <XCircle className="h-8 w-8 text-red-600" />;
       case 'info':
-        return <AlertCircle className="h-8 w-8 text-blue-600" />;
+        return <AlertCircle className="h-8 w-8 text-purple-600" />;
       default:
         return <AlertCircle className="h-8 w-8 text-gray-600" />;
     }
@@ -42,7 +42,7 @@ export function StatusNotificationModal({
       case 'error':
         return 'text-red-600';
       case 'info':
-        return 'text-blue-600';
+        return 'text-purple-600';
       default:
         return 'text-gray-600';
     }

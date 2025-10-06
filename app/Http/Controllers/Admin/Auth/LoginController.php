@@ -27,18 +27,25 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::guard('admin')->attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-            $user = Auth::guard('admin')->user();
-            
-            // Check if user is an admin
-            if ($user->role !== 'admin') {
-                Auth::guard('admin')->logout();
-                return back()->withErrors([
-                    'email' => 'Akun ini tidak memiliki akses ke halaman admin.',
-                ]);
-            }
+        // First, try to find the user and check role before attempting login
+        $user = \App\Models\User::where('email', $request->email)->first();
+        
+        if (!$user || $user->role !== 'admin') {
+            return back()->withErrors([
+                'email' => 'Akun ini tidak memiliki akses ke halaman admin.',
+            ]);
+        }
 
+        // Now attempt login with admin guard
+        if (Auth::guard('admin')->attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+            // Regenerate session to prevent fixation attacks
             $request->session()->regenerate();
+            
+            // Explicitly set the guard in session
+            $request->session()->put('auth.guard', 'admin');
+            
+            // Set admin-specific session cookie
+            config(['session.cookie' => 'kompetensia_admin_session']);
 
             return redirect()->intended(route('admin.dashboard'));
         }
@@ -55,9 +62,11 @@ class LoginController extends Controller
     {
         Auth::guard('admin')->logout();
 
-        $request->session()->invalidate();
+        // Regenerate token first before invalidating session
         $request->session()->regenerateToken();
+        $request->session()->invalidate();
 
-        return redirect('/admin/login');
+        // Return success response - frontend will handle redirect
+        return response()->json(['redirect' => route('admin.login')]);
     }
 }

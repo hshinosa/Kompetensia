@@ -46,13 +46,14 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'client' => auth()->guard('client')->user(),
+                'admin' => auth()->guard('admin')->user(),
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'csrf_token' => csrf_token(), // Always provide fresh CSRF token
+            'csrf_token' => csrf_token(),
         ];
     }
 }

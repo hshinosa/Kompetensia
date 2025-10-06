@@ -83,7 +83,7 @@ export default function LandingPage({ featuredBlogs = [], featuredArticles = [],
       <Navbar />
       <div className="">
         <HeroSection />
-        <main className="container mx-auto py-10">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
           <div id="sertifikasi">
             <SertifikasiPopuler sertifikasiList={popularSertifikasi} />
           </div>

@@ -120,7 +120,8 @@ class PendaftaranPKLRepository implements PendaftaranPKLRepositoryInterface
 
     /**
      * Check if user has any active PKL registration
-     * Active means: status is Pengajuan, Disetujui (and not expired), or Menunggu
+     * Active means: status is Pengajuan, Menunggu, or Disetujui (but not yet passed/lulus)
+     * If PKL has penilaian status 'Diterima' (Lulus), it's NOT active anymore - user can register new PKL
      */
     public function hasActiveRegistration(int $userId): ?PendaftaranPKL
     {
@@ -134,18 +135,34 @@ class PendaftaranPKLRepository implements PendaftaranPKLRepositoryInterface
             return $pendingRegistration;
         }
 
-        // Then check for Disetujui status that hasn't expired yet
-        $approvedRegistration = $this->model
+        // Get all Disetujui registrations and check them one by one
+        $approvedRegistrations = $this->model
+            ->with('penilaian') // Load penilaian relation
             ->where('user_id', $userId)
             ->where('status', 'Disetujui')
-            ->where(function($query) {
-                // If tanggal_selesai is null or in the future, it's still active
-                $query->whereNull('tanggal_selesai')
-                      ->orWhere('tanggal_selesai', '>=', now()->toDateString());
-            })
-            ->first();
+            ->get();
 
-        return $approvedRegistration;
+        foreach ($approvedRegistrations as $registration) {
+            // If has penilaian and status is 'Diterima' (Lulus), skip - user can register new PKL
+            if ($registration->penilaian && $registration->penilaian->status_penilaian === 'Diterima') {
+                continue; // This PKL is completed successfully, not blocking
+            }
+
+            // If has penilaian but NOT 'Diterima', block
+            if ($registration->penilaian && $registration->penilaian->status_penilaian !== 'Diterima') {
+                return $registration; // Still active, block new registration
+            }
+
+            // If no penilaian, check date
+            if (!$registration->penilaian) {
+                // If date not set or still in future, block
+                if (!$registration->tanggal_selesai || $registration->tanggal_selesai >= now()->toDateString()) {
+                    return $registration; // Still active, block new registration
+                }
+            }
+        }
+
+        return null; // No active registration found, user can register
     }
 
     /**

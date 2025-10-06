@@ -39,4 +39,20 @@ class VideoService
     {
         $this->repo->delete($video);
     }
+
+    /**
+     * Get statistics for all videos (regardless of pagination)
+     */
+    public function getStats(): array
+    {
+        $total = $this->repo->count();
+        $publishCount = $this->repo->countByStatus('Publish');
+        $draftCount = $this->repo->countByStatus('Draft');
+
+        return [
+            'total' => $total,
+            'publish' => $publishCount,
+            'draft' => $draftCount,
+        ];
+    }
 }

@@ -31,30 +31,47 @@ axios.interceptors.response.use(
     response => response,
     async error => {
         if (error.response?.status === 419 && !isReloading) {
+            console.warn('CSRF token mismatch detected, refreshing page...');
             isReloading = true;
-            // CSRF token mismatch - try to fetch new page to get fresh token
-            try {
-                await axios.get(window.location.href);
-                // Reload to get fresh state
-                window.location.reload();
-            } catch (e) {
-                // If that fails, just reload
-                window.location.reload();
-            }
+            // CSRF token mismatch - reload immediately to get fresh token
+            window.location.reload();
         }
         return Promise.reject(error);
     }
 );
 
 // Add global error handler for Inertia
+router.on('error', (event) => {
+    const error = event.detail.errors as any;
+    console.log('Inertia error:', error);
+});
+
 router.on('exception', (event) => {
     const exception = event.detail.exception as any;
     if (exception?.response?.status === 419 && !isReloading) {
+        console.warn('CSRF token mismatch in Inertia request, refreshing page...');
         isReloading = true;
         // CSRF token mismatch - reload page
         window.location.reload();
     }
 });
+
+// Refresh CSRF token on page visibility change (user returns to tab)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        const token = getCsrfToken();
+        if (token) {
+            axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+        }
+    }
+});
+
+// Clean up old localStorage keys on app load (migrate from old universal key to user-specific keys)
+// This runs once when the app loads to clean up the old 'user_profile_photo' key
+if (localStorage.getItem('user_profile_photo')) {
+    console.log('Cleaning up old universal profile photo key');
+    localStorage.removeItem('user_profile_photo');
+}
 
 createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,

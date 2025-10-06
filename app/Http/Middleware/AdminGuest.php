@@ -13,6 +13,9 @@ class AdminGuest
      */
     public function handle(Request $request, Closure $next)
     {
+        // Set admin-specific session cookie name
+        config(['session.cookie' => 'kompetensia_admin_session']);
+        
         if (Auth::guard('admin')->check()) {
             return redirect()->route('admin.dashboard');
         }

@@ -115,13 +115,13 @@ export default function SertifikasiPopuler({ sertifikasiList = [] }: Sertifikasi
   };
   
   return (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">Skema Sertifikasi Populer</h2>
-      <div className="flex gap-4 mb-8">
+    <section className="py-8 sm:py-10 lg:py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-gray-900">Skema Sertifikasi Populer</h2>
+      <div className="flex flex-wrap gap-2 sm:gap-4 mb-6 sm:mb-8">
         <button 
           onClick={() => setActiveFilter('BNSP')}
-          className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+          className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-semibold transition-colors ${
             activeFilter === 'BNSP' 
               ? 'bg-purple-700 text-white' 
               : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -131,7 +131,7 @@ export default function SertifikasiPopuler({ sertifikasiList = [] }: Sertifikasi
         </button>
         <button 
           onClick={() => setActiveFilter('Industri')}
-          className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+          className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-semibold transition-colors ${
             activeFilter === 'Industri' 
               ? 'bg-purple-700 text-white' 
               : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -140,7 +140,7 @@ export default function SertifikasiPopuler({ sertifikasiList = [] }: Sertifikasi
           Industri
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 auto-rows-fr">
         {filteredSertifikasi.map((item, idx) => (
           <div key={item.id || idx} className="w-full">
             <SertifikasiCard 

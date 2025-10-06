@@ -52,15 +52,15 @@ interface BatchPageProps {
 }
 
 const StatusBadge: React.FC<{ status?: string | null }> = ({ status }) => {
-  let variant: any = 'outline';
   let className = '';
   if (status === 'Diterima' || status === 'Lulus') {
-    variant = 'default';
-    className = 'bg-green-600 hover:bg-green-700';
+    className = 'bg-purple-100 text-purple-800 border-purple-200';
   } else if (status === 'Ditolak') {
-    variant = 'destructive';
+    className = 'bg-orange-100 text-orange-800 border-orange-200';
+  } else {
+    className = 'bg-gray-100 text-gray-800 border-gray-200';
   }
-  return <Badge variant={variant} className={className}>{status || 'Belum Dinilai'}</Badge>;
+  return <Badge className={className}>{status || 'Belum Dinilai'}</Badge>;
 };
 
 interface TugasAssessmentCardProps {
@@ -140,14 +140,16 @@ const TugasAssessmentCard: React.FC<TugasAssessmentCardProps> = ({ upload }) => 
       {/* Link URL */}
       {upload.link_url && (
         <div>
-          <span className="block text-sm font-medium text-gray-700 mb-2">Link URL</span>
-          <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded">
-            <LinkIcon className="h-4 w-4 text-blue-600" />
+          <span className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Link URL</span>
+          <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-orange-200 flex items-center space-x-3 hover:shadow-md transition-shadow">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <LinkIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+            </div>
             <a 
               href={upload.link_url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 underline break-all flex-1"
+              className="text-xs sm:text-sm text-purple-600 hover:text-purple-800 underline break-all flex-1 font-medium"
             >
               {upload.link_url}
             </a>
@@ -158,31 +160,27 @@ const TugasAssessmentCard: React.FC<TugasAssessmentCardProps> = ({ upload }) => 
       {/* File Tugas */}
       {upload.nama_file && (
         <div>
-          <span className="block text-sm font-medium text-gray-700 mb-2">File Tugas</span>
-          <div className="p-3 bg-gray-50 border rounded">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileText className="h-8 w-8 text-gray-500" />
-                <div>
-                  <p className="font-medium">{upload.nama_file}</p>
-                  <p className="text-sm text-gray-500">Tugas Sertifikasi</p>
-                </div>
-              </div>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={() => {
-                  if (upload.download_url) {
-                    window.location.href = upload.download_url;
-                  }
-                }}
-                disabled={!upload.download_url}
-              >
-                <Download className="h-4 w-4 mr-1" />
-                Download
-              </Button>
+          <span className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">File Tugas</span>
+          <div className="bg-white p-2.5 sm:p-3 rounded-lg border border-orange-200 flex items-center space-x-3 hover:shadow-md transition-shadow">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
+            <span className="text-xs sm:text-sm text-gray-900 flex-1 truncate font-medium">{upload.nama_file}</span>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              className="h-7 sm:h-8 px-2 sm:px-3 text-xs bg-purple-600 text-white hover:bg-purple-700 border-0 flex-shrink-0"
+              onClick={() => {
+                if (upload.download_url) {
+                  window.location.href = upload.download_url;
+                }
+              }}
+              disabled={!upload.download_url}
+            >
+              <Download className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+              Download
+            </Button>
           </div>
         </div>
       )}
@@ -197,14 +195,18 @@ const TugasAssessmentCard: React.FC<TugasAssessmentCardProps> = ({ upload }) => 
           <div className="flex flex-wrap gap-2">
             <Button 
               size="sm" 
-              variant={status === 'approved' ? 'default' : 'outline'} 
+              className={status === 'approved' ? 'bg-purple-600 text-white hover:bg-purple-700' : 'border border-purple-600 text-purple-600 hover:bg-purple-50'}
               onClick={() => setStatus('approved')}
             >
               Setujui
             </Button>
             <Button 
               size="sm" 
-              variant={status === 'rejected' ? 'destructive' : 'outline'} 
+              style={status === 'rejected' 
+                ? { backgroundColor: '#ea580c', color: 'white', border: 'none' } 
+                : { backgroundColor: 'white', color: '#ea580c', border: '1px solid #ea580c' }
+              }
+              className={status === 'rejected' ? 'hover:opacity-90 transition-opacity' : 'hover:bg-orange-50 transition-colors'}
               onClick={() => setStatus('rejected')}
             >
               Tolak
@@ -227,6 +229,7 @@ const TugasAssessmentCard: React.FC<TugasAssessmentCardProps> = ({ upload }) => 
         <div className="flex justify-end">
           <Button 
             size="sm" 
+            className="bg-purple-600 text-white hover:bg-purple-700"
             onClick={handleSaveAssessment}
             disabled={isSubmitting || status === upload.status && feedback === (upload.feedback || '')}
           >
@@ -473,15 +476,28 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
     </Card>
       </div>
       <Dialog open={openModal} onOpenChange={setOpenModal}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Penilaian Peserta</DialogTitle>
-            <DialogDescription>
-              {selected ? selected.user?.name : ''}
-            </DialogDescription>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" hideClose>
+          <DialogHeader className="bg-purple-600 text-white -mt-6 -mx-6 px-6 py-4 rounded-t-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-white text-lg font-semibold">Penilaian Peserta</DialogTitle>
+                <DialogDescription className="text-purple-100 text-sm">
+                  {selected ? selected.user?.name : ''}
+                </DialogDescription>
+              </div>
+              <button
+                onClick={() => setOpenModal(false)}
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-orange-400 rounded-full flex items-center justify-center hover:bg-orange-500 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </DialogHeader>
           {selected && (
-            <div className="space-y-5 text-sm">
+            <div className="space-y-5 text-sm mt-4">
               {/* Berkas Persyaratan - Format sesuai dengan PKL Modal */}
               <div className="space-y-4">
                 <Label>Berkas / Link Peserta</Label>
@@ -531,15 +547,28 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
 
       {/* Certificate Modal */}
       <Dialog open={openCertModal} onOpenChange={setOpenCertModal}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Terbitkan Sertifikat Kelulusan</DialogTitle>
-            <DialogDescription>
-              Masukkan link sertifikat digital untuk peserta yang telah lulus
-            </DialogDescription>
+        <DialogContent className="sm:max-w-lg" hideClose>
+          <DialogHeader className="bg-purple-600 text-white -mt-6 -mx-6 px-6 py-4 rounded-t-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-white text-lg font-semibold">Terbitkan Sertifikat Kelulusan</DialogTitle>
+                <DialogDescription className="text-purple-100 text-sm">
+                  Masukkan link sertifikat digital untuk peserta yang telah lulus
+                </DialogDescription>
+              </div>
+              <button
+                onClick={() => setOpenCertModal(false)}
+                className="w-7 h-7 sm:w-8 sm:h-8 bg-orange-400 rounded-full flex items-center justify-center hover:bg-orange-500 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 mt-4">
             {/* Important Reminder */}
             <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
               <div className="flex items-start gap-3">

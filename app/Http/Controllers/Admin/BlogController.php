@@ -23,7 +23,15 @@ class BlogController extends Controller
     $perPage = (int)($request->get('per_page') ?? 10);
     $filters['per_page'] = $perPage;
     $blogs = $this->service->list($filters, $perPage);
-        return Inertia::render('admin/manajemen-blog', ['blogs' => $blogs, 'filters' => $filters]);
+    
+    // Calculate stats for all data (not just current page)
+    $stats = $this->service->getStats();
+    
+        return Inertia::render('admin/manajemen-blog', [
+            'blogs' => $blogs, 
+            'filters' => $filters,
+            'stats' => $stats
+        ]);
     }
 
     public function create()

@@ -28,6 +28,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/pendaftaran/{type}/{id}', [DashboardController::class, 'pendaftaranDetail'])->name('pendaftaran.detail');
     Route::patch('/pendaftaran/{type}/{id}/approve', [DashboardController::class, 'approvePendaftaran'])->name('pendaftaran.approve');
+    Route::get('/pendaftaran-pkl/{id}/download/{type}', [DashboardController::class, 'downloadBerkasPKL'])->name('pendaftaran-pkl.download');
 
     Route::get('/sertifikasi-kompetensi', [SertifikasiController::class, 'index'])->name('sertifikasi-kompetensi');
     Route::get('/sertifikasi/create', [SertifikasiController::class, 'create'])->name('sertifikasi.create');

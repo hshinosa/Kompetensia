@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash2, MoreVertical, Video as VideoIcon, Eye, User, Play } from 'lucide-react';
+import { Plus, Edit, Trash2, MoreVertical, Video as VideoIcon, Eye, User, Play, X } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { VideoFilterDropdown } from '@/components/VideoFilterDropdown';
 
@@ -36,6 +36,7 @@ interface VideoItem {
 interface PageProps {
   videos?: { data: VideoItem[]; meta: { current_page: number; last_page: number; per_page: number; total: number } };
   filters?: Record<string, any>;
+  stats?: { total: number; publish: number; draft: number };
   [key: string]: any;
 }
 
@@ -49,6 +50,7 @@ export default function ManajemenVideo() {
   const { props } = usePage();
   const videos = (props as PageProps).videos;
   const filters = (props as PageProps).filters || {};
+  const stats = (props as PageProps).stats || { total: 0, publish: 0, draft: 0 };
   // Prepare raw video records and map to UI model
   const rawVideos = videos?.data ?? [];
   const data: VideoItem[] = useMemo(() => rawVideos.map(v => ({
@@ -95,9 +97,10 @@ export default function ManajemenVideo() {
     return () => clearTimeout(t);
   }, [search]);
 
-  const total = videos?.meta?.total ?? 0;
-  const publishCount = data.filter(v=>v.status==='Publish').length;
-  const draftCount = data.filter(v=>v.status==='Draft').length;
+  // Use stats from backend (all data, not just current page)
+  const total = stats?.total ?? 0;
+  const publishCount = stats?.publish ?? 0;
+  const draftCount = stats?.draft ?? 0;
 
   // Client-side pagination like dashboard
   const [page, setPage] = React.useState(1);
@@ -147,7 +150,7 @@ export default function ManajemenVideo() {
     router.delete(`/admin/video/${deleting.id}`, { onSuccess: ()=> setShowDelete(false) });
   };
 
-  const statusBadgeVariant = (s:string) => s==='Publish' ? 'default' : 'secondary';
+  const getStatusBadgeClass = (s:string) => s==='Publish' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-gray-100 text-gray-800 border-gray-200';
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -159,14 +162,14 @@ export default function ManajemenVideo() {
             <p className="text-muted-foreground">Kelola konten video untuk platform</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button onClick={openCreate} className="flex items-center gap-2"><Plus className="h-4 w-4"/>Tambah Video</Button>
+            <Button onClick={openCreate} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white"><Plus className="h-4 w-4"/>Tambah Video</Button>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <StatsCard label="Total Video" value={total} icon={<VideoIcon className="h-5 w-5" />} iconColor="text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-400/10" />
-          <StatsCard label="Publish" value={publishCount} icon={<Eye className="h-5 w-5" />} iconColor="text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-400/10" />
-          <StatsCard label="Draft" value={draftCount} icon={<VideoIcon className="h-5 w-5" />} iconColor="text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-400/10" />
+          <StatsCard label="Total Video" value={total} icon={<VideoIcon className="h-5 w-5" />} iconColor="text-purple-600 bg-purple-100" />
+          <StatsCard label="Publish" value={publishCount} icon={<Eye className="h-5 w-5" />} iconColor="text-green-600 bg-green-100" />
+          <StatsCard label="Draft" value={draftCount} icon={<VideoIcon className="h-5 w-5" />} iconColor="text-amber-600 bg-amber-100" />
         </div>
 
         <Card>
@@ -207,13 +210,13 @@ export default function ManajemenVideo() {
                         <div className="flex items-center gap-2"><VideoIcon className="h-4 w-4 text-purple-500" /> {v.judul}</div>
                         <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs">{v.deskripsi}</div>
                         {v.link_video && isValidYouTubeUrl(v.link_video) && (
-                          <div className="text-[10px] inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 rounded">
+                          <div className="text-[10px] inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-600 rounded">
                             <Play className="h-3 w-3" /> YouTube
                           </div>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell><Badge variant={statusBadgeVariant(v.status)}>{v.status}</Badge></TableCell>
+                    <TableCell><Badge className={getStatusBadgeClass(v.status)}>{v.status}</Badge></TableCell>
                     <TableCell className="text-sm flex items-center gap-1"><User className="h-3 w-3" />{v.penulis}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
@@ -246,11 +249,19 @@ export default function ManajemenVideo() {
 
         {/* Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent className="max-w-none sm:max-w-[90vw] lg:max-w-[960px] w-[92vw]">
-            <DialogHeader>
-              <DialogTitle>{editing ? 'Edit Video' : 'Video Baru'}</DialogTitle>
+          <DialogContent hideClose={true} className="max-w-none sm:max-w-[90vw] lg:max-w-[960px] w-[92vw] max-h-[90vh] overflow-y-auto p-0">
+            <DialogHeader className="bg-purple-600 text-white px-6 py-4 rounded-t-lg relative">
+              <DialogTitle className="text-xl font-semibold">{editing ? 'Edit Video' : 'Video Baru'}</DialogTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={()=>setShowForm(false)}
+                className="absolute right-4 top-4 h-8 w-8 rounded-full bg-orange-400 hover:bg-orange-500 text-white p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-6 px-6">
               {/* Title and Status on one line */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -285,9 +296,9 @@ export default function ManajemenVideo() {
                 <Label htmlFor="featured" className="flex items-center gap-1">Tandai Featured</Label>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="px-6 pb-6">
               <Button variant="outline" onClick={()=>setShowForm(false)}>Batal</Button>
-              <Button onClick={submitForm}>{editing ? 'Simpan' : 'Tambah'}</Button>
+              <Button onClick={submitForm} className="bg-purple-600 hover:bg-purple-700 text-white">{editing ? 'Simpan' : 'Tambah'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -268,7 +268,7 @@ export default function Dashboard() {
             label="Peserta Sertifikasi" 
             value={stats?.peserta_sertifikasi ?? 0} 
             icon={<Users className="h-5 w-5" />} 
-            iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10"
+            iconColor="text-purple-600 bg-purple-100"
             onClick={() => router.visit('/admin/sertifikasi-kompetensi')}
             isClickable
           />
@@ -276,7 +276,7 @@ export default function Dashboard() {
             label="Siswa PKL" 
             value={stats?.siswa_pkl ?? 0} 
             icon={<UserCheck className="h-5 w-5" />} 
-            iconColor="text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-400/10"
+            iconColor="text-purple-600 bg-purple-100"
             onClick={() => router.visit('/admin/praktik-kerja-lapangan')}
             isClickable
           />
@@ -284,7 +284,7 @@ export default function Dashboard() {
             label="Jumlah Sertifikasi Aktif" 
             value={stats?.jumlah_sertifikasi ?? 0} 
             icon={<BookOpen className="h-5 w-5" />} 
-            iconColor="text-indigo-600 bg-indigo-100 dark:text-indigo-400 dark:bg-indigo-400/10"
+            iconColor="text-purple-600 bg-purple-100"
             onClick={() => router.visit('/admin/sertifikasi-kompetensi')}
             isClickable
           />
@@ -292,7 +292,7 @@ export default function Dashboard() {
             label="Total Users" 
             value={stats?.total_users ?? 0} 
             icon={<UserCog className="h-5 w-5" />} 
-            iconColor="text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-400/10"
+            iconColor="text-purple-600 bg-purple-100"
             onClick={() => router.visit('/admin/user-management')}
             isClickable
           />

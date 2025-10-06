@@ -24,17 +24,23 @@ export default function ClientAuthenticatedLayout({ children, header }: Readonly
             {/* Sticky Navbar */}
             <Navbar />
 
-            <div className="flex flex-1 p-4 gap-4 relative">
-                {/* Sticky Sidebar */}
-                <div className="w-64 flex-shrink-0">
+            {/* Mobile: Sidebar below navbar, Desktop/Tablet: Sidebar on left */}
+            <div className="flex flex-1 relative gap-0 md:gap-4 lg:gap-6">
+                {/* Desktop/Tablet Sidebar - Hidden on mobile */}
+                <div className="hidden md:block w-52 lg:w-64 flex-shrink-0 md:pl-4 lg:pl-6">
                     <Sidebar currentPath={window.location.pathname} />
                 </div>
 
                 {/* Main Content with proper scrolling */}
-                <main className="flex-1 min-w-0">
+                <main className="flex-1 min-w-0 px-4 py-4 md:pr-4 lg:pr-6">
+                    {/* Mobile Sidebar - Shows below navbar, above content */}
+                    <div className="md:hidden mb-4">
+                        <Sidebar currentPath={window.location.pathname} />
+                    </div>
+                    
                     <div className="container mx-auto px-0 py-0">
                         {header && (
-                            <div className="mb-8">
+                            <div className="mb-6 md:mb-8">
                                 {header}
                             </div>
                         )}

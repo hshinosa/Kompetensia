@@ -69,6 +69,16 @@ class BlogRepository implements BlogRepositoryInterface
         $blog->delete();
     }
 
+    public function count(): int
+    {
+        return Blog::count();
+    }
+
+    public function countByStatus(string $status): int
+    {
+        return Blog::where('status', $status)->count();
+    }
+
     private function prepareSlug(array $data, ?Blog $existing = null): array
     {
         if (isset($data['nama_artikel'])) {

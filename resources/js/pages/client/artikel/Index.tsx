@@ -76,11 +76,11 @@ export default function Index({ articles, featured, filters }: ArticleIndexProps
 
         {/* Featured Articles */}
         {featured && featured.length > 0 && (
-          <div className="container mx-auto px-4 py-10">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Artikel Unggulan</h2>
-            <div className="grid md:grid-cols-3 gap-8">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Artikel Unggulan</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {featured.map((article) => (
-                <div key={article.id} className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
+                <div key={article.id} className="bg-white rounded-2xl sm:rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
                   <div className="aspect-video bg-gradient-to-br from-purple-500 to-blue-500 relative">
                     {article.thumbnail ? (
                       <img 
@@ -101,25 +101,25 @@ export default function Index({ articles, featured, filters }: ArticleIndexProps
                       </span>
                     </div>
                   </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                  <div className="p-4 sm:p-6">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3">
                       <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-md font-medium">
                         {article.jenis_konten}
                       </span>
-                      <span>{formatDate(article.created_at)}</span>
+                      <span className="hidden sm:inline">{formatDate(article.created_at)}</span>
                       <span>{formatViews(article.views)} views</span>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
+                    <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
                       {article.nama_artikel}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-3">
                       {article.deskripsi}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <span className="text-xs sm:text-sm text-gray-500">
                         oleh {article.penulis}
                       </span>
-                      <Link href={`/artikel/${article.slug}`} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                      <Link href={`/artikel/${article.slug}`} className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium text-center">
                         Baca Selengkapnya
                       </Link>
                     </div>
@@ -131,15 +131,15 @@ export default function Index({ articles, featured, filters }: ArticleIndexProps
         )}
 
         {/* All Articles */}
-        <div className="container mx-auto px-4 py-10">
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Semua Artikel</h2>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+          <div className="space-y-4 sm:space-y-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Semua Artikel</h2>
             
             {/* Filter buttons */}
             <div className="flex gap-2 flex-wrap">
               <button 
                 onClick={() => handleFilterChange('Semua')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors ${
                   activeFilter === 'Semua'
                     ? 'bg-purple-600 text-white'
                     : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -181,10 +181,10 @@ export default function Index({ articles, featured, filters }: ArticleIndexProps
           </div>
 
           {/* Articles Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mt-4 sm:mt-6">
             {articles.data && articles.data.length > 0 ? (
               articles.data.map((article) => (
-                <div key={article.id} className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
+                <div key={article.id} className="bg-white rounded-2xl sm:rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
                   <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 relative">
                     {article.thumbnail ? (
                       <img 
@@ -200,25 +200,25 @@ export default function Index({ articles, featured, filters }: ArticleIndexProps
                       </div>
                     )}
                   </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                  <div className="p-4 sm:p-6">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
                       <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-md font-medium">
                         {article.jenis_konten}
                       </span>
-                      <span>{formatDate(article.created_at)}</span>
+                      <span className="hidden sm:inline">{formatDate(article.created_at)}</span>
                       <span>{formatViews(article.views)} views</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
                       {article.nama_artikel}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-3">
                       {article.deskripsi}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <span className="text-xs sm:text-sm text-gray-500">
                         oleh {article.penulis}
                       </span>
-                      <Link href={`/artikel/${article.slug}`} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                      <Link href={`/artikel/${article.slug}`} className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium text-center">
                         Baca
                       </Link>
                     </div>

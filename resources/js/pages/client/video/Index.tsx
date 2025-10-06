@@ -96,11 +96,11 @@ export default function Index({ videos, featured }: VideoIndexProps) {
 
         {/* Featured Videos */}
         {featured && featured.length > 0 && (
-          <div className="container mx-auto px-4 py-10">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Video Unggulan</h2>
-            <div className="grid md:grid-cols-3 gap-8">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Video Unggulan</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {featured.map((video) => (
-                <div key={video.id} className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
+                <div key={video.id} className="bg-white rounded-2xl sm:rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
                   <div className="aspect-video bg-gradient-to-br from-red-500 to-purple-500 relative group cursor-pointer" onClick={() => handleVideoClick(video)}>
                     {video.thumbnail || getVideoThumbnail(video.video_url) ? (
                       <img 
@@ -138,22 +138,22 @@ export default function Index({ videos, featured }: VideoIndexProps) {
                     </div>
                   </div>
 
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                      <span>{formatDate(video.created_at)}</span>
+                  <div className="p-4 sm:p-6">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3">
+                      <span className="hidden sm:inline">{formatDate(video.created_at)}</span>
                       <span>{formatViews(video.views)} views</span>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
+                    <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
                       {video.nama_video}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-3">
                       {video.deskripsi}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <span className="text-xs sm:text-sm text-gray-500">
                         oleh {video.uploader}
                       </span>
-                      <button onClick={() => handleVideoClick(video)} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                      <button onClick={() => handleVideoClick(video)} className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium">
                         Tonton
                       </button>
                     </div>
@@ -165,16 +165,16 @@ export default function Index({ videos, featured }: VideoIndexProps) {
         )}
 
         {/* All Videos */}
-        <div className="container mx-auto px-4 py-10">
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Semua Video</h2>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+          <div className="space-y-4 sm:space-y-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Semua Video</h2>
           </div>
 
           {/* Videos Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mt-4 sm:mt-6">
             {videos.data && videos.data.length > 0 ? (
               videos.data.map((video) => (
-                <div key={video.id} className="bg-white rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
+                <div key={video.id} className="bg-white rounded-2xl sm:rounded-3xl border-2 border-purple-400 overflow-hidden hover:shadow-md hover:border-purple-600 transition-all duration-300">
                   <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 relative group cursor-pointer" onClick={() => handleVideoClick(video)}>
                     {video.thumbnail || getVideoThumbnail(video.video_url) ? (
                       <img 
@@ -192,8 +192,8 @@ export default function Index({ videos, featured }: VideoIndexProps) {
                     
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                      <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
-                        <svg className="w-6 h-6 text-purple-600 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+                        <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 ml-1" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z"/>
                         </svg>
                       </div>
@@ -205,22 +205,22 @@ export default function Index({ videos, featured }: VideoIndexProps) {
                     </div>
                   </div>
 
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                      <span>{formatDate(video.created_at)}</span>
+                  <div className="p-4 sm:p-6">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
+                      <span className="hidden sm:inline">{formatDate(video.created_at)}</span>
                       <span>{formatViews(video.views)} views</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
                       {video.nama_video}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-3">
                       {video.deskripsi}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <span className="text-xs sm:text-sm text-gray-500">
                         oleh {video.uploader}
                       </span>
-                      <button onClick={() => handleVideoClick(video)} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                      <button onClick={() => handleVideoClick(video)} className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium">
                         Tonton
                       </button>
                     </div>

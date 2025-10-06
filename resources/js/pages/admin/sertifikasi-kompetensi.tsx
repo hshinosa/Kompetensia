@@ -131,7 +131,7 @@ export default function SertifikasiKompetensi() {
             <p className="text-muted-foreground">Kelola program sertifikasi kompetensi</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button asChild className="flex items-center gap-2">
+            <Button asChild className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white">
               <Link href="/admin/form-sertifikasi">
                 <Plus className="h-4 w-4" />
                 Tambah Sertifikasi
@@ -141,10 +141,10 @@ export default function SertifikasiKompetensi() {
         </div>
 
         <div className="grid auto-rows-min gap-4 md:grid-cols-4">
-          <StatsCard label="Total Sertifikasi" value={totalSertifikasi} icon={<Briefcase className="h-5 w-5" />} iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10" />
-          <StatsCard label="Sertifikasi Aktif" value={sertifikasiAktif} icon={<Users className="h-5 w-5" />} iconColor="text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-400/10" />
-          <StatsCard label="Sertifikasi Industri" value={sertifikasiIndustri} icon={<Clock className="h-5 w-5" />} iconColor="text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-400/10" />
-          <StatsCard label="Sertifikasi BNSP" value={sertifikasiBNSP} icon={<MapPin className="h-5 w-5" />} iconColor="text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-400/10" />
+          <StatsCard label="Total Sertifikasi" value={totalSertifikasi} icon={<Briefcase className="h-5 w-5" />} iconColor="text-blue-600 bg-blue-100" />
+          <StatsCard label="Sertifikasi Aktif" value={sertifikasiAktif} icon={<Users className="h-5 w-5" />} iconColor="text-green-600 bg-green-100" />
+          <StatsCard label="Sertifikasi Industri" value={sertifikasiIndustri} icon={<Clock className="h-5 w-5" />} iconColor="text-orange-600 bg-orange-100" />
+          <StatsCard label="Sertifikasi BNSP" value={sertifikasiBNSP} icon={<MapPin className="h-5 w-5" />} iconColor="text-purple-600 bg-purple-100" />
         </div>
 
         <Card>
@@ -238,7 +238,7 @@ export default function SertifikasiKompetensi() {
                     </TableCell>
                     <TableCell className="font-medium max-w-[220px] truncate" title={item.namaSertifikasi}>{item.namaSertifikasi}</TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <Badge variant={item.jenisSertifikasi === 'BNSP' ? 'default' : 'secondary'}>
+                      <Badge className={item.jenisSertifikasi === 'BNSP' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-orange-100 text-orange-800 border-orange-200'}>
                         {item.jenisSertifikasi}
                       </Badge>
                     </TableCell>
@@ -254,7 +254,7 @@ export default function SertifikasiKompetensi() {
                     <TableCell className="hidden md:table-cell">{item.totalBatch}</TableCell>
                     <TableCell className="hidden md:table-cell">{item.assessor}</TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <Badge variant={item.status === 'Aktif' ? 'default' : 'secondary'}>
+                      <Badge className={item.status === 'Aktif' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-gray-100 text-gray-800 border-gray-200'}>
                         {item.status}
                       </Badge>
                     </TableCell>

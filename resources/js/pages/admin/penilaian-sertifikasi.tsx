@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Pagination from '@/components/Pagination';
+import { StatsCard } from '@/components/dashboard/StatsCard';
 import { Users, Clock, Award, FileCheck, Filter } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -81,58 +82,30 @@ const PenilaianSertifikasiPage: React.FC = () => {
                 </div>
         {/* Stats */}
         <div className="grid auto-rows-min gap-4 md:grid-cols-4">
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Award className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Sertifikasi</p>
-                  <div className="text-2xl font-bold">{totalSertifikasi}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <FileCheck className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Batch</p>
-                  <div className="text-2xl font-bold">{totalBatch}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Clock className="h-5 w-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Batch Aktif</p>
-                  <div className="text-2xl font-bold">{aktiveBatch}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="p-6">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Users className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Peserta</p>
-                  <div className="text-2xl font-bold">{totalPeserta}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatsCard 
+            label="Total Sertifikasi" 
+            value={totalSertifikasi} 
+            icon={<Award className="h-5 w-5" />} 
+            iconColor="text-blue-600 bg-blue-100" 
+          />
+          <StatsCard 
+            label="Total Batch" 
+            value={totalBatch} 
+            icon={<FileCheck className="h-5 w-5" />} 
+            iconColor="text-green-600 bg-green-100" 
+          />
+          <StatsCard 
+            label="Batch Aktif" 
+            value={aktiveBatch} 
+            icon={<Clock className="h-5 w-5" />} 
+            iconColor="text-orange-600 bg-orange-100" 
+          />
+          <StatsCard 
+            label="Total Peserta" 
+            value={totalPeserta} 
+            icon={<Users className="h-5 w-5" />} 
+            iconColor="text-purple-600 bg-purple-100" 
+          />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
@@ -183,7 +156,7 @@ const PenilaianSertifikasiPage: React.FC = () => {
                       <TableCell className="font-medium">{(meta.current_page-1)*meta.per_page + idx + 1}</TableCell>
                       <TableCell className="font-medium">{s.namaSertifikasi}</TableCell>
                       <TableCell>{s.assessor}</TableCell>
-                      <TableCell><Badge variant={s.penyelenggara === 'BNSP' ? 'default' : 'secondary'}>{s.penyelenggara}</Badge></TableCell>
+                      <TableCell><Badge className={s.penyelenggara === 'BNSP' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-orange-100 text-orange-800 border-orange-200'}>{s.penyelenggara}</Badge></TableCell>
                     </TableRow>
                   )) : (
                     <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">{search ? 'Tidak ada data sesuai' : 'Tidak ada data sertifikasi'}</TableCell></TableRow>
@@ -200,6 +173,7 @@ const PenilaianSertifikasiPage: React.FC = () => {
                   totalItems={meta.total}
                   onPageChange={changePage}
                   onItemsPerPageChange={(n)=>{ setPerPage(n); }}
+                  compact={true}
                 />
               </div>
             )}
@@ -253,7 +227,7 @@ const PenilaianSertifikasiPage: React.FC = () => {
                           <TableCell>{(batchPage-1)*batchPerPage + idx + 1}</TableCell>
                           <TableCell>{b.namaBatch}</TableCell>
                           <TableCell>{b.jumlahPeserta}</TableCell>
-                          <TableCell><Badge variant={b.status==='Aktif' ? 'default' : 'secondary'}>{b.status}</Badge></TableCell>
+                          <TableCell><Badge className={b.status==='Aktif' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-gray-100 text-gray-800 border-gray-200'}>{b.status}</Badge></TableCell>
                           <TableCell><Button variant="outline" size="sm" onClick={()=> router.get(route('admin.batch-penilaian-sertifikasi', { sertifikasiId: selected.id, batchId: b.id }))}>Nilai</Button></TableCell>
                         </TableRow>
                       ))}
@@ -263,19 +237,19 @@ const PenilaianSertifikasiPage: React.FC = () => {
                   <div className="flex items-center justify-center py-20 text-muted-foreground">Pilih sertifikasi</div>
                 )}
             </CardContent>
-            <div className="m-4 p-2">
-              {/* Batch Pagination */}
-              {selected && (
+            {selected && selected.batches.filter(b => (batchSearch ? b.namaBatch.toLowerCase().includes(batchSearch.toLowerCase()) : true)).filter(b => (batchStatus ? b.status.toLowerCase() === batchStatus.toLowerCase() : true)).length > 0 && (
+              <div className="px-4 pb-4">
                 <Pagination 
                   currentPage={batchPage} 
                   totalPages={Math.max(1, Math.ceil(selected.batches.filter(b => (batchSearch ? b.namaBatch.toLowerCase().includes(batchSearch.toLowerCase()) : true)).filter(b => (batchStatus ? b.status.toLowerCase() === batchStatus.toLowerCase() : true)).length / batchPerPage))} 
                   itemsPerPage={batchPerPage} 
-                  totalItems={selected.batches.length} 
+                  totalItems={selected.batches.filter(b => (batchSearch ? b.namaBatch.toLowerCase().includes(batchSearch.toLowerCase()) : true)).filter(b => (batchStatus ? b.status.toLowerCase() === batchStatus.toLowerCase() : true)).length} 
                   onPageChange={setBatchPage} 
-                  onItemsPerPageChange={setBatchPerPage} 
+                  onItemsPerPageChange={setBatchPerPage}
+                  compact={true}
                 />
-              )}
-            </div>
+              </div>
+            )}
           </Card>
         </div>
   {/* Inline peserta & penilaian dihapus; gunakan halaman detail-penilaian-sertifikasi */}

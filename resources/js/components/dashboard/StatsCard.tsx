@@ -12,10 +12,11 @@ interface StatsCardProps {
 }
 
 export function StatsCard({ label, value, className, icon, iconColor, onClick, isClickable = false }: StatsCardProps) {
-  const colorClasses = iconColor || 'text-primary bg-primary/10';
+  // Use purple accent colors to match client dashboard
+  const colorClasses = iconColor || 'text-purple-600 bg-purple-100';
   const baseClasses = ['p-6', className].filter(Boolean).join(' ');
   const clickableClasses = isClickable || onClick ? 
-    'cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2' : 
+    'cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2' : 
     '';
   
   const cardClasses = [baseClasses, clickableClasses].filter(Boolean).join(' ');
@@ -28,19 +29,19 @@ export function StatsCard({ label, value, className, icon, iconColor, onClick, i
       onClick={onClick}
       disabled={!onClick}
     >
-      <Card className={cardClasses}>
+      <Card className={`${cardClasses} border-2 border-purple-300`}>
         <CardContent className="p-0">
           <div className="flex items-center gap-4">
             {icon && (
-              <div className={["rounded-lg p-3 flex items-center justify-center flex-shrink-0", colorClasses].join(' ')}>
+              <div className={["rounded-xl p-3 flex items-center justify-center flex-shrink-0", colorClasses].join(' ')}>
                 {icon}
               </div>
             )}
             <div className="flex flex-col min-w-0 flex-1">
-              <CardTitle className="text-sm font-medium text-muted-foreground mb-1 leading-tight">
+              <CardTitle className="text-sm font-medium text-gray-600 mb-1 leading-tight">
                 {label}
               </CardTitle>
-              <div className="text-2xl font-bold leading-none tracking-tight">
+              <div className="text-2xl font-bold leading-none tracking-tight text-gray-900">
                 {value}
               </div>
             </div>

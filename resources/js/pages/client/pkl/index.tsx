@@ -38,35 +38,35 @@ export default function ClientPKL({ pklPrograms = [] }: ClientPKLProps) {
         <ClientAuthenticatedLayout>
             <Head title="PKL" />
             
-            <div className="space-y-6">
-                <div className="flex justify-between items-center">
+            <div className="space-y-4 sm:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Program PKL Saya</h1>
-                        <p className="text-gray-600 mt-1">Program PKL yang telah disetujui dan sedang Anda ikuti</p>
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Program PKL Saya</h1>
+                        <p className="text-sm sm:text-base text-gray-600 mt-1">Program PKL yang telah disetujui dan sedang Anda ikuti</p>
                     </div>
                     <a 
                         href="/pkl/tersedia" 
-                        className="px-8 py-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold text-lg"
+                        className="px-6 sm:px-8 py-3 sm:py-4 bg-purple-600 text-white rounded-lg sm:rounded-xl hover:bg-purple-700 transition-colors font-semibold text-sm sm:text-base lg:text-lg text-center whitespace-nowrap"
                     >
                         Cari Program Baru
                     </a>
                 </div>
 
                 {/* PKL Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {programsArray.map((program: PosisiPKL) => (
                         <div 
                             key={program.id}
-                            className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                            className="bg-white border border-gray-200 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                         >
                             {/* Card Content */}
-                            <div className="p-4">
-                                <div className="bg-gradient-to-tl from-purple-400 to-purple-600 rounded-3xl p-6 text-white relative overflow-hidden min-h-[280px] flex flex-col">
+                            <div className="p-3 sm:p-4">
+                                <div className="bg-gradient-to-tl from-purple-400 to-purple-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white relative overflow-hidden min-h-[240px] sm:min-h-[280px] flex flex-col">
                                     <div className="relative z-10 flex flex-col h-full">
                                         {/* Header */}
-                                        <div className="mb-4">
-                                            <h3 className="text-xl font-bold mb-3">{program.nama_posisi}</h3>
-                                            <p className="text-purple-100 text-sm leading-relaxed line-clamp-3">
+                                        <div className="mb-3 sm:mb-4">
+                                            <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{program.nama_posisi}</h3>
+                                            <p className="text-purple-100 text-xs sm:text-sm leading-relaxed line-clamp-3">
                                                 {program.deskripsi || 'Tidak ada deskripsi tersedia.'}
                                             </p>
                                         </div>
@@ -90,10 +90,10 @@ export default function ClientPKL({ pklPrograms = [] }: ClientPKLProps) {
                             </div>
                             
                             {/* Button Section */}
-                            <div className="px-4 pb-4">
+                            <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                                 <a 
                                     href={`/client/pkl/${program.id}`}
-                                    className="block w-full py-3 bg-purple-600 text-white font-semibold rounded-2xl hover:bg-purple-700 transition-colors text-center"
+                                    className="block w-full py-2.5 sm:py-3 bg-purple-600 text-white text-sm sm:text-base font-semibold rounded-xl sm:rounded-2xl hover:bg-purple-700 transition-colors text-center"
                                 >
                                     Kelola Dokumen
                                 </a>

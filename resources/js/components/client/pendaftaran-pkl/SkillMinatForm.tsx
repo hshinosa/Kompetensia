@@ -96,7 +96,7 @@ export default function SkillMinatForm({ formData, onFormDataChange, onNext, onB
             Apakah Anda pernah membuat video review produk, review suatu tempat atau membuat mini vlog?
           </label>
           <select
-            value={formData.pernahMembuatVideo || 'tidak'}
+            value={formData.pernahMembuatVideo || ''}
             onChange={(e) => onFormDataChange('pernahMembuatVideo', e.target.value)}
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             required

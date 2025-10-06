@@ -438,9 +438,9 @@ export default function FormSertifikasi() {
                   <TableHeader><TableRow><TableHead>Nama</TableHead><TableHead>Mulai</TableHead><TableHead>Selesai</TableHead><TableHead>Status</TableHead><TableHead className="w-[100px]">Aksi</TableHead></TableRow></TableHeader>
                   <TableBody>
                     {batch.map(b => {
-                      let badgeClass = 'bg-yellow-100 text-yellow-800';
-                      if (b.status==='Aktif') badgeClass = 'bg-green-100 text-green-800';
-                      else if (b.status==='Selesai') badgeClass = 'bg-gray-100 text-gray-800';
+                      let badgeClass = 'bg-gray-100 text-gray-800 border-gray-200';
+                      if (b.status==='Aktif') badgeClass = 'bg-purple-100 text-purple-800 border-purple-200';
+                      else if (b.status==='Selesai') badgeClass = 'bg-orange-100 text-orange-800 border-orange-200';
                       return (
                         <TableRow key={b.id}>
                           <TableCell className="font-medium">{b.nama_batch}</TableCell>
@@ -627,7 +627,7 @@ export default function FormSertifikasi() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={()=>setIsModulModalOpen(false)}>Batal</Button>
-              <Button onClick={handleSaveModul}>{editingModul? 'Simpan Perubahan':'Tambah Modul'}</Button>
+              <Button onClick={handleSaveModul} className="bg-purple-600 hover:bg-purple-700 text-white">{editingModul? 'Simpan Perubahan':'Tambah Modul'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -645,7 +645,7 @@ export default function FormSertifikasi() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={()=>setIsBatchModalOpen(false)}>Batal</Button>
-              <Button onClick={handleSaveBatch}>{editingBatch? 'Simpan Perubahan':'Tambah Batch'}</Button>
+              <Button onClick={handleSaveBatch} className="bg-purple-600 hover:bg-purple-700 text-white">{editingBatch? 'Simpan Perubahan':'Tambah Batch'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

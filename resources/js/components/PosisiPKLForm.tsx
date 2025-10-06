@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { router } from '@inertiajs/react';
+import { X } from 'lucide-react';
 
 type WorkType = 'WFH' | 'WFO' | 'Hybrid';
 type PosisiStatus = 'Aktif' | 'Draf' | 'Ditutup';
@@ -161,11 +162,19 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl min-w-[300px] md:min-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{editData ? 'Edit Posisi PKL' : 'Tambah Posisi PKL'}</DialogTitle>
+      <DialogContent hideClose={true} className="max-w-5xl min-w-[300px] md:min-w-[700px] max-h-[90vh] overflow-y-auto p-0">
+        <DialogHeader className="bg-purple-600 text-white px-6 py-4 rounded-t-lg relative">
+          <DialogTitle className="text-xl font-semibold">{editData ? 'Edit Posisi PKL' : 'Tambah Posisi PKL'}</DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="absolute right-4 top-4 h-8 w-8 rounded-full bg-orange-400 hover:bg-orange-500 text-white p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </DialogHeader>
-        <div className="grid gap-6 py-6">
+        <div className="grid gap-6 py-6 px-6">
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="namaPosisi">Nama Posisi *</Label>
@@ -271,11 +280,11 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
             </div>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="px-6 pb-6">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Batal
           </Button>
-          <Button onClick={handleSave} disabled={isLoading}>
+          <Button onClick={handleSave} disabled={isLoading} className="bg-purple-600 hover:bg-purple-700 text-white">
             {(() => {
               if (isLoading) return 'Menyimpan...';
               return editData ? 'Simpan Perubahan' : 'Simpan';

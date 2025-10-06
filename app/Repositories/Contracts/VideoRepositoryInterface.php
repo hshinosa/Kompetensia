@@ -13,4 +13,6 @@ interface VideoRepositoryInterface
     public function create(array $data): Video;
     public function update(Video $video, array $data): Video;
     public function delete(Video $video): void;
+    public function count(): int;
+    public function countByStatus(string $status): int;
 }

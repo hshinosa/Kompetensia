@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { usePage } from '@inertiajs/react';
 
 type ModalView = 'main' | 'change-email' | 'change-password';
+
+interface User {
+    id: number;
+    nama: string;
+    email: string;
+    role: string;
+}
+
+interface PageProps extends Record<string, any> {
+    auth?: {
+        user?: User;
+        client?: User;
+    };
+}
 
 interface Props {
     isOpen: boolean;
@@ -23,6 +38,12 @@ interface FormData {
 }
 
 export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
+    const { auth } = usePage<PageProps>().props;
+    const user = auth?.client || auth?.user;
+    
+    // Get user-specific localStorage key
+    const getPhotoStorageKey = () => user ? `user_profile_photo_${user.id}` : 'user_profile_photo';
+    
     const [currentView, setCurrentView] = useState<ModalView>('main');
     const [isClosing, setIsClosing] = useState(false);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -31,8 +52,10 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
     const [error, setError] = useState<string>('');
     const [success, setSuccess] = useState<string>('');
     const [fotoProfil, setFotoProfil] = useState<string | null>(() => {
-        // Initialize from localStorage on component mount
-        const saved = localStorage.getItem('user_profile_photo');
+        // Initialize from localStorage on component mount using user-specific key
+        if (!user) return null;
+        const key = `user_profile_photo_${user.id}`;
+        const saved = localStorage.getItem(key);
         console.log('Initial fotoProfil from localStorage:', saved);
         return saved || null;
     });
@@ -78,13 +101,14 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
     // Sync fotoProfil with localStorage whenever it changes
     useEffect(() => {
         console.log('fotoProfil changed:', fotoProfil);
-        if (fotoProfil) {
-            localStorage.setItem('user_profile_photo', fotoProfil);
-            console.log('Saved to localStorage:', fotoProfil);
+        if (fotoProfil && user) {
+            const key = getPhotoStorageKey();
+            localStorage.setItem(key, fotoProfil);
+            console.log('Saved to localStorage:', key, fotoProfil);
             // Dispatch event to notify other components (like Navbar)
             window.dispatchEvent(new Event('profile-photo-updated'));
         }
-    }, [fotoProfil]);
+    }, [fotoProfil, user]);
 
     // Fetch user profile data when modal opens
     useEffect(() => {
@@ -164,9 +188,11 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                 // Get server URL
                 const serverPhotoUrl = response.data.data.foto_profil;
                 
-                // Update state and localStorage atomically
+                // Update state and localStorage atomically with user-specific key
                 setFotoProfil(serverPhotoUrl);
-                localStorage.setItem('user_profile_photo', serverPhotoUrl);
+                if (user) {
+                    localStorage.setItem(getPhotoStorageKey(), serverPhotoUrl);
+                }
                 
                 setSuccess('Foto profil berhasil diupload');
                 setTimeout(() => setSuccess(''), 3000);
@@ -193,8 +219,10 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
 
             if (response.data.success) {
                 setFotoProfil(null);
-                // Remove from localStorage
-                localStorage.removeItem('user_profile_photo');
+                // Remove from localStorage using user-specific key
+                if (user) {
+                    localStorage.removeItem(getPhotoStorageKey());
+                }
                 setSuccess('Foto profil berhasil dihapus');
                 setTimeout(() => setSuccess(''), 3000);
             }

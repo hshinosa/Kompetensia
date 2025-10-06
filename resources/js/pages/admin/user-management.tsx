@@ -122,18 +122,18 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
 
     const getRoleBadgeColor = (role: string) => {
         switch (role) {
-            case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-            case 'mahasiswa': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+            case 'admin': return 'bg-red-100 text-red-800';
+            case 'mahasiswa': return 'bg-gray-100 text-gray-800';
+            default: return 'bg-gray-100 text-gray-800';
         }
     };
 
     const getStatusBadgeColor = (status: string, aktif: boolean) => {
-        if (!aktif) return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+        if (!aktif) return 'bg-red-100 text-red-800';
         switch (status) {
-            case 'aktif': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-            case 'suspended': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+            case 'aktif': return 'bg-green-100 text-green-800';
+            case 'suspended': return 'bg-yellow-100 text-yellow-800';
+            default: return 'bg-gray-100 text-gray-800';
         }
     };
 
@@ -161,7 +161,7 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
                         <h1 className="text-3xl font-bold tracking-tight font-heading">Manajemen Pengguna</h1>
                         <p className="text-muted-foreground">Kelola data pengguna sistem</p>
                     </div>
-                    <Button asChild>
+                    <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
                         <Link href="/admin/pengguna/create" className="flex items-center gap-2">
                             <Plus className="h-4 w-4" />
                             Tambah Pengguna
@@ -175,25 +175,25 @@ export default function UserManagement({ pengguna, filters, stats }: Readonly<Pe
                         label="Total Pengguna" 
                         value={stats.total} 
                         icon={<Users className="h-5 w-5" />} 
-                        iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10"
+                        iconColor="text-blue-600 bg-blue-100"
                     />
                     <StatsCard 
                         label="Admin" 
                         value={stats.admin} 
                         icon={<Shield className="h-5 w-5" />} 
-                        iconColor="text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-400/10"
+                        iconColor="text-red-600 bg-red-100"
                     />
                     <StatsCard 
                         label="Mahasiswa" 
                         value={stats.mahasiswa} 
                         icon={<GraduationCap className="h-5 w-5" />} 
-                        iconColor="text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-400/10"
+                        iconColor="text-purple-600 bg-purple-100"
                     />
                     <StatsCard 
                         label="Aktif" 
                         value={stats.aktif} 
                         icon={<UserCheck className="h-5 w-5" />} 
-                        iconColor="text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-400/10"
+                        iconColor="text-green-600 bg-green-100"
                     />
                 </div>
 

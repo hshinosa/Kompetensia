@@ -27,18 +27,27 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::guard('client')->attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-            $user = Auth::guard('client')->user();
-            
-            // Check if user is a client/mahasiswa
-            if ($user->role !== 'mahasiswa') {
-                Auth::guard('client')->logout();
-                return back()->withErrors([
-                    'email' => 'Akun ini tidak memiliki akses ke halaman client.',
-                ]);
-            }
+        // First, try to find the user and check role before attempting login
+        $user = \App\Models\User::where('email', $request->email)->first();
+        
+        if (!$user || $user->role !== 'mahasiswa') {
+            return back()->withErrors([
+                'email' => 'Akun ini tidak memiliki akses ke halaman client.',
+            ]);
+        }
 
+        // Set client-specific session cookie BEFORE login attempt
+        config(['session.cookie' => 'kompetensia_client_session']);
+
+        if (Auth::guard('client')->attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+            // Regenerate session to prevent fixation attacks
             $request->session()->regenerate();
+            
+            // Explicitly set the guard in session
+            $request->session()->put('auth.guard', 'client');
+            
+            // Ensure session cookie is properly set after regeneration
+            config(['session.cookie' => 'kompetensia_client_session']);
 
             return redirect()->intended(route('client.dashboard'));
         }
@@ -53,11 +62,16 @@ class LoginController extends Controller
      */
     public function destroy(Request $request)
     {
+        // Set client-specific session cookie before logout
+        config(['session.cookie' => 'kompetensia_client_session']);
+        
         Auth::guard('client')->logout();
 
+        // Invalidate session first, then regenerate token
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Redirect to login page
+        return redirect()->route('client.login');
     }
 }

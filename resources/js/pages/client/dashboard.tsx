@@ -161,9 +161,9 @@ export default function ClientDashboard({
         <ClientAuthenticatedLayout>
             <Head title="Dashboard" />
             
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     <StatCard
                         href="/client/sertifikasi"
                         label="Sertifikasi Selesai"
@@ -212,10 +212,10 @@ export default function ClientDashboard({
                 </div>
 
                 {/* Riwayat Pengajuan Table */}
-                <div className="bg-white rounded-xl border-2 border-purple-300 overflow-hidden shadow-sm">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <h2 className="text-xl font-semibold text-gray-900">Riwayat Pengajuan</h2>
-                        <p className="text-sm text-gray-600 mt-1">Lihat status pengajuan sertifikasi dan PKL Anda</p>
+                <div className="bg-white rounded-lg sm:rounded-xl border-2 border-purple-300 overflow-hidden shadow-sm">
+                    <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Riwayat Pengajuan</h2>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1">Lihat status pengajuan sertifikasi dan PKL Anda</p>
                     </div>
                     <RiwayatPengajuanTable 
                         pengajuanItems={pengajuanItems}

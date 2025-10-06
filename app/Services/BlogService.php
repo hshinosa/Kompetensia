@@ -39,4 +39,20 @@ class BlogService
     {
         $this->repo->delete($blog);
     }
+
+    /**
+     * Get statistics for all blogs (regardless of pagination)
+     */
+    public function getStats(): array
+    {
+        $total = $this->repo->count();
+        $publishCount = $this->repo->countByStatus('Publish');
+        $draftCount = $this->repo->countByStatus('Draft');
+
+        return [
+            'total' => $total,
+            'publish' => $publishCount,
+            'draft' => $draftCount,
+        ];
+    }
 }

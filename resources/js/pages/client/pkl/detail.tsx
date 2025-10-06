@@ -470,9 +470,9 @@ export default function PKLDetail({ pkl, pendaftaran, uploadedDocuments = [], ex
                 </div>
 
                 {/* Upload Section */}
-                <div className="flex gap-6">
-                    {/* Upload Form - Left Side */}
-                    <div className="max-w-2xl flex-1 relative">
+                <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
+                    {/* Upload Form - Left Side (order-2 on mobile if passed, order-1 otherwise) */}
+                    <div className={`max-w-2xl flex-1 relative ${hasApprovedLaporanAkhir ? 'order-2 lg:order-1' : 'order-1'}`}>
                         <div className="bg-white rounded-xl border border-gray-200 p-6">
                             {/* Loading Overlay */}
                             {isUploading && (
@@ -644,8 +644,8 @@ export default function PKLDetail({ pkl, pendaftaran, uploadedDocuments = [], ex
                         </div>
                     </div>
 
-                    {/* Review Card - Right Side */}
-                    <div className="flex-1">
+                    {/* Review Card - Right Side (order-1 on mobile if passed, order-2 otherwise) */}
+                    <div className={`flex-1 ${hasApprovedLaporanAkhir ? 'order-1 lg:order-2' : 'order-2'}`}>
                         <div className={`bg-white rounded-xl border border-gray-200 p-6 h-full transition-all duration-300 ${isReviewEnabled ? 'opacity-100 border-green-300' : hasExistingReview ? 'opacity-100 border-orange-300' : 'opacity-60'}`}>
                             <div className="space-y-6 h-full">
                                 {/* Status Indicator */}

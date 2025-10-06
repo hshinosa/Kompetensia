@@ -321,11 +321,14 @@ class PendaftaranPKLController extends Controller
                 'is_portfolio' => $jenisDokumen === 'portfolio'
             ]);
             
-            // Generate unique filename
+            // Use original filename with timestamp prefix to avoid conflicts
+            $originalName = $file->getClientOriginalName();
             $extension = $file->getClientOriginalExtension();
-            $fileName = time() . '_' . $jenisDokumen . '_' . uniqid() . '.' . $extension;
+            $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
+            $fileName = time() . '_' . $nameWithoutExt . '.' . $extension;
             
             \Log::info('FILE NAME GENERATION:', [
+                'original_file_name' => $originalName,
                 'generated_file_name' => $fileName,
                 'file_extension' => $extension,
                 'jenis_dokumen' => $jenisDokumen
@@ -386,26 +389,85 @@ class PendaftaranPKLController extends Controller
      */
     public function downloadBerkas(Request $request, int $id, string $type)
     {
+        \Log::info('=== DOWNLOAD BERKAS REQUEST ===', [
+            'pendaftaran_id' => $id,
+            'type' => $type,
+            'request_url' => $request->fullUrl(),
+            'request_method' => $request->method()
+        ]);
+
         try {
+            // Step 1: Get pendaftaran
+            \Log::info('Step 1: Fetching pendaftaran data');
             $pendaftaran = $this->pendaftaranPKLService->getPendaftaranById($id);
 
             if (!$pendaftaran) {
+                \Log::error('Pendaftaran not found', ['id' => $id]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Pendaftaran PKL tidak ditemukan'
                 ], Response::HTTP_NOT_FOUND);
             }
 
-            // Validasi akses - user hanya bisa download berkas miliknya sendiri
-            $user = auth()->guard('client')->user();
-            if ($user && $user->id !== $pendaftaran->user_id) {
-                // Allow admin/staff to download
-                $adminUser = auth()->guard('web')->user();
-                if (!$adminUser || $adminUser->role !== 'admin') {
+            \Log::info('Pendaftaran found', [
+                'id' => $pendaftaran->id,
+                'user_id' => $pendaftaran->user_id,
+                'cv_file_path' => $pendaftaran->cv_file_path ?? 'NULL',
+                'cv_file_name' => $pendaftaran->cv_file_name ?? 'NULL',
+                'portfolio_file_path' => $pendaftaran->portfolio_file_path ?? 'NULL',
+                'portfolio_file_name' => $pendaftaran->portfolio_file_name ?? 'NULL'
+            ]);
+
+            // Step 2: Check authentication
+            \Log::info('Step 2: Checking authentication');
+            
+            // Check web guard (admin)
+            $adminUser = auth()->guard('web')->user();
+            \Log::info('Web guard check', [
+                'is_authenticated' => $adminUser ? true : false,
+                'user_id' => $adminUser ? $adminUser->id : null,
+                'user_role' => $adminUser ? $adminUser->role : null,
+                'user_email' => $adminUser ? $adminUser->email : null
+            ]);
+
+            // Check client guard
+            $clientUser = auth()->guard('client')->user();
+            \Log::info('Client guard check', [
+                'is_authenticated' => $clientUser ? true : false,
+                'user_id' => $clientUser ? $clientUser->id : null,
+                'user_email' => $clientUser ? $clientUser->email : null
+            ]);
+
+            // Validasi akses
+            if ($adminUser && $adminUser->role === 'admin') {
+                // Admin can access any file
+                \Log::info('✓ Access GRANTED: Admin user', [
+                    'admin_id' => $adminUser->id,
+                    'admin_role' => $adminUser->role
+                ]);
+            } else {
+                // For clients, only allow their own files
+                if (!$clientUser) {
+                    \Log::error('✗ Access DENIED: No authenticated user found');
+                    abort(403, 'Anda harus login untuk mendownload berkas');
+                }
+
+                if ($clientUser->id !== $pendaftaran->user_id) {
+                    \Log::error('✗ Access DENIED: User does not own this pendaftaran', [
+                        'client_id' => $clientUser->id,
+                        'pendaftaran_user_id' => $pendaftaran->user_id
+                    ]);
                     abort(403, 'Anda tidak memiliki akses untuk mendownload berkas ini');
                 }
+
+                \Log::info('✓ Access GRANTED: Client owns this pendaftaran', [
+                    'client_id' => $clientUser->id
+                ]);
             }
 
+            // Step 3: Get file path and name
+            \Log::info('Step 3: Getting file path');
+            
             $filePath = null;
             $fileName = null;
 
@@ -419,24 +481,65 @@ class PendaftaranPKLController extends Controller
                     $fileName = $pendaftaran->portfolio_file_name;
                     break;
                 default:
-                    abort(400, 'Tipe berkas tidak valid');
+                    \Log::error('Invalid file type', ['type' => $type]);
+                    abort(400, 'Tipe berkas tidak valid. Hanya cv atau portfolio yang diizinkan.');
             }
+
+            \Log::info('File info from database', [
+                'type' => $type,
+                'file_path' => $filePath,
+                'file_name' => $fileName
+            ]);
 
             if (!$filePath || !$fileName) {
-                abort(404, 'Berkas tidak ditemukan');
+                \Log::error('File path or name is null', [
+                    'file_path' => $filePath,
+                    'file_name' => $fileName
+                ]);
+                abort(404, 'Berkas tidak ditemukan di database');
             }
 
+            // Step 4: Check file exists
+            \Log::info('Step 4: Checking file existence');
+            
             $fullPath = storage_path('app/public/' . $filePath);
+            \Log::info('Full file path', [
+                'full_path' => $fullPath,
+                'file_exists' => file_exists($fullPath)
+            ]);
 
             if (!file_exists($fullPath)) {
-                abort(404, 'File tidak ditemukan di server');
+                \Log::error('File does not exist on disk', [
+                    'full_path' => $fullPath,
+                    'storage_path' => storage_path('app/public'),
+                    'relative_path' => $filePath
+                ]);
+                abort(404, 'File tidak ditemukan di server. Path: ' . $filePath);
             }
+
+            // Step 5: Send file
+            \Log::info('Step 5: Sending file download response', [
+                'file_size' => filesize($fullPath),
+                'mime_type' => mime_content_type($fullPath)
+            ]);
 
             return response()->download($fullPath, $fileName);
 
         } catch (\Exception $e) {
-            \Log::error('Download berkas error: ' . $e->getMessage());
-            abort(500, 'Gagal mendownload berkas');
+            \Log::error('=== DOWNLOAD BERKAS ERROR ===', [
+                'pendaftaran_id' => $id,
+                'type' => $type,
+                'error_message' => $e->getMessage(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mendownload berkas',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

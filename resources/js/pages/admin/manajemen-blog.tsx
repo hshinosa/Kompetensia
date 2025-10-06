@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import RichTextEditor from '@/components/RichTextEditor';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash2, MoreVertical, FileText, User, Star } from 'lucide-react';
+import { Plus, Edit, Trash2, MoreVertical, FileText, User, Star, X } from 'lucide-react';
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 import Pagination from '@/components/Pagination';
 import { BlogFilterDropdown } from '@/components/BlogFilterDropdown';
@@ -41,6 +41,7 @@ interface Blog {
 interface PageProps extends InertiaPageProps {
   blogs: { data: Blog[]; meta: { current_page: number; last_page: number; per_page: number; total: number } };
   filters: Record<string, any>;
+  stats?: { total: number; publish: number; draft: number };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -53,6 +54,7 @@ export default function ManajemenBlog() {
   const { props } = usePage<PageProps>();
   const blogs = (props as any).blogs;
   const filters = (props as any).filters || {};
+  const stats = (props as any).stats || {};
   const initialData: Blog[] = blogs?.data || [];
   const [search, setSearch] = useState(filters.search || '');
   const [activeFilters, setActiveFilters] = useState({
@@ -77,10 +79,10 @@ export default function ManajemenBlog() {
     meta_description: ''
   });
 
-  // Derived stats
-  const total = blogs?.meta?.total ?? 0;
-  const publishCount = initialData.filter(b => b.status === 'Publish').length;
-  const draftCount = initialData.filter(b => b.status === 'Draft').length;
+  // Use stats from backend (all data, not just current page)
+  const total = stats?.total ?? 0;
+  const publishCount = stats?.publish ?? 0;
+  const draftCount = stats?.draft ?? 0;
 
   // Client-side pagination like dashboard
   const [page, setPage] = React.useState(1);
@@ -116,7 +118,7 @@ export default function ManajemenBlog() {
     router.delete(`/admin/blog/${deleting.id}`, { onSuccess: ()=> setShowDelete(false) });
   };
 
-  const statusBadgeVariant = (s:string) => s === 'Publish' ? 'default' : 'secondary';
+  const getStatusBadgeClass = (s:string) => s === 'Publish' ? 'bg-purple-100 text-purple-800 border-purple-200' : 'bg-gray-100 text-gray-800 border-gray-200';
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -128,14 +130,14 @@ export default function ManajemenBlog() {
             <p className="text-muted-foreground">Kelola artikel blog untuk platform</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button onClick={openCreate} className="flex items-center gap-2"><Plus className="h-4 w-4"/>Tambah Artikel Blog</Button>
+            <Button onClick={openCreate} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white"><Plus className="h-4 w-4"/>Tambah Artikel Blog</Button>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <StatsCard label="Total Artikel" value={total} icon={<FileText className="h-5 w-5" />} iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10" />
-          <StatsCard label="Publish" value={publishCount} icon={<Star className="h-5 w-5" />} iconColor="text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-400/10" />
-          <StatsCard label="Draft" value={draftCount} icon={<FileText className="h-5 w-5" />} iconColor="text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-400/10" />
+          <StatsCard label="Total Artikel" value={total} icon={<FileText className="h-5 w-5" />} iconColor="text-blue-600 bg-blue-100" />
+          <StatsCard label="Publish" value={publishCount} icon={<Star className="h-5 w-5" />} iconColor="text-green-600 bg-green-100" />
+          <StatsCard label="Draft" value={draftCount} icon={<FileText className="h-5 w-5" />} iconColor="text-amber-600 bg-amber-100" />
         </div>
 
         <Card>
@@ -178,7 +180,7 @@ export default function ManajemenBlog() {
                       </div>
                       <div className="text-xs text-muted-foreground line-clamp-1 max-w-xs">{b.deskripsi}</div>
                     </TableCell>
-                    <TableCell><Badge variant={statusBadgeVariant(b.status)}>{b.status}</Badge></TableCell>
+                    <TableCell><Badge className={getStatusBadgeClass(b.status)}>{b.status}</Badge></TableCell>
                     <TableCell className="text-sm flex items-center gap-1"><User className="h-3 w-3" />{b.penulis}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
@@ -210,9 +212,19 @@ export default function ManajemenBlog() {
 
         {/* Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent className="max-w-none sm:max-w-[90vw] lg:max-w-[1280px] w-[92vw] md:w-[90vw] max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>{editing ? 'Edit Artikel' : 'Artikel Baru'}</DialogTitle></DialogHeader>
-            <div className="grid gap-4 py-4">
+          <DialogContent hideClose={true} className="max-w-none sm:max-w-[90vw] lg:max-w-[1280px] w-[92vw] md:w-[90vw] max-h-[90vh] overflow-y-auto p-0">
+            <DialogHeader className="bg-purple-600 text-white px-6 py-4 rounded-t-lg relative">
+              <DialogTitle className="text-xl font-semibold">{editing ? 'Edit Artikel' : 'Artikel Baru'}</DialogTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={()=>setShowForm(false)}
+                className="absolute right-4 top-4 h-8 w-8 rounded-full bg-orange-400 hover:bg-orange-500 text-white p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogHeader>
+            <div className="grid gap-4 py-6 px-6">
               <div className="grid gap-2">
                 <Label htmlFor="nama_artikel">Judul</Label>
                 <Input id="nama_artikel" value={form.nama_artikel} onChange={e=>setForm(f=>({...f,nama_artikel:e.target.value}))} />
@@ -272,9 +284,9 @@ export default function ManajemenBlog() {
                 <Label htmlFor="featured" className="flex items-center gap-1">Tandai Featured</Label>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="px-6 pb-6">
               <Button variant="outline" onClick={()=>setShowForm(false)}>Batal</Button>
-              <Button onClick={submitForm}>{editing ? 'Simpan' : 'Tambah'}</Button>
+              <Button onClick={submitForm} className="bg-purple-600 hover:bg-purple-700 text-white">{editing ? 'Simpan' : 'Tambah'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

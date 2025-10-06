@@ -35,7 +35,11 @@ interface PageProps extends Record<string, unknown> {
   filters?: { search?:string; status?:string; kategori?:string };
 }
 
-const statusVariants: Record<string, 'default' | 'secondary' | 'destructive'> = { Aktif:'default', Draf:'secondary', Ditutup:'destructive' };
+const statusVariants: Record<string, string> = { 
+  Aktif: 'bg-purple-100 text-purple-800 border-purple-200', 
+  Draf: 'bg-gray-100 text-gray-800 border-gray-200', 
+  Ditutup: 'bg-orange-100 text-orange-800 border-orange-200' 
+};
 
 const PraktikKerjaLapanganPage: React.FC = () => {
   const breadcrumbs: BreadcrumbItem[] = [
@@ -128,13 +132,13 @@ const PraktikKerjaLapanganPage: React.FC = () => {
                         <p className="text-muted-foreground">Kelola posisi dan program PKL yang tersedia</p>
                     </div>
                 </div>
-          <Button onClick={openCreate}>Tambah Posisi</Button>
+          <Button onClick={openCreate} className="bg-purple-600 hover:bg-purple-700 text-white">Tambah Posisi</Button>
         </div>
         <div className="grid gap-4 md:grid-cols-4">
-          <StatsCard label="Total Posisi" value={totalPosisi} icon={<Briefcase className="h-5 w-5" />} iconColor="text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-400/10" />
-          <StatsCard label="Aktif" value={aktifCount} icon={<Layers className="h-5 w-5" />} iconColor="text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-400/10" />
-          <StatsCard label="Draft" value={draftCount} icon={<Users className="h-5 w-5" />} iconColor="text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-400/10" />
-          <StatsCard label="Ditutup" value={ditutupCount} icon={<Archive className="h-5 w-5" />} iconColor="text-rose-600 bg-rose-100 dark:text-rose-400 dark:bg-rose-400/10" />
+          <StatsCard label="Total Posisi" value={totalPosisi} icon={<Briefcase className="h-5 w-5" />} iconColor="text-blue-600 bg-blue-100" />
+          <StatsCard label="Aktif" value={aktifCount} icon={<Layers className="h-5 w-5" />} iconColor="text-green-600 bg-green-100" />
+          <StatsCard label="Draft" value={draftCount} icon={<Users className="h-5 w-5" />} iconColor="text-amber-600 bg-amber-100" />
+          <StatsCard label="Ditutup" value={ditutupCount} icon={<Archive className="h-5 w-5" />} iconColor="text-rose-600 bg-rose-100" />
         </div>
 
         <Card>
@@ -202,7 +206,7 @@ const PraktikKerjaLapanganPage: React.FC = () => {
                       <TableCell className="hidden md:table-cell">{row.wfhWfoHybrid}</TableCell>
                       <TableCell className="hidden md:table-cell">{row.pesertaTerdaftar}</TableCell>
                       <TableCell>
-                        <Badge variant={statusVariants[row.status] ?? 'secondary'}>{row.status}</Badge>
+                        <Badge className={statusVariants[row.status] ?? 'bg-gray-100 text-gray-800 border-gray-200'}>{row.status}</Badge>
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

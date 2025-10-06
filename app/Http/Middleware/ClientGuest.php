@@ -13,6 +13,9 @@ class ClientGuest
      */
     public function handle(Request $request, Closure $next)
     {
+        // Set client-specific session cookie name
+        config(['session.cookie' => 'kompetensia_client_session']);
+        
         if (Auth::guard('client')->check()) {
             return redirect()->route('client.dashboard');
         }

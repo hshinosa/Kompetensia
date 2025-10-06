@@ -193,6 +193,7 @@ class PKLController extends Controller
                     'posisi_nama' => $activeRegistration->posisiPKL->nama_posisi ?? 'Unknown',
                     'tanggal_selesai' => $activeRegistration->tanggal_selesai,
                     'tanggal_pendaftaran' => $activeRegistration->tanggal_pendaftaran,
+                    'penilaian_status' => $activeRegistration->penilaian ? $activeRegistration->penilaian->status_penilaian : null,
                 ] : null
             ]);
         } catch (\Exception $e) {

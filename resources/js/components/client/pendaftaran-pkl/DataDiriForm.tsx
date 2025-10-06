@@ -316,7 +316,7 @@ export default function DataDiriForm({ formData, onFormDataChange, onNext, user 
               Apakah anda memiliki laptop?
             </label>
             <select
-              value={formData.memilikiLaptop || 'tidak'}
+              value={formData.memilikiLaptop || ''}
               onChange={(e) => onFormDataChange('memilikiLaptop', e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
@@ -331,7 +331,7 @@ export default function DataDiriForm({ formData, onFormDataChange, onNext, user 
               Apakah anda memiliki kamera DSLR?
             </label>
             <select
-              value={formData.memilikiKameraDSLR || 'tidak'}
+              value={formData.memilikiKameraDSLR || ''}
               onChange={(e) => onFormDataChange('memilikiKameraDSLR', e.target.value)}
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required

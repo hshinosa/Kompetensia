@@ -65,4 +65,14 @@ class VideoRepository implements VideoRepositoryInterface
         if ($video->thumbnail) { Storage::disk('public')->delete($video->thumbnail); }
         $video->delete();
     }
+
+    public function count(): int
+    {
+        return Video::count();
+    }
+
+    public function countByStatus(string $status): int
+    {
+        return Video::where('status', $status)->count();
+    }
 }
