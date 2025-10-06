@@ -130,9 +130,6 @@ export default function PreviewSertifikasi({ sertifikasi, rekomendasiSertifikasi
   };
 
   // Log data untuk debugging
-  console.log('Sertifikasi data:', sertifikasi);
-  console.log('Rekomendasi data:', rekomendasiSertifikasi);
-
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar />

@@ -26,10 +26,7 @@ export default function ClientSertifikatSaya({ certificates }: Props) {
 
     // Debug: Log received data
     React.useEffect(() => {
-        console.log('=== SERTIFIKAT SAYA DEBUG ===');
-        console.log('Certificates received:', certificates);
-        console.log('Certificates count:', certificates?.length);
-    }, [certificates]);
+        }, [certificates]);
 
     return (
         <ClientAuthenticatedLayout>

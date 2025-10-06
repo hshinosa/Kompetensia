@@ -32,14 +32,6 @@ export default function Index({ articles, featured, filters }: ArticleIndexProps
   const [activeFilter, setActiveFilter] = useState(filters?.jenis_konten || 'Semua');
 
   // Debug pagination data
-  console.log('Articles pagination data:', {
-    total: articles?.meta?.total,
-    per_page: articles?.meta?.per_page,
-    current_page: articles?.meta?.current_page,
-    last_page: articles?.meta?.last_page,
-    links_count: articles?.links?.length
-  });
-
   const handleFilterChange = (filter: string) => {
     setActiveFilter(filter);
     router.get('/artikel', 

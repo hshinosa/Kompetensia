@@ -58,24 +58,15 @@ export default function ClientDashboard({
 
     // Function to fetch detailed registration data
     const fetchDetailedData = async (pengajuan: PengajuanItem) => {
-        console.log('=== FETCH DETAILED DATA START ===');
-        console.log('Fetching detailed data for:', pengajuan);
-        console.log('Pengajuan ID:', pengajuan.id);
-        console.log('Jenis pengajuan:', pengajuan.jenis_pengajuan);
-        
         setIsLoadingDetail(true);
         setDetailedData(null);
         
         try {
             const isSerifikasi = pengajuan.jenis_pengajuan.toLowerCase().includes('sertifikasi');
-            console.log('Is Sertifikasi?', isSerifikasi);
             
             const endpoint = isSerifikasi 
                 ? `/client/pendaftaran-sertifikasi/${pengajuan.id}/detail`
                 : `/client/pendaftaran-pkl/${pengajuan.id}/detail`;
-            
-            console.log('API endpoint:', endpoint);
-            console.log('Full URL will be:', window.location.origin + endpoint);
             
             const response = await fetch(endpoint, {
                 method: 'GET',
@@ -88,47 +79,16 @@ export default function ClientDashboard({
                 credentials: 'same-origin',
             });
             
-            console.log('Response object:', response);
-            console.log('Response status:', response.status);
-            console.log('Response statusText:', response.statusText);
-            console.log('Response ok:', response.ok);
-            console.log('Response headers:', [...response.headers.entries()]);
-            
             if (response.ok) {
                 const result = await response.json();
-                console.log('=== API RESPONSE SUCCESS ===');
-                console.log('Full API response:', result);
-                console.log('Response success flag:', result.success);
-                console.log('Response data:', result.data);
                 
                 if (result.success) {
                     setDetailedData(result.data);
-                    console.log('=== DETAILED DATA SET ===');
-                    console.log('Detailed data set in state:', result.data);
-                } else {
-                    console.error('API returned success=false:', result.message);
-                }
-            } else {
-                console.error('=== API REQUEST FAILED ===');
-                const errorText = await response.text();
-                console.error('Response status:', response.status);
-                console.error('Response text:', errorText);
-                
-                // Try to parse the error response as JSON if possible
-                try {
-                    const errorJson = JSON.parse(errorText);
-                    console.error('Parsed error JSON:', errorJson);
-                } catch (e) {
-                    console.error('Error response is not JSON');
                 }
             }
         } catch (error) {
-            console.error('=== FETCH ERROR ===');
-            console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
-            console.error('Error message:', error instanceof Error ? error.message : String(error));
-            console.error('Full error object:', error);
+            // Error handled silently
         } finally {
-            console.log('=== FETCH DETAILED DATA END ===');
             setIsLoadingDetail(false);
         }
     };
@@ -139,11 +99,6 @@ export default function ClientDashboard({
     const processedCount = pengajuanItems.filter(item => item.status === 'Sedang Diverifikasi').length;
 
     const handleDetailClick = (pengajuan: PengajuanItem) => {
-        console.log('=== DETAIL CLICK DEBUG ===');
-        console.log('Clicked pengajuan item:', pengajuan);
-        console.log('Pengajuan ID:', pengajuan.id);
-        console.log('Jenis pengajuan:', pengajuan.jenis_pengajuan);
-        
         setSelectedPengajuan(pengajuan);
         setIsModalOpen(true);
         // Fetch detailed data when modal opens

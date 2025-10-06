@@ -31,7 +31,6 @@ axios.interceptors.response.use(
     response => response,
     async error => {
         if (error.response?.status === 419 && !isReloading) {
-            console.warn('CSRF token mismatch detected, refreshing page...');
             isReloading = true;
             // CSRF token mismatch - reload immediately to get fresh token
             window.location.reload();
@@ -43,13 +42,11 @@ axios.interceptors.response.use(
 // Add global error handler for Inertia
 router.on('error', (event) => {
     const error = event.detail.errors as any;
-    console.log('Inertia error:', error);
-});
+    });
 
 router.on('exception', (event) => {
     const exception = event.detail.exception as any;
     if (exception?.response?.status === 419 && !isReloading) {
-        console.warn('CSRF token mismatch in Inertia request, refreshing page...');
         isReloading = true;
         // CSRF token mismatch - reload page
         window.location.reload();
@@ -69,7 +66,6 @@ document.addEventListener('visibilitychange', () => {
 // Clean up old localStorage keys on app load (migrate from old universal key to user-specific keys)
 // This runs once when the app loads to clean up the old 'user_profile_photo' key
 if (localStorage.getItem('user_profile_photo')) {
-    console.log('Cleaning up old universal profile photo key');
     localStorage.removeItem('user_profile_photo');
 }
 

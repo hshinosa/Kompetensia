@@ -89,12 +89,10 @@ export default function Dashboard() {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Response error:', response.status, errorText);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log('Received data:', data);
       
       // The backend now returns flattened data structure matching PendaftarData interface
       // Just pass the data directly as it already matches our interface
@@ -115,7 +113,6 @@ export default function Dashboard() {
       setSelectedRegistration(transformedData);
       setIsModalOpen(true);
     } catch (error) {
-      console.error('Error fetching registration detail:', error);
       alert('Gagal memuat detail pendaftaran');
     } finally {
       setIsLoadingDetail(false);
@@ -134,14 +131,6 @@ export default function Dashboard() {
       if (!id || !type) {
         throw new Error('Data pendaftaran tidak lengkap');
       }
-      
-      console.log('Sending approval request:', {
-        type,
-        id,
-        status,
-        alasan,
-        selectedRegistration: selectedRegistration
-      });
       
       // Get CSRF token
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -165,21 +154,13 @@ export default function Dashboard() {
         })
       });
       
-      // Log response details
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-      
       let result;
       try {
         result = await response.json();
       } catch (parseError) {
-        console.error('JSON parse error:', parseError);
         const text = await response.text();
-        console.error('Response text:', text);
         throw new Error('Server mengembalikan response yang tidak valid');
       }
-      
-      console.log('Response data:', result);
       
       if (!response.ok) {
         throw new Error(result.error || result.message || `Server error: ${response.status}`);
@@ -198,7 +179,6 @@ export default function Dashboard() {
       });
       
     } catch (error) {
-      console.error('Error updating registration:', error);
       // Show error modal
       setStatusModal({
         isOpen: true,

@@ -53,7 +53,7 @@ export default function PendaftaranNavbar() {
             localStorage.setItem(key, photoUrl);
           }
         } catch (error) {
-          console.error('Error fetching profile photo:', error);
+          // Error handled silently
         }
       } else {
         // Use cached photo
@@ -103,7 +103,7 @@ export default function PendaftaranNavbar() {
         }
       },
       onError: (errors) => {
-        console.error('Logout error:', errors);
+        // Error handled silently
       }
     });
   };

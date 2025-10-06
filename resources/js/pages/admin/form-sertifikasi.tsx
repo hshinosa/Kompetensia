@@ -256,13 +256,8 @@ export default function FormSertifikasi() {
     });
     
     // Debug: Log what we're sending
-    console.log('Form submission data:');
-    console.log('isCreatingNewAsesor:', isCreatingNewAsesor);
-    console.log('selectedAsesor:', selectedAsesor);
-    console.log('Form data entries:');
     for (const pair of fd.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
+      }
     
     const url = isEdit && s?.id ? `/admin/sertifikasi/${s.id}?_method=PUT` : '/admin/sertifikasi';
     
@@ -275,7 +270,6 @@ export default function FormSertifikasi() {
         } 
       },
       onError: (errors) => {
-        console.error('Form submission errors:', errors);
         // Scroll to top to show validation errors
         window.scrollTo({ top:0, behavior:'smooth' });
       }

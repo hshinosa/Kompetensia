@@ -80,15 +80,12 @@ export default function PKLPage({ posisiPKL, openModal, programId, programData, 
 
   // Handle modal state from landing page navigation
   useEffect(() => {
-    console.log('PKL Page loaded with params:', { openModal, programId, programData });
-    
     if (!openModal) return;
 
     // Try to parse program data from JSON
     if (programData) {
       try {
         const program = JSON.parse(programData);
-        console.log('Parsed program data:', program);
         // Normalize the program data for consistent format
         const normalizedProgram = normalizeProgram(program);
         setSelectedProgram(normalizedProgram);
@@ -105,8 +102,7 @@ export default function PKLPage({ posisiPKL, openModal, programId, programData, 
         }
         return;
       } catch (error) {
-        console.error('Error parsing program data:', error);
-      }
+        }
     }
 
     // Fallback: find program by ID in existing posisiPKL data

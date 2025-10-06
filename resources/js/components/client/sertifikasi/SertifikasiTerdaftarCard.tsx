@@ -36,18 +36,13 @@ export default function SertifikasiTerdaftarCard({ sertifikasi, onDetailClick }:
     const imageUrl = getPlaceholderImage(sertifikasi.jenis_sertifikasi);
 
     const handleDetailClick = () => {
-        console.log('Detail clicked for sertifikasi:', sertifikasi.id);
-        
         if (onDetailClick) {
-            console.log('Using onDetailClick callback');
             onDetailClick(sertifikasi);
         } else {
-            console.log('Using direct router navigation');
             // Navigate to detail page with multiple fallback methods
             try {
                 router.visit(`/client/sertifikasi/${sertifikasi.id}`);
             } catch (error) {
-                console.error('Router visit failed:', error);
                 // Fallback to window.location
                 window.location.href = `/client/sertifikasi/${sertifikasi.id}`;
             }

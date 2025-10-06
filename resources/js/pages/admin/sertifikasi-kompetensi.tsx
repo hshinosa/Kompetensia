@@ -115,7 +115,7 @@ export default function SertifikasiKompetensi() {
   const handleEditSertifikasi = (sertifikasi: SertifikasiData) => { window.location.href = `/admin/form-sertifikasi/${sertifikasi.id}`; };
   const handleViewSertifikasi = (sertifikasi: SertifikasiData) => { router.visit(`/admin/detail-sertifikasi/${sertifikasi.id}`); };
   const handleDeleteSertifikasi = (sertifikasi: SertifikasiData) => { setSelectedSertifikasi(sertifikasi); setIsDeleteModalOpen(true); };
-  const handleSave = () => { console.log('Saving data:', formData); setIsEditModalOpen(false); setSelectedSertifikasi(null); };
+  const handleSave = () => { setIsEditModalOpen(false); setSelectedSertifikasi(null); };
   const handleDelete = () => {
     if (!selectedSertifikasi) return;
     router.delete(`/admin/sertifikasi/${selectedSertifikasi.id}`, { preserveScroll:true, onFinish:()=> { setIsDeleteModalOpen(false); setSelectedSertifikasi(null); } });

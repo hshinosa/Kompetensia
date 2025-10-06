@@ -96,8 +96,7 @@ const TugasAssessmentCard: React.FC<TugasAssessmentCardProps> = ({ upload }) => 
       },
       onError: (errors) => {
         setIsSubmitting(false);
-        console.error('Error saving assessment:', errors);
-      }
+        }
     });
   };
 
@@ -260,7 +259,6 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
   
   // Debug: Log all status values
   React.useEffect(() => {
-    console.log('=== DEBUG PENILAIAN STATUS ===');
     batch.pendaftaran.forEach((p, idx) => {
       const hasUploadedTugas = p.upload_tugas && p.upload_tugas.length > 0;
       const allTugasApproved = hasUploadedTugas && 
@@ -268,20 +266,7 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
       const isPassed = p.penilaian?.status_kelulusan === 'Diterima' || 
                        p.penilaian?.status_kelulusan === 'Lulus';
       
-      console.log(`Peserta ${idx + 1} (${p.user?.name}):`, {
-        id: p.id,
-        status_kelulusan: p.penilaian?.status_kelulusan,
-        penilaian_exists: !!p.penilaian,
-        sertifikat_exists: !!p.sertifikat,
-        sertifikat_link: p.sertifikat?.link_sertifikat,
-        hasUploadedTugas,
-        allTugasApproved,
-        isPassed,
-        shouldShowButton: isPassed || allTugasApproved,
-        buttonType: p.sertifikat ? 'Lihat Sertifikat' : 'Terbitkan Sertifikat',
-        upload_tugas_statuses: p.upload_tugas?.map(t => t.status)
       });
-    });
   }, [batch.pendaftaran]);
   
   // Certificate modal state
@@ -294,8 +279,8 @@ const BatchPenilaianSertifikasiPage: React.FC = () => {
 
   const openPenilaian = (id:number) => {
     const row = batch.pendaftaran.find(p=>p.id===id);
-    console.log('Selected pendaftaran data:', row); // Debug log
-    console.log('Upload tugas data:', row?.upload_tugas); // Debug log
+    // Debug log
+    // Debug log
     setSelectedId(id);
     setOpenModal(true);
   };

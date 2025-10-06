@@ -139,8 +139,7 @@ class PendaftaranApiService {
         axios.defaults.headers.common['X-CSRF-TOKEN'] = response.data.token;
       }
     } catch (error) {
-      console.warn('Failed to fetch CSRF token:', error);
-    }
+      }
   }
 
   // Pendaftaran Sertifikasi APIs

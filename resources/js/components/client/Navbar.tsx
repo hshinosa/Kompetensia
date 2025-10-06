@@ -55,7 +55,7 @@ export default function Navbar() {
             localStorage.setItem(key, photoUrl);
           }
         } catch (error) {
-          console.error('Error fetching profile photo:', error);
+          // Error handled silently
         }
       } else {
         // Use cached photo
@@ -106,7 +106,7 @@ export default function Navbar() {
         }
       },
       onError: (errors) => {
-        console.error('Logout error:', errors);
+        // Error handled silently
       }
     });
   };

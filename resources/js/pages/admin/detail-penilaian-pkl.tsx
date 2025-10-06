@@ -160,8 +160,7 @@ export default function DetailPenilaianPKL({ pendaftaran, submisi_pkl }: Readonl
                 setAssessmentForm({ status_penilaian: '', feedback_pembimbing: '' });
             },
             onError: (errors) => {
-                console.error('Assessment submission failed:', errors);
-            }
+                }
         });
     };
 

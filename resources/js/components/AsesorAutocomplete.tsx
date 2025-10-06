@@ -81,7 +81,6 @@ const AsesorAutocomplete: React.FC<AsesorAutocompleteProps> = ({
                 setOptions([]);
             }
         } catch (error) {
-            console.error('Error fetching asesors:', error);
             setOptions([]);
         }
         setLoading(false);

@@ -42,48 +42,18 @@ export default function DataDiriForm({ formData, onFormDataChange, onNext, user 
   const handleFileUpload = async (file: File, type: 'cv' | 'portfolio') => {
     if (!file) return;
 
-    // === DETAILED FRONTEND LOGGING FOR FILE UPLOAD ===
-    console.log('=== FILE UPLOAD STARTED ===', {
-      type: type,
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      timestamp: new Date().toISOString()
-    });
-
     // Validate file type
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(file.type)) {
-      console.error('FILE VALIDATION FAILED:', {
-        type: type,
-        fileName: file.name,
-        fileType: file.type,
-        allowedTypes: allowedTypes,
-        reason: 'Invalid file type'
-      });
       alert('Hanya file PDF, DOC, atau DOCX yang diperbolehkan');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      console.error('FILE VALIDATION FAILED:', {
-        type: type,
-        fileName: file.name,
-        fileSize: file.size,
-        maxSize: 5 * 1024 * 1024,
-        reason: 'File too large'
-      });
       alert('Ukuran file maksimal 5MB');
       return;
     }
-
-    console.log('FILE VALIDATION PASSED:', {
-      type: type,
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type
-    });
 
     setUploadStatus(prev => ({
       ...prev,
@@ -95,13 +65,6 @@ export default function DataDiriForm({ formData, onFormDataChange, onNext, user 
       formData.append('file', file);
       formData.append('jenis_dokumen', type);
 
-      console.log('SENDING UPLOAD REQUEST:', {
-        type: type,
-        fileName: file.name,
-        formDataKeys: Array.from(formData.keys()),
-        url: '/api/upload-document'
-      });
-
       const response = await fetch('/api/upload-document', {
         method: 'POST',
         body: formData,
@@ -110,21 +73,8 @@ export default function DataDiriForm({ formData, onFormDataChange, onNext, user 
         },
       });
 
-      console.log('UPLOAD RESPONSE RECEIVED:', {
-        type: type,
-        responseStatus: response.status,
-        responseOk: response.ok,
-        responseStatusText: response.statusText
-      });
-
       if (response.ok) {
         const result = await response.json();
-        console.log('=== UPLOAD SUCCESS ===', {
-          type: type,
-          result: result,
-          filePath: result.data?.filePath,
-          fileName: result.data?.fileName
-        });
         
         setUploadStatus(prev => ({
           ...prev,
@@ -135,32 +85,12 @@ export default function DataDiriForm({ formData, onFormDataChange, onNext, user 
         const filePathKey = `${type}_file_path`;
         const fileNameKey = `${type}_file_name`;
         
-        console.log('SAVING TO FORM DATA:', {
-          type: type,
-          filePathKey: filePathKey,
-          fileNameKey: fileNameKey,
-          filePath: result.data.filePath,
-          fileName: result.data.fileName
-        });
-        
         onFormDataChange(filePathKey, result.data.filePath);
         onFormDataChange(fileNameKey, result.data.fileName);
-        
-        console.log('FORM DATA UPDATED SUCCESSFULLY:', {
-          type: type,
-          [filePathKey]: result.data.filePath,
-          [fileNameKey]: result.data.fileName
-        });
       } else {
         throw new Error('Upload failed');
       }
     } catch (error) {
-      console.error('=== UPLOAD ERROR ===', {
-        type: type,
-        fileName: file.name,
-        error: error,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error'
-      });
       alert('Upload gagal. Silakan coba lagi.');
       setUploadStatus(prev => ({
         ...prev,

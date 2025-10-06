@@ -33,8 +33,7 @@ export default function KebijakanFinalisasiForm({ formData, onFormDataChange, on
       onSubmit();
     } else {
       // Handle final submission with posisiPKL ID
-      console.log('Form submitted:', { ...formData, program_id: posisiPKL?.id });
-    }
+      }
   };
 
   return (

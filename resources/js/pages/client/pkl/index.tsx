@@ -27,10 +27,6 @@ interface ClientPKLProps {
 
 export default function ClientPKL({ pklPrograms = [] }: ClientPKLProps) {
     // Debug: Log the pklPrograms data
-    console.log('ClientPKL - pklPrograms:', pklPrograms);
-    console.log('ClientPKL - pklPrograms type:', typeof pklPrograms);
-    console.log('ClientPKL - is array:', Array.isArray(pklPrograms));
-
     // Ensure pklPrograms is an array
     const programsArray = Array.isArray(pklPrograms) ? pklPrograms : [];
 

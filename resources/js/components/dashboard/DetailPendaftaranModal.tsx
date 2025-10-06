@@ -86,15 +86,9 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   
-  // Debug log to see what data we're receiving
+  // Effect to track modal state
   React.useEffect(() => {
-    if (isOpen && pendaftarData) {
-      console.log('DetailPendaftaranModal data:', pendaftarData);
-      console.log('Biodata:', pendaftarData.biodata);
-      console.log('Berkas Persyaratan:', pendaftarData.biodata?.berkas_persyaratan);
-      console.log('Sertifikasi:', pendaftarData.sertifikasi);
-      console.log('PKL Info:', pendaftarData.pkl_info);
-    }
+    // Modal data validation can be added here if needed
   }, [isOpen, pendaftarData]);
   
   const approve = async () => { 
@@ -105,7 +99,6 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
       onClose(); 
     } catch (err) {
       setError('Gagal menyetujui pendaftaran. Silakan coba lagi.');
-      console.error('Approve error:', err);
     } finally {
       setIsProcessing(false);
     }
@@ -131,7 +124,6 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
       onClose();
     } catch (err) {
       setError('Gagal menolak pendaftaran. Silakan coba lagi.');
-      console.error('Reject error:', err);
     } finally {
       setIsProcessing(false);
     }
@@ -254,7 +246,6 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
                         try {
                           berkasData = JSON.parse(berkas);
                         } catch (e) {
-                          console.error('Failed to parse berkas_persyaratan:', e);
                           return <p className="text-sm text-gray-500">Gagal memuat berkas</p>;
                         }
                       }
@@ -269,7 +260,6 @@ export function DetailPendaftaranModal({ isOpen, pendaftarData, onClose, onAppro
                       // Helper function to get download URL using admin route
                       const getDownloadUrl = (type: string) => {
                         if (!pendaftarData.original_id) {
-                          console.error('No original_id found');
                           return '#';
                         }
                         return `/admin/pendaftaran-pkl/${pendaftarData.original_id}/download/${type}`;

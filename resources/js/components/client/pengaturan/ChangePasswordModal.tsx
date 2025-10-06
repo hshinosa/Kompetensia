@@ -72,7 +72,6 @@ export default function ChangePasswordModal({ isOpen, onClose }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission here
-    console.log('Password change submitted');
     handleClose();
   };
 

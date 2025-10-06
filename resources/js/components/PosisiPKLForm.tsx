@@ -135,7 +135,6 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
             onSave({} as PosisiPKLData); // Trigger refresh
           },
           onError: (errors) => {
-            console.error('Update error:', errors);
             alert('Gagal mengupdate posisi PKL');
           },
           onFinish: () => setIsLoading(false)
@@ -147,14 +146,12 @@ export default function PosisiPKLForm({ isOpen, onClose, onSave, editData }: Pos
             onSave({} as PosisiPKLData); // Trigger refresh
           },
           onError: (errors) => {
-            console.error('Store error:', errors);
             alert('Gagal menyimpan posisi PKL');
           },
           onFinish: () => setIsLoading(false)
         });
       }
     } catch (error) {
-      console.error('Save error:', error);
       alert('Terjadi kesalahan');
       setIsLoading(false);
     }

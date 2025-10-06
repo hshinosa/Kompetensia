@@ -279,14 +279,7 @@ export default function PenilaianPKL({ pendaftaran = { data: [] } }: Readonly<Pr
                                                     
                                                     // Debug logging
                                                     if (isSMK) {
-                                                        console.log('SMK Student Debug:', {
-                                                            institusi,
-                                                            class_semester: item.user?.class_semester,
-                                                            semester: item.user?.semester,
-                                                            pendaftaran_semester: item.semester,
-                                                            user: item.user
-                                                        });
-                                                    }
+                                                        }
                                                     
                                                     if (isSMK) {
                                                         // For SMK students, try multiple sources for class information

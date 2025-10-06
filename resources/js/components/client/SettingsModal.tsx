@@ -56,7 +56,6 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
         if (!user) return null;
         const key = `user_profile_photo_${user.id}`;
         const saved = localStorage.getItem(key);
-        console.log('Initial fotoProfil from localStorage:', saved);
         return saved || null;
     });
     const [isUploadingFoto, setIsUploadingFoto] = useState(false);
@@ -100,11 +99,9 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
 
     // Sync fotoProfil with localStorage whenever it changes
     useEffect(() => {
-        console.log('fotoProfil changed:', fotoProfil);
         if (fotoProfil && user) {
             const key = getPhotoStorageKey();
             localStorage.setItem(key, fotoProfil);
-            console.log('Saved to localStorage:', key, fotoProfil);
             // Dispatch event to notify other components (like Navbar)
             window.dispatchEvent(new Event('profile-photo-updated'));
         }
@@ -113,7 +110,6 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
     // Fetch user profile data when modal opens
     useEffect(() => {
         if (isOpen) {
-            console.log('Modal opened, fetching profile...');
             fetchUserProfile();
         }
     }, [isOpen]);
@@ -144,7 +140,6 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                 }
             }
         } catch (err: any) {
-            console.error('Error fetching profile:', err);
             setError(err.response?.data?.message || 'Gagal memuat data profil');
         } finally {
             setIsLoading(false);
@@ -198,7 +193,6 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                 setTimeout(() => setSuccess(''), 3000);
             }
         } catch (err: any) {
-            console.error('Error uploading photo:', err);
             setError(err.response?.data?.message || 'Gagal mengupload foto profil');
         } finally {
             setIsUploadingFoto(false);
@@ -227,7 +221,6 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                 setTimeout(() => setSuccess(''), 3000);
             }
         } catch (err: any) {
-            console.error('Error deleting photo:', err);
             setError(err.response?.data?.message || 'Gagal menghapus foto profil');
         } finally {
             setIsUploadingFoto(false);
@@ -315,7 +308,6 @@ export default function SettingsModal({ isOpen, onClose }: Readonly<Props>) {
                 }, 1500);
             }
         } catch (err: any) {
-            console.error('Error updating profile:', err);
             setError(err.response?.data?.message || 'Gagal memperbarui profil');
         } finally {
             setIsSaving(false);

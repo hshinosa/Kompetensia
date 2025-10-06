@@ -23,7 +23,6 @@ export default function ClientSertifikasi({ sertifikasiTerdaftar = [] }: ClientS
         try {
             router.visit(`/client/sertifikasi/${sertifikasi.id}`);
         } catch (error) {
-            console.error('Router visit failed:', error);
             // Fallback to window.location
             window.location.href = `/client/sertifikasi/${sertifikasi.id}`;
         }

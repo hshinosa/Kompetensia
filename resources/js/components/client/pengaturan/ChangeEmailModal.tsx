@@ -64,7 +64,6 @@ export default function ChangeEmailModal({ isOpen, onClose }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission here
-    console.log('New email:', newEmail);
     handleClose();
   };
 

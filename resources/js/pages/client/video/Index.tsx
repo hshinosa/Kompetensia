@@ -32,14 +32,6 @@ export default function Index({ videos, featured }: VideoIndexProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Debug pagination data
-  console.log('Videos pagination data:', {
-    total: videos?.meta?.total,
-    per_page: videos?.meta?.per_page,
-    current_page: videos?.meta?.current_page,
-    last_page: videos?.meta?.last_page,
-    links_count: videos?.links?.length
-  });
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
       year: 'numeric',
